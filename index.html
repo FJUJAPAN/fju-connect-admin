@@ -150,7 +150,21 @@ async function viewYouth(id){
     const cell=document.createElement('div');cell.className='stat';const labelEl=document.createElement('strong');labelEl.textContent=label;const valueEl=document.createElement('p');valueEl.textContent=value||'—';cell.append(labelEl,valueEl);details.append(cell);
   }
   panel.append(details);
-  const history=document.createElement('p');history.className='muted';history.textContent='Histórico de evolução: integração em preparação. Nenhum histórico foi alterado.';panel.append(history);
+  const historyTitle=document.createElement('h3');historyTitle.textContent='Histórico de evolução';panel.append(historyTitle);
+  const historyList=document.createElement('div');historyList.className='stat';historyList.textContent='Carregando histórico...';panel.append(historyList);
+  try{
+    const {data:events,error}=await supabase.from('fju_historico_patentes').select('patente_anterior,patente_nova,alterado_em').eq('jovem_id',id).order('alterado_em',{ascending:false}).limit(50);
+    if(error)throw error;
+    historyList.replaceChildren();
+    if(!events?.length){historyList.textContent='Ainda não há mudanças de patente registradas.';}
+    else for(const ev of events){
+      const row=document.createElement('p');
+      const date=ev.alterado_em?new Date(ev.alterado_em).toLocaleString('ja-JP'):'Data indisponível';
+      row.textContent=date+' — '+(ev.patente_anterior||'Sem patente')+' → '+(ev.patente_nova||'Sem patente');
+      historyList.append(row);
+    }
+  }catch(err){historyList.textContent='Histórico indisponível: '+err.message;}
+
   const close=document.createElement('button');close.type='button';close.className='secondary';close.textContent='Fechar ficha';close.onclick=()=>{panel.classList.add('hidden');if(detailPhotoUrl){URL.revokeObjectURL(detailPhotoUrl);detailPhotoUrl=null;}};panel.append(close);
   panel.scrollIntoView({behavior:'smooth'});
   try{
