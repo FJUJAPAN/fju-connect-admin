@@ -5,6 +5,23 @@
 <title>FJU Connect JAPAN · Admin</title>
 <style>
 :root{font-family:system-ui,-apple-system,sans-serif;color:#172033;background:#f4f6fa}*{box-sizing:border-box}body{margin:0}header{background:#19264b;color:white;padding:22px 18px}header h1{margin:0;font-size:23px}header p{margin:6px 0 0;color:#cbd6f0}.wrap{max-width:1000px;margin:auto;padding:18px}.notice{background:#fff5db;border-left:4px solid #e6a100;padding:14px;border-radius:8px;margin-bottom:16px}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}button{border:0;border-radius:9px;padding:11px 15px;background:#253b75;color:white;font-weight:600;cursor:pointer}.tabs button{background:#e2e8f3;color:#1c2b4e}.tabs button.active{background:#253b75;color:white}.panel{background:white;border-radius:14px;padding:20px;box-shadow:0 3px 15px #14213d10;margin-bottom:18px}h2{margin-top:0;font-size:21px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.stat{padding:16px;background:#eef2fa;border-radius:12px}.stat b{display:block;font-size:25px;margin-top:8px}label{display:block;font-weight:600;font-size:13px;margin:12px 0 5px}input,select,textarea{width:100%;border:1px solid #b9c4d7;border-radius:8px;padding:11px;font:inherit}textarea{min-height:80px}.hidden{display:none}.muted{color:#61708b;font-size:14px}.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.secondary{background:#e2e8f3;color:#1c2b4e}.message{margin:12px 0;white-space:pre-wrap}.error{color:#b42318}.success{color:#176b44}footer{text-align:center;padding:20px;color:#71809a;font-size:12px}.auth{max-width:440px;margin:30px auto}.topline{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.report-list{display:grid;gap:14px;margin-top:14px}
+.report-card{background:#fff;border:1px solid #e0e6f0;border-radius:16px;padding:16px;box-shadow:0 4px 14px #14213d0a}
+.report-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.report-card-title{font-size:17px;font-weight:750;color:#19264b}
+.report-card-subtitle{font-size:13px;color:#61708b;margin-top:4px}
+.report-badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:700;background:#e8f5ed;color:#176b44}
+.report-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:9px}
+.report-metric{background:#f4f6fb;border-radius:11px;padding:11px;min-height:68px}
+.report-metric span{display:block;font-size:12px;color:#61708b;line-height:1.35}
+.report-metric b{display:block;font-size:22px;color:#19264b;margin-top:5px}
+.report-highlight{background:#e9efff}
+.report-highlight b{color:#253b75}
+.report-event-total{display:flex;align-items:center;gap:12px;margin-top:10px;background:#f0f4ff;border-radius:12px;padding:12px}
+.report-event-total b{font-size:30px;color:#253b75}
+.report-section-title{font-size:16px;margin:22px 0 8px;color:#19264b}
+@media(max-width:520px){.report-card{padding:13px}.report-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.report-card-title{font-size:16px}}
+
 </style>
 </head>
 <body>
@@ -300,13 +317,21 @@ async function loadWeeklyReports(){
   const [{data:reports,error},{data:polos,poloError}]=await Promise.all([q,supabase.from('fju_polos').select('id,nome')]);
   if(error||poloError){list.textContent='Não foi possível carregar relatórios: '+(error?.message||poloError?.message);return;}
   const names=new Map((polos||[]).map(p=>[p.id,p.nome]));
-  list.replaceChildren();
+  list.replaceChildren();list.className='report-list';
   if(!reports?.length){list.textContent='Nenhum relatório semanal enviado ainda.';return;}
+  const metric=(label,value,highlight=false)=>{const box=document.createElement('div');box.className='report-metric'+(highlight?' report-highlight':'');const span=document.createElement('span');span.textContent=label;const b=document.createElement('b');b.textContent=Number(value??0).toLocaleString('ja-JP');box.append(span,b);return box;};
   for(const r of reports){
-    const row=document.createElement('div');row.className='stat';row.style.marginBottom='8px';
-    const title=document.createElement('strong');title.textContent=(names.get(r.polo_id)||'Polo não identificado')+' — '+r.semana_domingo;
-    const detail=document.createElement('p');detail.className='muted';detail.textContent='Firmes: '+r.jovens_firmes+' · Novos: '+r.jovens_novos+' · Afastados: '+r.jovens_afastados+' · Domingo 9h30: '+r.presenca_domingo_930+' · Encontro FJU: '+r.presenca_encontro_fju+' · Batizados Espírito Santo: '+r.batizados_espirito_santo+' · Batizados nas águas: '+r.batizados_aguas+' · Total único: '+r.total_jovens_unicos;
-    row.append(title,detail);list.append(row);
+    const card=document.createElement('article');card.className='report-card';
+    const head=document.createElement('div');head.className='report-card-head';
+    const titleWrap=document.createElement('div');
+    const title=document.createElement('div');title.className='report-card-title';title.textContent=names.get(r.polo_id)||'Polo não identificado';
+    const subtitle=document.createElement('div');subtitle.className='report-card-subtitle';subtitle.textContent='Relatório semanal · Domingo '+r.semana_domingo;
+    titleWrap.append(title,subtitle);
+    const badge=document.createElement('span');badge.className='report-badge';badge.textContent='✓ Enviado';
+    head.append(titleWrap,badge);
+    const metrics=document.createElement('div');metrics.className='report-metrics';
+    metrics.append(metric('Total único',r.total_jovens_unicos,true),metric('Jovens firmes',r.jovens_firmes),metric('Jovens novos',r.jovens_novos),metric('Jovens afastados',r.jovens_afastados),metric('Presença · domingo 9h30',r.presenca_domingo_930),metric('Presença · Encontro FJU',r.presenca_encontro_fju),metric('Batizados · Espírito Santo',r.batizados_espirito_santo),metric('Batizados · nas águas',r.batizados_aguas));
+    card.append(head,metrics);list.append(card);
   }
 }
 el('weekly-report-form').addEventListener('submit',async e=>{
@@ -336,13 +361,21 @@ async function loadSpecialEvents(){
   const [{data:events,error},{data:polos,poloError}]=await Promise.all([q,supabase.from('fju_polos').select('id,nome')]);
   if(error||poloError){list.textContent='Não foi possível carregar eventos: '+(error?.message||poloError?.message);return;}
   const names=new Map((polos||[]).map(p=>[p.id,p.nome]));
-  list.replaceChildren();
+  list.replaceChildren();list.className='report-list';
   if(!events?.length){list.textContent='Nenhum evento especial registrado ainda.';return;}
   for(const ev of events){
-    const row=document.createElement('div');row.className='stat';row.style.marginBottom='8px';
-    const title=document.createElement('strong');title.textContent=(names.get(ev.polo_id)||'Polo não identificado')+' — '+new Date(ev.data_evento+'T12:00:00').toLocaleDateString('ja-JP');
-    const detail=document.createElement('p');detail.className='muted';detail.textContent=ev.nome_evento+' — '+ev.total_jovens+' jovens';
-    row.append(title,detail);list.append(row);
+    const card=document.createElement('article');card.className='report-card';
+    const head=document.createElement('div');head.className='report-card-head';
+    const titleWrap=document.createElement('div');
+    const title=document.createElement('div');title.className='report-card-title';title.textContent=ev.nome_evento;
+    const subtitle=document.createElement('div');subtitle.className='report-card-subtitle';subtitle.textContent=(names.get(ev.polo_id)||'Polo não identificado')+' · '+new Date(ev.data_evento+'T12:00:00').toLocaleDateString('ja-JP');
+    titleWrap.append(title,subtitle);
+    const badge=document.createElement('span');badge.className='report-badge';badge.textContent='Evento especial';
+    head.append(titleWrap,badge);
+    const total=document.createElement('div');total.className='report-event-total';
+    const count=document.createElement('b');count.textContent=Number(ev.total_jovens||0).toLocaleString('ja-JP');
+    const label=document.createElement('div');label.innerHTML='<strong>jovens participantes</strong><div class="report-card-subtitle">Total informado pelo polo</div>';
+    total.append(count,label);card.append(head,total);list.append(card);
   }
 }
 el('special-event-form').addEventListener('submit',async e=>{
