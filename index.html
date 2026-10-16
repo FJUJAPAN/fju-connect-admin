@@ -103,14 +103,14 @@ body.printing>#print-area{display:block!important}
 <form id="weekly-report-form">
 <div class="grid">
 <div><label for="weekly-report-date">Data do domingo do relatório</label><input id="weekly-report-date" type="date" required></div>
-<div><label for="weekly-firmes">Jovens firmes durante a semana</label><input id="weekly-firmes" type="number" min="0" step="1" value="0" required></div>
-<div><label for="weekly-novos">Jovens novos durante a semana</label><input id="weekly-novos" type="number" min="0" step="1" value="0" required></div>
-<div><label for="weekly-afastados">Jovens afastados durante a semana</label><input id="weekly-afastados" type="number" min="0" step="1" value="0" required></div>
-<div><label for="weekly-domingo">Presença domingo 9h30</label><input id="weekly-domingo" type="number" min="0" step="1" value="0" required></div>
-<div><label for="weekly-encontro">Presença no Encontro FJU</label><input id="weekly-encontro" type="number" min="0" step="1" value="0" required></div>
-<div><label for="weekly-espirito">Batizados com o Espírito Santo nesta semana</label><input id="weekly-espirito" type="number" min="0" step="1" value="0" required></div>
-<div><label for="weekly-aguas">Batizados nas águas nesta semana</label><input id="weekly-aguas" type="number" min="0" step="1" value="0" required></div>
-<div><label for="weekly-total">Total único da semana (sem repetir)</label><input id="weekly-total" type="number" min="0" step="1" value="0" required></div>
+<div><label for="weekly-firmes">Jovens firmes durante a semana</label><select id="weekly-firmes" class="weekly-quantity" required></select></div>
+<div><label for="weekly-novos">Jovens novos durante a semana</label><select id="weekly-novos" class="weekly-quantity" required></select></div>
+<div><label for="weekly-afastados">Jovens afastados durante a semana</label><select id="weekly-afastados" class="weekly-quantity" required></select></div>
+<div><label for="weekly-domingo">Presença domingo 9h30</label><select id="weekly-domingo" class="weekly-quantity" required></select></div>
+<div><label for="weekly-encontro">Presença no Encontro FJU</label><select id="weekly-encontro" class="weekly-quantity" required></select></div>
+<div><label for="weekly-espirito">Batizados com o Espírito Santo nesta semana</label><select id="weekly-espirito" class="weekly-quantity" required></select></div>
+<div><label for="weekly-aguas">Batizados nas águas nesta semana</label><select id="weekly-aguas" class="weekly-quantity" required></select></div>
+<div><label for="weekly-total">Total único da semana (sem repetir)</label><select id="weekly-total" class="weekly-quantity" required></select></div>
 </div>
 <p><button type="submit">Salvar relatório semanal</button></p>
 <p id="weekly-report-message" class="message" role="status" aria-live="polite"></p>
@@ -138,6 +138,10 @@ const SUPABASE_URL='https://hmacroktklgwkofxsygv.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_mdkfafhpqtthwzU8Hf7u9A_rErx3MFJ';
 const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const el=id=>document.getElementById(id);
+const quantityOptions=document.createDocumentFragment();
+for(let n=0;n<=1000;n++){const option=document.createElement('option');option.value=String(n);option.textContent=String(n);quantityOptions.append(option);}
+for(const select of document.querySelectorAll('select.weekly-quantity')){select.append(quantityOptions.cloneNode(true));select.value='0';}
+
 const show=(id)=>{for(const s of ['auth','recovery','app'])el(s).classList.toggle('hidden',s!==id)};
 const message=(id,msg,error=false)=>{el(id).textContent=msg;el(id).className='message '+(error?'error':'success')};
 let recoveryMode=false;
