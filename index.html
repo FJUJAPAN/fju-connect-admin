@@ -295,13 +295,19 @@ el('youth-search').addEventListener('input',renderYouth);
 
 async function loadWeeklyReports(){
   const list=el('weekly-report-list');list.textContent='Carregando relatórios...';
-  let q=supabase.from('fju_relatorios_semanais').select('id,semana_domingo,jovens_firmes,jovens_novos,jovens_afastados,presenca_domingo_930,presenca_encontro_fju,batizados_espirito_santo,batizados_aguas,total_jovens_unicos').order('semana_domingo',{ascending:false}).limit(30);
+  let q=supabase.from('fju_relatorios_semanais').select('id,polo_id,semana_domingo,jovens_firmes,jovens_novos,jovens_afastados,presenca_domingo_930,presenca_encontro_fju,batizados_espirito_santo,batizados_aguas,total_jovens_unicos').order('semana_domingo',{ascending:false}).limit(100);
   if(currentProfile?.papel==='coordenador')q=q.eq('polo_id',currentProfile.polo_id);
-  const {data,error}=await q;
-  if(error){list.textContent='Não foi possível carregar relatórios: '+error.message;return;}
+  const [{data:reports,error},{data:polos,poloError}]=await Promise.all([q,supabase.from('fju_polos').select('id,nome')]);
+  if(error||poloError){list.textContent='Não foi possível carregar relatórios: '+(error?.message||poloError?.message);return;}
+  const names=new Map((polos||[]).map(p=>[p.id,p.nome]));
   list.replaceChildren();
-  if(!data?.length){list.textContent='Nenhum relatório semanal enviado ainda.';return;}
-  for(const r of data){const p=document.createElement('p');p.textContent=r.semana_domingo+' — firmes: '+r.jovens_firmes+', novos: '+r.jovens_novos+', afastados: '+r.jovens_afastados+', domingo 9h30: '+r.presenca_domingo_930+', Encontro FJU: '+r.presenca_encontro_fju+', batizados Espírito Santo: '+r.batizados_espirito_santo+', batizados nas águas: '+r.batizados_aguas+', total único: '+r.total_jovens_unicos;list.append(p);}
+  if(!reports?.length){list.textContent='Nenhum relatório semanal enviado ainda.';return;}
+  for(const r of reports){
+    const row=document.createElement('div');row.className='stat';row.style.marginBottom='8px';
+    const title=document.createElement('strong');title.textContent=(names.get(r.polo_id)||'Polo não identificado')+' — '+r.semana_domingo;
+    const detail=document.createElement('p');detail.className='muted';detail.textContent='Firmes: '+r.jovens_firmes+' · Novos: '+r.jovens_novos+' · Afastados: '+r.jovens_afastados+' · Domingo 9h30: '+r.presenca_domingo_930+' · Encontro FJU: '+r.presenca_encontro_fju+' · Batizados Espírito Santo: '+r.batizados_espirito_santo+' · Batizados nas águas: '+r.batizados_aguas+' · Total único: '+r.total_jovens_unicos;
+    row.append(title,detail);list.append(row);
+  }
 }
 el('weekly-report-form').addEventListener('submit',async e=>{
   e.preventDefault();if(!currentProfile)return;
@@ -325,16 +331,18 @@ document.querySelectorAll('[data-report-tab]').forEach(btn=>btn.addEventListener
 }));
 async function loadSpecialEvents(){
   const list=el('special-event-list');list.textContent='Carregando eventos...';
-  let q=supabase.from('fju_eventos_especiais').select('id,nome_evento,data_evento,total_jovens,created_at').order('data_evento',{ascending:false}).limit(50);
+  let q=supabase.from('fju_eventos_especiais').select('id,polo_id,nome_evento,data_evento,total_jovens,created_at').order('data_evento',{ascending:false}).limit(100);
   if(currentProfile?.papel==='coordenador')q=q.eq('polo_id',currentProfile.polo_id);
-  const {data,error}=await q;
-  if(error){list.textContent='Não foi possível carregar eventos: '+error.message;return;}
+  const [{data:events,error},{data:polos,poloError}]=await Promise.all([q,supabase.from('fju_polos').select('id,nome')]);
+  if(error||poloError){list.textContent='Não foi possível carregar eventos: '+(error?.message||poloError?.message);return;}
+  const names=new Map((polos||[]).map(p=>[p.id,p.nome]));
   list.replaceChildren();
-  if(!data?.length){list.textContent='Nenhum evento especial registrado ainda.';return;}
-  for(const ev of data){
-    const row=document.createElement('p');
-    row.textContent=new Date(ev.data_evento+'T12:00:00').toLocaleDateString('ja-JP')+' — '+ev.nome_evento+' — '+ev.total_jovens+' jovens';
-    list.append(row);
+  if(!events?.length){list.textContent='Nenhum evento especial registrado ainda.';return;}
+  for(const ev of events){
+    const row=document.createElement('div');row.className='stat';row.style.marginBottom='8px';
+    const title=document.createElement('strong');title.textContent=(names.get(ev.polo_id)||'Polo não identificado')+' — '+new Date(ev.data_evento+'T12:00:00').toLocaleDateString('ja-JP');
+    const detail=document.createElement('p');detail.className='muted';detail.textContent=ev.nome_evento+' — '+ev.total_jovens+' jovens';
+    row.append(title,detail);list.append(row);
   }
 }
 el('special-event-form').addEventListener('submit',async e=>{
