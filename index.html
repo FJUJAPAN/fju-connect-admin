@@ -342,7 +342,7 @@ function youthMessage(text,error=false){message('youth-message',text,error)}
 function selectedYouthLanguages(){return [...document.querySelectorAll('input[name="youth-language"]:checked')].map(x=>x.value)}
 function refreshYouthLanguages(){const a=selectedYouthLanguages();el('youth-languages-summary').textContent=a.length?a.join(', '):'Selecionar idiomas'}
 document.querySelectorAll('input[name="youth-language"]').forEach(x=>x.addEventListener('change',refreshYouthLanguages));
-function resetYouth(){if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}el('youth-form').reset();refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
+function resetYouth(){el('youth-photo').disabled=false;if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}el('youth-form').reset();refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
 async function initializeYouth(){
   const {data,error}=await supabase.from('fju_polos').select('id,nome').order('nome');
   if(error){youthMessage('Não foi possível carregar polos: '+error.message,true);return;}
@@ -391,7 +391,7 @@ function renderYouth(){
     const edit=document.createElement('button');edit.type='button';edit.className='secondary';edit.textContent='Editar';edit.onclick=()=>editYouth(r.id);
     const view=document.createElement('button');view.type='button';view.className='secondary';view.textContent='Ver ficha';view.style.marginRight='8px';view.onclick=()=>viewYouth(r.id);
     div.append(name,detail,view);if(currentProfile?.papel==='nacional')div.append(edit);
-    else {const request=document.createElement('button');request.type='button';request.className='secondary';request.textContent='Solicitar alteração / exclusão';request.onclick=()=>requestYouthChange(r);div.append(request);}
+    else {const request=document.createElement('button');request.type='button';request.className='secondary';request.textContent='Solicitar edição';request.onclick=()=>editYouth(r.id);const del=document.createElement('button');del.type='button';del.className='secondary';del.textContent='Solicitar exclusão';del.onclick=()=>requestYouthChange(r);div.append(del);div.append(request);}
     list.append(div);
   }
 }
@@ -444,18 +444,16 @@ async function viewYouth(id){
 }
 async function requestYouthChange(r){
   if(currentProfile?.papel!=='coordenador')return;
-  const type=prompt('Digite 1 para solicitar ALTERAÇÃO ou 2 para solicitar EXCLUSÃO da ficha de '+r.nome_completo);
-  if(type!=='1'&&type!=='2')return;
-  const motivo=prompt(type==='1'?'Descreva exatamente o que precisa ser alterado (campo e novo valor) e o motivo:':'Informe o motivo da exclusão:');
+  const motivo=prompt('Informe o motivo da exclusão de '+r.nome_completo+':');
   if(!motivo?.trim())return;
   const {data:{user}}=await supabase.auth.getUser();
-  const {error}=await supabase.from('fju_solicitacoes_fichas').insert({jovem_id:r.id,polo_id:r.polo_id,tipo:type==='1'?'alteracao':'exclusao',descricao:motivo.trim(),solicitado_por:user?.id});
+  const {error}=await supabase.from('fju_solicitacoes_fichas').insert({jovem_id:r.id,polo_id:r.polo_id,tipo:'exclusao',descricao:motivo.trim(),solicitado_por:user?.id});
   if(error){youthMessage('Não foi possível solicitar. Verifique se a tabela de autorizações foi configurada: '+error.message,true);return;}
   youthMessage('Solicitação enviada ao Administrador Nacional. A ficha não foi alterada.');
 }
 async function loadYouthRequests(){
   const list=el('requests-list');list.replaceChildren();el('requests-message').textContent='Consultando solicitações...';
-  let query=supabase.from('fju_solicitacoes_fichas').select('id,jovem_id,polo_id,tipo,descricao,status,created_at').order('created_at',{ascending:false}).limit(100);
+  let query=supabase.from('fju_solicitacoes_fichas').select('id,jovem_id,polo_id,tipo,descricao,dados_propostos,status,created_at').order('created_at',{ascending:false}).limit(100);
   if(currentProfile?.papel==='coordenador')query=query.eq('polo_id',currentProfile.polo_id);
   const {data,error}=await query;
   if(error){message('requests-message','A área depende da configuração no Supabase: '+error.message,true);return;}
@@ -464,15 +462,19 @@ async function loadYouthRequests(){
     const card=document.createElement('article');card.className='report-card';
     const title=document.createElement('strong');title.textContent=(r.tipo==='exclusao'?'Exclusão':'Alteração')+' · '+r.status;
     const desc=document.createElement('p');desc.textContent=r.descricao;
+    if(r.dados_propostos&&r.tipo==='alteracao'){
+      const {data:original}=await supabase.from('fju_jovens').select('nome_completo,nascimento,telefone,nacionalidade_iso2,idiomas,patente,categoria').eq('id',r.jovem_id).maybeSingle();
+      for(const [field,next] of Object.entries(r.dados_propostos)){const p=document.createElement('p');p.textContent=field+': '+JSON.stringify(original?.[field]??null)+' → '+JSON.stringify(next);card.append(p);}
+    }
     const meta=document.createElement('p');meta.className='muted';meta.textContent='Ficha: '+r.jovem_id+' · Igreja: '+r.polo_id;
     card.append(title,desc,meta);
     if(currentProfile?.papel==='nacional'&&r.status==='pendente'){
       const approve=document.createElement('button');approve.type='button';approve.textContent='Aprovar solicitação';
       approve.onclick=async()=>{if(!confirm('Aprovar esta solicitação? A alteração/exclusão deve ser executada pelo administrador na ficha.'))return;
-        const {error}=await supabase.from('fju_solicitacoes_fichas').update({status:'aprovada'}).eq('id',r.id);
+        const {error}=await supabase.rpc('fju_decidir_solicitacao',{p_solicitacao_id:r.id,p_aprovar:true});
         if(error)message('requests-message',error.message,true);else void loadYouthRequests();};
       const deny=document.createElement('button');deny.type='button';deny.className='secondary';deny.textContent='Recusar';
-      deny.onclick=async()=>{const {error}=await supabase.from('fju_solicitacoes_fichas').update({status:'recusada'}).eq('id',r.id);if(error)message('requests-message',error.message,true);else void loadYouthRequests();};
+      deny.onclick=async()=>{const {error}=await supabase.rpc('fju_decidir_solicitacao',{p_solicitacao_id:r.id,p_aprovar:false});if(error)message('requests-message',error.message,true);else void loadYouthRequests();};
       card.append(approve,deny);
     }
     list.append(card);
@@ -480,13 +482,12 @@ async function loadYouthRequests(){
 }
 el('requests-refresh').addEventListener('click',()=>void loadYouthRequests());
 function editYouth(id){
-  if(currentProfile?.papel!=='nacional'){youthMessage('Alterações de fichas exigem autorização do Administrador Nacional.',true);return;}
   const r=youthRows.find(x=>x.id===id);if(!r)return;
   el('youth-id').value=r.id;el('youth-polo').value=r.polo_id;
   for(const [field,key] of [['youth-name','nome_completo'],['youth-birth','nascimento'],['youth-phone','telefone'],['youth-country','nacionalidade_iso2'],['youth-rank','patente']])el(field).value=r[key]||'';
   el('youth-rank').value=r.categoria==='inconstante'?'Inconstante':({'firme':'Firme','cpo':'CPO','colaborador':'Colaborador','obreiro':'Obreiro','coordenador':'Coordenador'}[r.patente]||r.patente||'');
   document.querySelectorAll('input[name="youth-language"]').forEach(x=>x.checked=(r.idiomas||[]).includes(x.value));refreshYouthLanguages();
-  el('youth-photo').value='';void loadYouthPhoto(r.id);youthMessage('Editando ficha de teste: '+r.nome_completo);el('youth-form').scrollIntoView({behavior:'smooth'});
+  el('youth-photo').value='';el('youth-photo').disabled=currentProfile?.papel==='coordenador';void loadYouthPhoto(r.id);youthMessage(currentProfile?.papel==='coordenador'?'Edite os campos e envie para aprovação. A ficha original não será alterada.':'Editando ficha: '+r.nome_completo);el('youth-form').scrollIntoView({behavior:'smooth'});
 }
 el('youth-form').addEventListener('submit',async e=>{
   e.preventDefault();if(!currentProfile)return;
@@ -505,7 +506,15 @@ el('youth-form').addEventListener('submit',async e=>{
   if(!payload.nome_completo){youthMessage('Informe um nome fictício.',true);return;}
   youthMessage('Salvando...');
   const id=el('youth-id').value;
-  if(id&&currentProfile.papel!=='nacional'){youthMessage('Somente o Administrador Nacional pode alterar fichas existentes.',true);return;}
+  if(id&&currentProfile.papel==='coordenador'){
+    const original=youthRows.find(x=>String(x.id)===String(id));if(!original){youthMessage('Ficha original não encontrada.',true);return;}
+    const changes={};for(const key of ['nome_completo','nascimento','telefone','nacionalidade_iso2','idiomas','patente','categoria'])if(JSON.stringify(original[key]??null)!==JSON.stringify(payload[key]??null))changes[key]=payload[key];
+    if(!Object.keys(changes).length){youthMessage('Nenhuma alteração encontrada.',true);return;}
+    const {data:{user}}=await supabase.auth.getUser();
+    const {error}=await supabase.from('fju_solicitacoes_fichas').insert({jovem_id:id,polo_id:original.polo_id,tipo:'alteracao',descricao:'Campos: '+Object.keys(changes).join(', '),dados_propostos:changes,solicitado_por:user?.id});
+    if(error){youthMessage('Não foi possível enviar a solicitação: '+error.message,true);return;}
+    resetYouth();youthMessage('Solicitação enviada. A ficha original não foi alterada.');return;
+  }
   const result=id?await supabase.from('fju_jovens').update(payload).eq('id',id).select('id').single():await supabase.from('fju_jovens').insert(payload).select('id').single();
   const {error}=result;
   if(error){youthMessage('Não foi possível salvar: '+error.message,true);return;}
