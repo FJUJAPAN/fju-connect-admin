@@ -92,7 +92,7 @@ body.printing>#print-area{display:block!important}
 </div>
 <p class="actions"><button type="submit">Salvar ficha de teste</button><button type="button" id="youth-clear" class="secondary">Limpar formulário</button><button type="button" id="youth-refresh" class="secondary">Atualizar lista</button></p>
 </form><p id="youth-message" class="message" role="status"></p>
-<label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite parte do nome">
+<label for="youth-list-polo">Visualizar fichas da igreja</label><select id="youth-list-polo"><option value="">Selecione uma igreja</option></select><label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite parte do nome">
 <div id="youth-list" style="margin-top:12px"></div><div id="youth-detail" class="panel hidden" style="margin-top:16px;border:1px solid #dce3ef"></div>
 </section>
 <section id="relatorios" class="panel hidden">
@@ -348,6 +348,10 @@ async function initializeYouth(){
   const allowed=currentProfile.papel==='coordenador'?(data||[]).filter(x=>x.id===currentProfile.polo_id):(data||[]);
   el('youth-polo').replaceChildren();
   for(const polo of allowed){const opt=document.createElement('option');opt.value=polo.id;opt.textContent=polo.nome;el('youth-polo').append(opt);}
+  const listPolo=el('youth-list-polo');listPolo.replaceChildren();
+  if(currentProfile.papel==='nacional'){const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Selecione uma igreja';listPolo.append(placeholder);}
+  for(const polo of allowed){const option=document.createElement('option');option.value=String(polo.id);option.textContent=polo.nome;listPolo.append(option);}
+  if(currentProfile.papel==='coordenador')listPolo.value=String(currentProfile.polo_id);
   resetYouth();await loadYouth();
 }
 async function loadYouthPhoto(id){
@@ -367,14 +371,17 @@ async function loadYouth(){
   youthMessage('Consultando fichas de teste...');
   let q=supabase.from('fju_jovens').select('id,polo_id,nome_completo,nascimento,telefone,nacionalidade_iso2,idiomas,patente,categoria,excluido_em').is('excluido_em',null).order('nome_completo').limit(200);
   if(currentProfile.papel==='coordenador')q=q.eq('polo_id',currentProfile.polo_id);
+  else if(el('youth-list-polo').value)q=q.eq('polo_id',el('youth-list-polo').value);
   const {data,error}=await q;
   if(error){youthMessage('Erro na consulta: '+error.message,true);return;}
-  youthRows=data||[];renderYouth();youthMessage(`${youthRows.length} ficha(s) carregada(s). Limite da lista: 200.`);
+  youthRows=data||[];renderYouth();youthMessage(`${youthRows.length} ficha(s) carregada(s) da igreja selecionada. Limite da lista: 200.`);
 }
 function renderYouth(){
   const term=el('youth-search').value.trim().toLocaleLowerCase();
   const list=el('youth-list');list.replaceChildren();
-  const rows=youthRows.filter(r=>(r.nome_completo||'').toLocaleLowerCase().includes(term));
+  const polo=el('youth-list-polo').value;
+  if(!polo){list.textContent='Selecione uma igreja para visualizar as fichas.';return;}
+  const rows=youthRows.filter(r=>String(r.polo_id)===polo&&(r.nome_completo||'').toLocaleLowerCase().includes(term));
   if(!rows.length){list.textContent='Nenhuma ficha encontrada.';return;}
   for(const r of rows){
     const div=document.createElement('div');div.className='stat';div.style.marginBottom='8px';
@@ -475,6 +482,7 @@ el('youth-photo').addEventListener('change',e=>{const file=e.target.files?.[0];c
 el('youth-clear').onclick=resetYouth;
 el('youth-refresh').onclick=loadYouth;
 el('youth-search').addEventListener('input',renderYouth);
+el('youth-list-polo').addEventListener('change',()=>{el('youth-detail').classList.add('hidden');void loadYouth();});
 
 el('weekly-report-form').addEventListener('submit',async e=>{
   e.preventDefault();if(!currentProfile)return;
