@@ -48,8 +48,9 @@ body.printing>#print-area{display:block!important}
 .print-report th{background:#eef2f8}
 .print-report .print-status{font-weight:bold}
 .print-report .print-footer{margin-top:18px;padding-top:8px;border-top:1px solid #d7deea;font-size:9px;color:#526079}
+.print-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px}
 @page{size:A4 portrait;margin:12mm}
-@media print{body{background:#fff!important}.print-report{display:block!important}.print-report .print-kpis{grid-template-columns:repeat(3,1fr)}.print-report tr{break-inside:avoid}.print-report h1,.print-report h2{break-after:avoid}}
+@media print{.print-toolbar{display:none!important}body{background:#fff!important}.print-report{display:block!important}.print-report .print-kpis{grid-template-columns:repeat(3,1fr)}.print-report tr{break-inside:avoid}.print-report h1,.print-report h2{break-after:avoid}}
 
 
 @media(max-width:520px){.report-card{padding:13px}.report-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.report-card-title{font-size:16px}}
@@ -261,11 +262,12 @@ async function printWeeklyReport(poloId=null){
     for(const p of selectedPolos){const r=byPolo.get(p.id);const tr=document.createElement('tr');const vals=[p.nome,r?'Enviado':'Pendente',r?.total_jovens_unicos??'—',r?.jovens_firmes??'—',r?.jovens_novos??'—',r?.jovens_afastados??'—',r?.presenca_domingo_930??'—',r?.presenca_encontro_fju??'—',r?.batizados_espirito_santo??'—',r?.batizados_aguas??'—'];for(const val of vals){const td=document.createElement('td');td.textContent=String(val);tr.append(td);}tbody.append(tr);}table.append(tbody);wrap.append(table);
   }
   const footer=document.createElement('div');footer.className='print-footer';footer.textContent='FJU JAPAN · Documento interno para acompanhamento dos polos.';wrap.append(footer);
-  area.append(wrap);document.body.classList.add('printing');
-  const cleanup=()=>{document.body.classList.remove('printing');area.replaceChildren();window.removeEventListener('afterprint',cleanup);};
-  window.addEventListener('afterprint',cleanup);
+  const toolbar=document.createElement('div');toolbar.className='print-toolbar';
+  const back=document.createElement('button');back.type='button';back.textContent='← Voltar ao painel';back.addEventListener('click',()=>{document.body.classList.remove('printing');area.replaceChildren();});
+  const again=document.createElement('button');again.type='button';again.textContent='Imprimir / Salvar PDF';again.addEventListener('click',()=>window.print());
+  toolbar.append(back,again);area.append(toolbar,wrap);
+  document.body.classList.add('printing');
   window.print();
-  setTimeout(cleanup,1500);
 }
 el('print-national-report').addEventListener('click',()=>void printWeeklyReport());
 el('national-report-refresh').addEventListener('click',()=>void loadNationalReportOverview());
