@@ -12,12 +12,12 @@
 <main class="wrap">
 <section id="auth" class="panel auth"><h2>Entrar</h2><form id="login-form"><label for="email">E-mail</label><input id="email" type="email" autocomplete="username" required><label for="password">Senha</label><input id="password" type="password" autocomplete="current-password" required><p><button type="submit">Entrar</button></p></form><button class="secondary" id="forgot">Enviar recuperação de senha</button><p id="auth-message" class="message" role="status" aria-live="polite"></p></section>
 <section id="recovery" class="panel auth hidden"><h2>Definir nova senha</h2><form id="recovery-form"><label for="new-password">Nova senha (mínimo de 8 caracteres)</label><input id="new-password" type="password" minlength="8" autocomplete="new-password" required><label for="confirm-password">Confirmar nova senha</label><input id="confirm-password" type="password" minlength="8" autocomplete="new-password" required><p><button type="submit">Salvar nova senha</button></p></form><p id="recovery-message" class="message" role="status" aria-live="polite"></p></section>
-<div id="app" class="hidden"><div class="topline"><p id="identity" class="muted"></p><button id="logout" class="secondary">Sair</button></div><div class="notice"><strong>Versão de teste.</strong> Login e perfil conectados ao Supabase. Cadastro e edição de fichas de teste ativados. Não insira dados reais; fotos, relatórios e impressão continuam desativados.</div>
+<div id="app" class="hidden"><div class="topline"><p id="identity" class="muted"></p><button id="logout" class="secondary">Sair</button></div><div class="notice"><strong>Versão de teste.</strong> Login e perfil conectados ao Supabase. Cadastro e edição de fichas de teste ativados. Fotos armazenadas em bucket privado (em validação). Não insira dados reais até testar as permissões; relatórios e impressão continuam desativados.</div>
 <nav class="tabs"><button class="active" data-tab="inicio">Visão geral</button><button data-tab="jovens">Fichas</button><button data-tab="relatorios">Relatório semanal</button><button data-tab="config">Configuração</button></nav>
 <section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Polos</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><div class="stat">Relatórios recebidos<b id="report-count">—</b></div><div class="stat">Relatórios pendentes<b>—</b></div></div><p id="dashboard-note" class="muted">Os indicadores são consultados com as permissões da conta autenticada. Pendências serão ativadas após definirmos o período dos relatórios.</p></section>
 <section id="jovens" class="panel hidden">
 <h2>Fichas dos jovens — teste funcional</h2>
-<p class="muted">Use somente dados fictícios até a validação completa das permissões. A seleção de foto mostra somente uma prévia; o envio ao armazenamento privado ainda não está ativado.</p>
+<p class="muted">Use somente dados fictícios até a validação completa das permissões. Fotos de teste podem ser enviadas ao armazenamento privado após salvar a ficha. Ainda não use fotos reais até testar o isolamento entre polos.</p>
 <form id="youth-form">
 <input id="youth-id" type="hidden">
 <div class="grid">
@@ -28,7 +28,7 @@
 <div><label for="youth-country">Nacionalidade</label><select id="youth-country"><option value="">Selecione</option><option value="BR">🇧🇷 Brasil</option><option value="JP">🇯🇵 Japão</option><option value="PH">🇵🇭 Filipinas</option><option value="PE">🇵🇪 Peru</option><option value="BO">🇧🇴 Bolívia</option><option value="PY">🇵🇾 Paraguai</option><option value="AR">🇦🇷 Argentina</option><option value="CO">🇨🇴 Colômbia</option><option value="VE">🇻🇪 Venezuela</option><option value="US">🇺🇸 Estados Unidos</option><option value="CN">🇨🇳 China</option><option value="KR">🇰🇷 Coreia do Sul</option><option value="VN">🇻🇳 Vietnã</option><option value="ID">🇮🇩 Indonésia</option><option value="NP">🇳🇵 Nepal</option><option value="IN">🇮🇳 Índia</option><option value="LK">🇱🇰 Sri Lanka</option><option value="MM">🇲🇲 Mianmar</option><option value="TH">🇹🇭 Tailândia</option><option value="PK">🇵🇰 Paquistão</option><option value="BD">🇧🇩 Bangladesh</option><option value="GB">🇬🇧 Reino Unido</option><option value="FR">🇫🇷 França</option><option value="DE">🇩🇪 Alemanha</option><option value="PT">🇵🇹 Portugal</option><option value="ES">🇪🇸 Espanha</option><option value="MX">🇲🇽 México</option><option value="NG">🇳🇬 Nigéria</option><option value="GH">🇬🇭 Gana</option><option value="OTHER">Outra nacionalidade</option></select></div>
 <div><label>Idiomas que fala (selecione um ou mais)</label><details id="youth-languages-picker"><summary id="youth-languages-summary">Selecionar idiomas</summary><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;padding:12px 4px"><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Português"> Português</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Japonês"> Japonês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Inglês"> Inglês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Espanhol"> Espanhol</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Tagalog"> Tagalog</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Hindi"> Hindi</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Nepali"> Nepali</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Indonésio"> Indonésio</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Birmanês"> Birmanês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Cingalês"> Cingalês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Coreano"> Coreano</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Chinês"> Chinês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Vietnamita"> Vietnamita</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Tailandês"> Tailandês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Outros"> Outros</label></div></details></div>
 <div><label for="youth-rank">Patente do jovem</label><select id="youth-rank" required><option value="">Selecione</option><option>Inconstante</option><option>Firme</option><option>CPO</option><option>Colaborador</option><option>Obreiro</option><option>Coordenador</option></select></div>
-<div><label for="youth-photo">Foto do jovem (prévia; envio privado em preparação)</label><input id="youth-photo" type="file" accept="image/jpeg,image/png,image/webp"><img id="youth-photo-preview" alt="Prévia da foto escolhida" class="hidden" style="width:90px;height:90px;object-fit:cover;border-radius:12px;margin-top:8px"><p class="muted">A foto ainda não será salva. Não use fotos reais nesta fase de teste.</p></div>
+<div><label for="youth-photo">Foto do jovem (galeria ou câmera)</label><input id="youth-photo" type="file" accept="image/jpeg,image/png,image/webp"><img id="youth-photo-preview" alt="Prévia da foto escolhida" class="hidden" style="width:90px;height:90px;object-fit:cover;border-radius:12px;margin-top:8px"><p class="muted">A foto será enviada ao bucket privado ao salvar a ficha. Use apenas imagens fictícias nesta fase de teste.</p></div>
 </div>
 <p class="actions"><button type="submit">Salvar ficha de teste</button><button type="button" id="youth-clear" class="secondary">Limpar formulário</button><button type="button" id="youth-refresh" class="secondary">Atualizar lista</button></p>
 </form><p id="youth-message" class="message" role="status"></p>
@@ -47,7 +47,7 @@ const el=id=>document.getElementById(id);
 const show=(id)=>{for(const s of ['auth','recovery','app'])el(s).classList.toggle('hidden',s!==id)};
 const message=(id,msg,error=false)=>{el(id).textContent=msg;el(id).className='message '+(error?'error':'success')};
 let recoveryMode=false;
-let profileRequest=0; let currentProfile=null; let youthRows=[];
+let profileRequest=0; let currentProfile=null; let youthRows=[]; let photoUrl=null;
 async function countRows(table){const {count,error}=await supabase.from(table).select('*',{count:'exact',head:true});if(error)throw error;return count??0;}
 async function loadDashboard(profile,requestId){
   const local=profile.papel==='coordenador';
@@ -88,7 +88,7 @@ function youthMessage(text,error=false){message('youth-message',text,error)}
 function selectedYouthLanguages(){return [...document.querySelectorAll('input[name="youth-language"]:checked')].map(x=>x.value)}
 function refreshYouthLanguages(){const a=selectedYouthLanguages();el('youth-languages-summary').textContent=a.length?a.join(', '):'Selecionar idiomas'}
 document.querySelectorAll('input[name="youth-language"]').forEach(x=>x.addEventListener('change',refreshYouthLanguages));
-function resetYouth(){el('youth-form').reset();refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
+function resetYouth(){if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}el('youth-form').reset();refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
 async function initializeYouth(){
   const {data,error}=await supabase.from('fju_polos').select('id,nome').order('nome');
   if(error){youthMessage('Não foi possível carregar polos: '+error.message,true);return;}
@@ -96,6 +96,18 @@ async function initializeYouth(){
   el('youth-polo').replaceChildren();
   for(const polo of allowed){const opt=document.createElement('option');opt.value=polo.id;opt.textContent=polo.nome;el('youth-polo').append(opt);}
   resetYouth();await loadYouth();
+}
+async function loadYouthPhoto(id){
+  const preview=el('youth-photo-preview');preview.classList.add('hidden');preview.removeAttribute('src');
+  if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}
+  const {data,error}=await supabase.storage.from('fju-fotos').list(id,{limit:20});
+  if(error){youthMessage('Ficha aberta, mas não foi possível consultar a foto: '+error.message,true);return;}
+  const file=(data||[]).find(f=>/^perfil\.(jpg|png|webp)$/.test(f.name));
+  if(!file)return;
+  const result=await supabase.storage.from('fju-fotos').download(id+'/'+file.name);
+  if(result.error){youthMessage('Foto indisponível: '+result.error.message,true);return;}
+  if(el('youth-id').value!==id)return;
+  photoUrl=URL.createObjectURL(result.data);preview.src=photoUrl;preview.classList.remove('hidden');
 }
 async function loadYouth(){
   if(!currentProfile)return;
@@ -125,7 +137,7 @@ function editYouth(id){
   for(const [field,key] of [['youth-name','nome_completo'],['youth-birth','nascimento'],['youth-phone','telefone'],['youth-country','nacionalidade_iso2'],['youth-rank','patente']])el(field).value=r[key]||'';
   el('youth-rank').value=r.categoria==='inconstante'?'Inconstante':({'firme':'Firme','cpo':'CPO','colaborador':'Colaborador','obreiro':'Obreiro','coordenador':'Coordenador'}[r.patente]||r.patente||'');
   document.querySelectorAll('input[name="youth-language"]').forEach(x=>x.checked=(r.idiomas||[]).includes(x.value));refreshYouthLanguages();
-  youthMessage('Editando ficha de teste: '+r.nome_completo);el('youth-form').scrollIntoView({behavior:'smooth'});
+  el('youth-photo').value='';void loadYouthPhoto(r.id);youthMessage('Editando ficha de teste: '+r.nome_completo);el('youth-form').scrollIntoView({behavior:'smooth'});
 }
 el('youth-form').addEventListener('submit',async e=>{
   e.preventDefault();if(!currentProfile)return;
@@ -144,11 +156,21 @@ el('youth-form').addEventListener('submit',async e=>{
   if(!payload.nome_completo){youthMessage('Informe um nome fictício.',true);return;}
   youthMessage('Salvando...');
   const id=el('youth-id').value;
-  const {error}=id?await supabase.from('fju_jovens').update(payload).eq('id',id):await supabase.from('fju_jovens').insert(payload);
+  const result=id?await supabase.from('fju_jovens').update(payload).eq('id',id).select('id').single():await supabase.from('fju_jovens').insert(payload).select('id').single();
+  const {error}=result;
   if(error){youthMessage('Não foi possível salvar: '+error.message,true);return;}
-  resetYouth();await loadYouth();youthMessage('Ficha de teste salva com sucesso.');void loadDashboard(currentProfile,profileRequest);
+  const file=el('youth-photo').files?.[0];
+  if(file){
+    const extension={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[file.type];
+    if(!extension||file.size>5*1024*1024){youthMessage('Ficha salva, mas foto inválida. Escolha JPG, PNG ou WebP de até 5 MB.',true);return;}
+    youthMessage('Ficha salva. Enviando foto privada...');
+    const path=result.data.id+'/perfil.'+extension;
+    const uploaded=await supabase.storage.from('fju-fotos').upload(path,file,{contentType:file.type,upsert:true});
+    if(uploaded.error){youthMessage('Ficha salva, mas não foi possível enviar a foto: '+uploaded.error.message,true);await loadYouth();return;}
+  }
+  resetYouth();await loadYouth();youthMessage(file?'Ficha e foto de teste salvas com sucesso.':'Ficha de teste salva com sucesso.');void loadDashboard(currentProfile,profileRequest);
 });
-el('youth-photo').addEventListener('change',e=>{const file=e.target.files?.[0];const preview=el('youth-photo-preview');if(!file){preview.classList.add('hidden');return;}if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){youthMessage('Escolha uma imagem JPG, PNG ou WebP de até 5 MB.',true);e.target.value='';return;}const reader=new FileReader();reader.onload=()=>{preview.src=reader.result;preview.classList.remove('hidden')};reader.readAsDataURL(file);});
+el('youth-photo').addEventListener('change',e=>{const file=e.target.files?.[0];const preview=el('youth-photo-preview');if(!file){preview.classList.add('hidden');return;}if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){youthMessage('Escolha uma imagem JPG, PNG ou WebP de até 5 MB.',true);e.target.value='';return;}if(photoUrl)URL.revokeObjectURL(photoUrl);photoUrl=URL.createObjectURL(file);preview.src=photoUrl;preview.classList.remove('hidden');});
 el('youth-clear').onclick=resetYouth;
 el('youth-refresh').onclick=loadYouth;
 el('youth-search').addEventListener('input',renderYouth);
