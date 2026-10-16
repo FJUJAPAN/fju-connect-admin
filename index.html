@@ -39,17 +39,24 @@
 <h2>Relatórios</h2>
 <div class="tabs" style="margin-bottom:16px"><button type="button" class="active" data-report-tab="semanal">Relatório semanal</button><button type="button" data-report-tab="especial">Evento especial</button></div>
 <div id="report-weekly">
-<p class="muted">Domingo: lembrete às 17h30, prazo às 22h. Envio e lembretes ainda precisam ser ativados.</p>
+<p class="muted">Preencha os números referentes à semana e salve o relatório. Lembrete de domingo às 17h30 e prazo às 22h ainda não automatizados.</p>
+<form id="weekly-report-form">
 <div class="grid">
-<div><label>Jovens firmes durante a semana</label><input type="number" min="0" placeholder="0" disabled></div>
-<div><label>Jovens novos durante a semana</label><input type="number" min="0" placeholder="0" disabled></div>
-<div><label>Jovens afastados durante a semana</label><input type="number" min="0" placeholder="0" disabled></div>
-<div><label>Presença domingo 9h30</label><input type="number" min="0" placeholder="0" disabled></div>
-<div><label>Presença no Encontro FJU</label><input type="number" min="0" placeholder="0" disabled></div>
-<div><label>Batizados com o Espírito Santo nesta semana</label><input type="number" min="0" placeholder="0" disabled></div>
-<div><label>Batizados nas águas nesta semana</label><input type="number" min="0" placeholder="0" disabled></div>
-<div><label>Total único da semana (sem repetir)</label><input type="number" min="0" placeholder="0" disabled></div>
-</div></div>
+<div><label for="weekly-report-date">Data do domingo do relatório</label><input id="weekly-report-date" type="date" required></div>
+<div><label for="weekly-firmes">Jovens firmes durante a semana</label><input id="weekly-firmes" type="number" min="0" step="1" value="0" required></div>
+<div><label for="weekly-novos">Jovens novos durante a semana</label><input id="weekly-novos" type="number" min="0" step="1" value="0" required></div>
+<div><label for="weekly-afastados">Jovens afastados durante a semana</label><input id="weekly-afastados" type="number" min="0" step="1" value="0" required></div>
+<div><label for="weekly-domingo">Presença domingo 9h30</label><input id="weekly-domingo" type="number" min="0" step="1" value="0" required></div>
+<div><label for="weekly-encontro">Presença no Encontro FJU</label><input id="weekly-encontro" type="number" min="0" step="1" value="0" required></div>
+<div><label for="weekly-espirito">Batizados com o Espírito Santo nesta semana</label><input id="weekly-espirito" type="number" min="0" step="1" value="0" required></div>
+<div><label for="weekly-aguas">Batizados nas águas nesta semana</label><input id="weekly-aguas" type="number" min="0" step="1" value="0" required></div>
+<div><label for="weekly-total">Total único da semana (sem repetir)</label><input id="weekly-total" type="number" min="0" step="1" value="0" required></div>
+</div>
+<p><button type="submit">Salvar relatório semanal</button></p>
+<p id="weekly-report-message" class="message" role="status" aria-live="polite"></p>
+</form>
+<h3>Relatórios enviados</h3><div id="weekly-report-list" class="stat">Carregando relatórios...</div>
+</div>
 <div id="report-special" class="hidden">
 <p>Registre o movimento especial realizado pelo polo e o total de jovens que participaram.</p>
 <form id="special-event-form">
@@ -250,11 +257,35 @@ el('youth-clear').onclick=resetYouth;
 el('youth-refresh').onclick=loadYouth;
 el('youth-search').addEventListener('input',renderYouth);
 
+async function loadWeeklyReports(){
+  const list=el('weekly-report-list');list.textContent='Carregando relatórios...';
+  let q=supabase.from('fju_relatorios_semanais').select('id,semana_domingo,jovens_firmes,jovens_novos,jovens_afastados,presenca_domingo_930,presenca_encontro_fju,batizados_espirito_santo,batizados_aguas,total_jovens_unicos').order('semana_domingo',{ascending:false}).limit(30);
+  if(currentProfile?.papel==='coordenador')q=q.eq('polo_id',currentProfile.polo_id);
+  const {data,error}=await q;
+  if(error){list.textContent='Não foi possível carregar relatórios: '+error.message;return;}
+  list.replaceChildren();
+  if(!data?.length){list.textContent='Nenhum relatório semanal enviado ainda.';return;}
+  for(const r of data){const p=document.createElement('p');p.textContent=r.semana_domingo+' — firmes: '+r.jovens_firmes+', novos: '+r.jovens_novos+', afastados: '+r.jovens_afastados+', domingo 9h30: '+r.presenca_domingo_930+', Encontro FJU: '+r.presenca_encontro_fju+', batizados Espírito Santo: '+r.batizados_espirito_santo+', batizados nas águas: '+r.batizados_aguas+', total único: '+r.total_jovens_unicos;list.append(p);}
+}
+el('weekly-report-form').addEventListener('submit',async e=>{
+  e.preventDefault();if(!currentProfile)return;
+  const date=el('weekly-report-date').value;
+  const ids=['weekly-firmes','weekly-novos','weekly-afastados','weekly-domingo','weekly-encontro','weekly-espirito','weekly-aguas','weekly-total'];
+  const values=ids.map(id=>Number(el(id).value));
+  if(!date||values.some(v=>!Number.isInteger(v)||v<0)){message('weekly-report-message','Preencha todos os campos com números inteiros iguais ou maiores que zero.',true);return;}
+  const user=(await supabase.auth.getUser()).data.user;
+  const payload={polo_id:currentProfile.polo_id||null,semana_domingo:date,jovens_firmes:values[0],jovens_novos:values[1],jovens_afastados:values[2],presenca_domingo_930:values[3],presenca_encontro_fju:values[4],batizados_espirito_santo:values[5],batizados_aguas:values[6],total_jovens_unicos:values[7],criado_por:user?.id||null};
+  message('weekly-report-message','Salvando relatório...');
+  const {error}=await supabase.from('fju_relatorios_semanais').upsert(payload,{onConflict:'polo_id,semana_domingo'});
+  if(error){message('weekly-report-message','Não foi possível salvar: '+error.message,true);return;}
+  message('weekly-report-message','Relatório semanal salvo com sucesso.');
+  await loadWeeklyReports();
+});
 document.querySelectorAll('[data-report-tab]').forEach(btn=>btn.addEventListener('click',()=>{
   document.querySelectorAll('[data-report-tab]').forEach(b=>b.classList.toggle('active',b===btn));
   el('report-weekly').classList.toggle('hidden',btn.dataset.reportTab!=='semanal');
   el('report-special').classList.toggle('hidden',btn.dataset.reportTab!=='especial');
-  if(btn.dataset.reportTab==='especial')void loadSpecialEvents();
+  if(btn.dataset.reportTab==='especial')void loadSpecialEvents();else void loadWeeklyReports();
 }));
 async function loadSpecialEvents(){
   const list=el('special-event-list');list.textContent='Carregando eventos...';
