@@ -115,7 +115,7 @@ body.printing>#print-area{display:block!important}
 <p><button type="submit">Salvar relatório semanal</button></p>
 <p id="weekly-report-message" class="message" role="status" aria-live="polite"></p>
 </form>
-<h3>Relatórios enviados</h3><div id="weekly-report-list" class="stat">Carregando relatórios...</div>
+
 </div>
 <div id="report-special" class="hidden">
 <p>Registre o movimento especial realizado pelo polo e o total de jovens que participaram.</p>
@@ -468,30 +468,6 @@ el('youth-clear').onclick=resetYouth;
 el('youth-refresh').onclick=loadYouth;
 el('youth-search').addEventListener('input',renderYouth);
 
-async function loadWeeklyReports(){
-  const list=el('weekly-report-list');list.textContent='Carregando relatórios...';
-  let q=supabase.from('fju_relatorios_semanais').select('id,polo_id,semana_domingo,jovens_firmes,jovens_novos,jovens_afastados,presenca_domingo_930,presenca_encontro_fju,batizados_espirito_santo,batizados_aguas,total_jovens_unicos').order('semana_domingo',{ascending:false}).limit(100);
-  if(currentProfile?.papel==='coordenador')q=q.eq('polo_id',currentProfile.polo_id);
-  const [{data:reports,error},{data:polos,poloError}]=await Promise.all([q,supabase.from('fju_polos').select('id,nome')]);
-  if(error||poloError){list.textContent='Não foi possível carregar relatórios: '+(error?.message||poloError?.message);return;}
-  const names=new Map((polos||[]).map(p=>[p.id,p.nome]));
-  list.replaceChildren();list.className='report-list';
-  if(!reports?.length){list.textContent='Nenhum relatório semanal enviado ainda.';return;}
-  const metric=(label,value,highlight=false)=>{const box=document.createElement('div');box.className='report-metric'+(highlight?' report-highlight':'');const span=document.createElement('span');span.textContent=label;const b=document.createElement('b');b.textContent=Number(value??0).toLocaleString('ja-JP');box.append(span,b);return box;};
-  for(const r of reports){
-    const card=document.createElement('article');card.className='report-card';
-    const head=document.createElement('div');head.className='report-card-head';
-    const titleWrap=document.createElement('div');
-    const title=document.createElement('div');title.className='report-card-title';title.textContent=names.get(r.polo_id)||'Polo não identificado';
-    const subtitle=document.createElement('div');subtitle.className='report-card-subtitle';subtitle.textContent='Relatório semanal · Domingo '+r.semana_domingo;
-    titleWrap.append(title,subtitle);
-    const badge=document.createElement('span');badge.className='report-badge';badge.textContent='✓ Enviado';
-    head.append(titleWrap,badge);
-    const metrics=document.createElement('div');metrics.className='report-metrics';
-    metrics.append(metric('Total único',r.total_jovens_unicos,true),metric('Jovens firmes',r.jovens_firmes),metric('Jovens novos',r.jovens_novos),metric('Jovens afastados',r.jovens_afastados),metric('Presença · domingo 9h30',r.presenca_domingo_930),metric('Presença · Encontro FJU',r.presenca_encontro_fju),metric('Batizados · Espírito Santo',r.batizados_espirito_santo),metric('Batizados · nas águas',r.batizados_aguas));
-    card.append(head,metrics);list.append(card);
-  }
-}
 el('weekly-report-form').addEventListener('submit',async e=>{
   e.preventDefault();if(!currentProfile)return;
   const date=el('weekly-report-date').value;
@@ -504,13 +480,12 @@ el('weekly-report-form').addEventListener('submit',async e=>{
   const {error}=await supabase.from('fju_relatorios_semanais').upsert(payload,{onConflict:'polo_id,semana_domingo'});
   if(error){message('weekly-report-message','Não foi possível salvar: '+error.message,true);return;}
   message('weekly-report-message','Relatório semanal salvo com sucesso.');
-  await loadWeeklyReports();
 });
 document.querySelectorAll('[data-report-tab]').forEach(btn=>btn.addEventListener('click',()=>{
   document.querySelectorAll('[data-report-tab]').forEach(b=>b.classList.toggle('active',b===btn));
   el('report-weekly').classList.toggle('hidden',btn.dataset.reportTab!=='semanal');
   el('report-special').classList.toggle('hidden',btn.dataset.reportTab!=='especial');
-  if(btn.dataset.reportTab==='especial')void loadSpecialEvents();else void loadWeeklyReports();
+  if(btn.dataset.reportTab==='especial')void loadSpecialEvents();
 }));
 async function loadSpecialEvents(){
   const list=el('special-event-list');list.textContent='Carregando eventos...';
