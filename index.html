@@ -197,7 +197,7 @@ el('youth-form').addEventListener('submit',async e=>{
     telefone:el('youth-phone').value.trim()||null,
     nacionalidade_iso2:el('youth-country').value.trim().toUpperCase()||null,
     idiomas:selectedYouthLanguages(),
-    patente:el('youth-rank').value==='Inconstante'?null:el('youth-rank').value.toLowerCase(),
+    patente:['Inconstante','Firme'].includes(el('youth-rank').value)?null:el('youth-rank').value.toLowerCase(),
     categoria:el('youth-rank').value==='Inconstante'?'inconstante':'firme'
   };
   if(!el('youth-rank').value){youthMessage('Selecione a patente do jovem.',true);return;}
