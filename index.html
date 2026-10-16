@@ -390,7 +390,7 @@ function renderYouth(){
     const detail=document.createElement('p');detail.className='muted';detail.textContent=`${r.patente||r.categoria||'Sem patente'} · ${r.nacionalidade_iso2||'—'}`;
     const edit=document.createElement('button');edit.type='button';edit.className='secondary';edit.textContent='Editar';edit.onclick=()=>editYouth(r.id);
     const view=document.createElement('button');view.type='button';view.className='secondary';view.textContent='Ver ficha';view.style.marginRight='8px';view.onclick=()=>viewYouth(r.id);
-    div.append(name,detail,view,edit);list.append(div);
+    div.append(name,detail,view);if(currentProfile?.papel==='nacional')div.append(edit);list.append(div);
   }
 }
 let detailPhotoUrl=null;
@@ -441,6 +441,7 @@ async function viewYouth(id){
   }catch(e){const note=document.createElement('p');note.className='muted';note.textContent='Foto indisponível: '+e.message;panel.append(note);}
 }
 function editYouth(id){
+  if(currentProfile?.papel!=='nacional'){youthMessage('Alterações de fichas exigem autorização do Administrador Nacional.',true);return;}
   const r=youthRows.find(x=>x.id===id);if(!r)return;
   el('youth-id').value=r.id;el('youth-polo').value=r.polo_id;
   for(const [field,key] of [['youth-name','nome_completo'],['youth-birth','nascimento'],['youth-phone','telefone'],['youth-country','nacionalidade_iso2'],['youth-rank','patente']])el(field).value=r[key]||'';
@@ -465,6 +466,7 @@ el('youth-form').addEventListener('submit',async e=>{
   if(!payload.nome_completo){youthMessage('Informe um nome fictício.',true);return;}
   youthMessage('Salvando...');
   const id=el('youth-id').value;
+  if(id&&currentProfile.papel!=='nacional'){youthMessage('Somente o Administrador Nacional pode alterar fichas existentes.',true);return;}
   const result=id?await supabase.from('fju_jovens').update(payload).eq('id',id).select('id').single():await supabase.from('fju_jovens').insert(payload).select('id').single();
   const {error}=result;
   if(error){youthMessage('Não foi possível salvar: '+error.message,true);return;}
