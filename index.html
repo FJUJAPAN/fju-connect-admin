@@ -20,6 +20,19 @@
 .report-event-total{display:flex;align-items:center;gap:12px;margin-top:10px;background:#f0f4ff;border-radius:12px;padding:12px}
 .report-event-total b{font-size:30px;color:#253b75}
 .report-section-title{font-size:16px;margin:22px 0 8px;color:#19264b}
+.chart-bars{display:flex;align-items:flex-end;gap:10px;min-height:190px;padding:16px 4px 4px;overflow-x:auto}
+.chart-column{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:7px;min-width:42px;flex:1;height:180px}
+.chart-value{font-size:11px;font-weight:700;color:#253b75}
+.chart-bar{width:min(34px,75%);min-height:3px;background:#536fbd;border-radius:7px 7px 2px 2px}
+.chart-label{font-size:10px;color:#61708b;white-space:nowrap}
+.polo-rank-list{display:grid;gap:12px}
+.polo-rank-row{display:grid;grid-template-columns:minmax(100px,160px) 1fr 48px;align-items:center;gap:10px}
+.polo-rank-name{font-size:13px;font-weight:650;overflow-wrap:anywhere}
+.polo-rank-track{height:12px;background:#e9edf5;border-radius:99px;overflow:hidden}
+.polo-rank-fill{height:100%;background:#536fbd;border-radius:99px}
+.polo-rank-value{text-align:right;font-weight:750;color:#253b75}
+@media(max-width:520px){.polo-rank-row{grid-template-columns:92px 1fr 38px;gap:7px}.polo-rank-name{font-size:11px}}
+
 @media(max-width:520px){.report-card{padding:13px}.report-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.report-card-title{font-size:16px}}
 
 </style>
@@ -31,7 +44,15 @@
 <section id="recovery" class="panel auth hidden"><h2>Definir nova senha</h2><form id="recovery-form"><label for="new-password">Nova senha (mínimo de 8 caracteres)</label><input id="new-password" type="password" minlength="8" autocomplete="new-password" required><label for="confirm-password">Confirmar nova senha</label><input id="confirm-password" type="password" minlength="8" autocomplete="new-password" required><p><button type="submit">Salvar nova senha</button></p></form><p id="recovery-message" class="message" role="status" aria-live="polite"></p></section>
 <div id="app" class="hidden"><div class="topline"><p id="identity" class="muted"></p><button id="logout" class="secondary">Sair</button></div><div class="notice"><strong>Versão de teste.</strong> Login e perfil conectados ao Supabase. Cadastro e edição de fichas de teste ativados. Fotos armazenadas em bucket privado (em validação). Não insira dados reais até testar as permissões; relatórios e impressão continuam desativados.</div>
 <nav class="tabs"><button class="active" data-tab="inicio">Visão geral</button><button data-tab="jovens">Fichas</button><button data-tab="relatorios">Relatório semanal</button><button data-tab="config">Configuração</button></nav>
-<section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Polos</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><div class="stat">Relatórios recebidos<b id="report-count">—</b></div><div class="stat">Relatórios pendentes<b id="pending-count">—</b></div></div><p id="dashboard-note" class="muted">Indicadores consultados conforme as permissões da conta autenticada.</p><div id="national-report-panel" class="hidden"><h3>Acompanhamento nacional dos relatórios</h3><p>Selecione o domingo referente ao relatório para ver quais polos enviaram e quais estão pendentes.</p><div class="grid"><div><label for="national-report-date">Domingo do relatório</label><input id="national-report-date" type="date"></div><div style="align-self:end"><button type="button" id="national-report-refresh">Consultar polos</button></div></div><div id="national-report-summary" class="grid"></div><div id="national-report-list" class="stat">Carregando acompanhamento...</div></div></section>
+<section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Polos</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><div class="stat">Relatórios recebidos<b id="report-count">—</b></div><div class="stat">Relatórios pendentes<b id="pending-count">—</b></div></div><p id="dashboard-note" class="muted">Indicadores consultados conforme as permissões da conta autenticada.</p><div id="national-report-panel" class="hidden">
+<h3>Painel nacional de resultados</h3>
+<p class="muted">Indicadores calculados a partir dos relatórios semanais registrados pelos polos.</p>
+<div class="grid"><div><label for="national-report-date">Domingo do relatório</label><input id="national-report-date" type="date"></div><div style="align-self:end"><button type="button" id="national-report-refresh">Atualizar painel</button></div></div>
+<div id="national-report-summary" class="grid"></div>
+<h3 class="report-section-title">Tendência das últimas semanas</h3><div id="national-trend-chart" class="report-card">Carregando gráfico...</div>
+<h3 class="report-section-title">Comparação entre polos</h3><p class="muted">Total único informado no relatório da semana selecionada.</p><div id="national-polo-chart" class="report-card">Carregando comparação...</div>
+<h3 class="report-section-title">Acompanhamento dos polos</h3><div id="national-report-list" class="report-list">Carregando acompanhamento...</div>
+</div></section>
 <section id="jovens" class="panel hidden">
 <h2>Fichas dos jovens — teste funcional</h2>
 <p class="muted">Use somente dados fictícios até a validação completa das permissões. Fotos de teste podem ser enviadas ao armazenamento privado após salvar a ficha. Ainda não use fotos reais até testar o isolamento entre polos.</p>
@@ -112,26 +133,76 @@ async function loadNationalReportOverview(){
   const list=el('national-report-list');list.textContent='Consultando polos e relatórios...';
   const [{data:polos,error:poloError},{data:reports,error:reportError}]=await Promise.all([
     supabase.from('fju_polos').select('id,nome').order('nome'),
-    supabase.from('fju_relatorios_semanais').select('polo_id,semana_domingo,jovens_firmes,jovens_novos,jovens_afastados,presenca_domingo_930,presenca_encontro_fju,batizados_espirito_santo,batizados_aguas,total_jovens_unicos').eq('semana_domingo',dateInput.value)
+    supabase.from('fju_relatorios_semanais').select('id,polo_id,semana_domingo,jovens_firmes,jovens_novos,jovens_afastados,presenca_domingo_930,presenca_encontro_fju,batizados_espirito_santo,batizados_aguas,total_jovens_unicos').order('semana_domingo',{ascending:false}).limit(1000)
   ]);
-  if(poloError||reportError){list.textContent='Não foi possível consultar o acompanhamento: '+(poloError?.message||reportError?.message);return;}
-  const byPolo=new Map((reports||[]).map(r=>[r.polo_id,r]));
-  const submitted=(polos||[]).filter(p=>byPolo.has(p.id)).length;
-  const pending=Math.max(0,(polos||[]).length-submitted);
+  if(poloError||reportError){list.textContent='Não foi possível consultar o painel: '+(poloError?.message||reportError?.message);return;}
+  const poloRows=polos||[], reportRows=reports||[];
+  const selected=reportRows.filter(r=>r.semana_domingo===dateInput.value);
+  const byPolo=new Map(selected.map(r=>[r.polo_id,r]));
+  const submitted=poloRows.filter(p=>byPolo.has(p.id)).length;
+  const pending=Math.max(0,poloRows.length-submitted);
   el('pending-count').textContent=String(pending);
+  const total=(key,rows=selected)=>rows.reduce((sum,r)=>sum+(Number(r[key])||0),0);
   const summary=el('national-report-summary');summary.replaceChildren();
-  for(const [label,value] of [['Polos',String((polos||[]).length)],['Enviados',String(submitted)],['Pendentes',String(pending)]]){
-    const box=document.createElement('div');box.className='stat';const t=document.createElement('span');t.textContent=label;const b=document.createElement('b');b.textContent=value;box.append(t,b);summary.append(box);
+  const summaryItems=[
+    ['Polos',poloRows.length],['Relatórios enviados',submitted],['Pendentes',pending],
+    ['Jovens únicos informados',total('total_jovens_unicos')],['Jovens novos',total('jovens_novos')],
+    ['Batizados com o Espírito Santo',total('batizados_espirito_santo')],['Batizados nas águas',total('batizados_aguas')]
+  ];
+  for(const [label,value] of summaryItems){
+    const box=document.createElement('div');box.className='stat';
+    const span=document.createElement('span');span.textContent=label;
+    const b=document.createElement('b');b.textContent=Number(value).toLocaleString('ja-JP');
+    box.append(span,b);summary.append(box);
   }
-  list.replaceChildren();
-  if(!polos?.length){list.textContent='Nenhum polo disponível para esta conta.';return;}
-  for(const polo of polos){
+  const trend=el('national-trend-chart');trend.replaceChildren();
+  const weeks=[...new Set(reportRows.map(r=>r.semana_domingo))].sort().slice(-8);
+  if(!weeks.length){trend.textContent='Ainda não há relatórios semanais suficientes para montar o gráfico.';}
+  else{
+    const chartTitle=document.createElement('p');chartTitle.className='muted';chartTitle.textContent='Total único informado em cada semana';trend.append(chartTitle);
+    const bars=document.createElement('div');bars.className='chart-bars';
+    const max=Math.max(1,...weeks.map(w=>total('total_jovens_unicos',reportRows.filter(r=>r.semana_domingo===w))));
+    for(const week of weeks){
+      const val=total('total_jovens_unicos',reportRows.filter(r=>r.semana_domingo===week));
+      const col=document.createElement('div');col.className='chart-column';
+      const number=document.createElement('span');number.className='chart-value';number.textContent=String(val);
+      const bar=document.createElement('div');bar.className='chart-bar';bar.style.height=Math.max(3,Math.round(val/max*125))+'px';bar.title=week+': '+val;
+      const label=document.createElement('span');label.className='chart-label';label.textContent=week.slice(5);
+      col.append(number,bar,label);bars.append(col);
+    }
+    trend.append(bars);
+  }
+  const rank=el('national-polo-chart');rank.replaceChildren();
+  const ranked=poloRows.map(p=>({name:p.nome,value:Number(byPolo.get(p.id)?.total_jovens_unicos)||0,submitted:byPolo.has(p.id)})).sort((a,b)=>b.value-a.value);
+  if(!ranked.length){rank.textContent='Nenhum polo encontrado.';}
+  else{
+    const rows=document.createElement('div');rows.className='polo-rank-list';
+    const max=Math.max(1,...ranked.map(p=>p.value));
+    for(const p of ranked){
+      const row=document.createElement('div');row.className='polo-rank-row';
+      const name=document.createElement('span');name.className='polo-rank-name';name.textContent=p.name+(p.submitted?'':' · pendente');
+      const track=document.createElement('div');track.className='polo-rank-track';
+      const fill=document.createElement('div');fill.className='polo-rank-fill';fill.style.width=(p.value/max*100)+'%';track.append(fill);
+      const val=document.createElement('span');val.className='polo-rank-value';val.textContent=String(p.value);
+      row.append(name,track,val);rows.append(row);
+    }
+    rank.append(rows);
+  }
+  list.replaceChildren();list.className='report-list';
+  if(!poloRows.length){list.textContent='Nenhum polo disponível para esta conta.';return;}
+  for(const polo of poloRows){
     const r=byPolo.get(polo.id);
-    const row=document.createElement('div');row.className='stat';row.style.marginBottom='8px';
-    const title=document.createElement('strong');title.textContent=polo.nome+' — '+(r?'Relatório enviado':'Pendente');
-    const detail=document.createElement('p');detail.className='muted';
-    detail.textContent=r?('Firmes: '+r.jovens_firmes+' · Novos: '+r.jovens_novos+' · Afastados: '+r.jovens_afastados+' · Domingo: '+r.presenca_domingo_930+' · Encontro FJU: '+r.presenca_encontro_fju+' · Batizados Espírito Santo: '+r.batizados_espirito_santo+' · Batizados nas águas: '+r.batizados_aguas+' · Total único: '+r.total_jovens_unicos):'Ainda não há relatório registrado para este domingo.';
-    row.append(title,detail);list.append(row);
+    const row=document.createElement('article');row.className='report-card';
+    const head=document.createElement('div');head.className='report-card-head';
+    const title=document.createElement('div');title.className='report-card-title';title.textContent=polo.nome;
+    const badge=document.createElement('span');badge.className='report-badge';badge.textContent=r?'✓ Relatório enviado':'Pendente';if(!r){badge.style.background='#fff1e7';badge.style.color='#9a3412';}
+    head.append(title,badge);row.append(head);
+    if(r){
+      const metrics=document.createElement('div');metrics.className='report-metrics';
+      const addMetric=(label,value)=>{const m=document.createElement('div');m.className='report-metric';const l=document.createElement('span');l.textContent=label;const v=document.createElement('b');v.textContent=String(Number(value)||0);m.append(l,v);metrics.append(m);};
+      addMetric('Total único',r.total_jovens_unicos);addMetric('Firmes',r.jovens_firmes);addMetric('Novos',r.jovens_novos);addMetric('Afastados',r.jovens_afastados);addMetric('Domingo 9h30',r.presenca_domingo_930);addMetric('Encontro FJU',r.presenca_encontro_fju);addMetric('Batizados Espírito Santo',r.batizados_espirito_santo);addMetric('Batizados nas águas',r.batizados_aguas);row.append(metrics);
+    }else{const p=document.createElement('p');p.className='muted';p.textContent='Nenhum relatório registrado para '+dateInput.value+'.';row.append(p);}
+    list.append(row);
   }
 }
 el('national-report-refresh').addEventListener('click',()=>void loadNationalReportOverview());
