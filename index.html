@@ -63,7 +63,7 @@ body.printing>#print-area{display:block!important}
 <section id="auth" class="panel auth"><h2>Entrar</h2><form id="login-form"><label for="email">E-mail</label><input id="email" type="email" autocomplete="username" required><label for="password">Senha</label><input id="password" type="password" autocomplete="current-password" required><p><button type="submit">Entrar</button></p></form><button class="secondary" id="forgot">Enviar recuperação de senha</button><p id="auth-message" class="message" role="status" aria-live="polite"></p></section>
 <section id="recovery" class="panel auth hidden"><h2>Definir nova senha</h2><form id="recovery-form"><label for="new-password">Nova senha (mínimo de 8 caracteres)</label><input id="new-password" type="password" minlength="8" autocomplete="new-password" required><label for="confirm-password">Confirmar nova senha</label><input id="confirm-password" type="password" minlength="8" autocomplete="new-password" required><p><button type="submit">Salvar nova senha</button></p></form><p id="recovery-message" class="message" role="status" aria-live="polite"></p></section>
 <div id="app" class="hidden"><div class="topline"><p id="identity" class="muted"></p><button id="logout" class="secondary">Sair</button></div><div class="notice"><strong>Versão de teste.</strong> Login e perfil conectados ao Supabase. Cadastro e edição de fichas de teste ativados. Fotos armazenadas em bucket privado (em validação). Não insira dados reais até testar as permissões; relatórios e impressão continuam desativados.</div>
-<nav class="tabs"><button class="active" data-tab="inicio">Visão geral</button><button data-tab="jovens">Fichas</button><button data-tab="relatorios">Relatório semanal</button><button data-tab="config">Configuração</button></nav>
+<nav class="tabs"><button class="active" data-tab="inicio">Visão geral</button><button data-tab="jovens">Fichas</button><button data-tab="relatorios">Relatório semanal</button><button data-tab="autorizacoes">Autorizações</button><button data-tab="config">Configuração</button></nav>
 <section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Polos</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><div class="stat">Relatórios recebidos<b id="report-count">—</b></div><div class="stat">Relatórios pendentes<b id="pending-count">—</b></div></div><p id="dashboard-note" class="muted">Indicadores consultados conforme as permissões da conta autenticada.</p><div id="national-report-panel" class="hidden">
 <h3>Painel nacional de resultados</h3>
 <p class="muted">Indicadores calculados a partir dos relatórios semanais registrados pelos polos.</p>
@@ -95,7 +95,7 @@ body.printing>#print-area{display:block!important}
 <label for="youth-list-polo">Visualizar fichas da igreja</label><select id="youth-list-polo"><option value="">Selecione uma igreja</option></select><label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite parte do nome">
 <div id="youth-list" style="margin-top:12px"></div><div id="youth-detail" class="panel hidden" style="margin-top:16px;border:1px solid #dce3ef"></div>
 </section>
-<section id="relatorios" class="panel hidden">
+<section id="autorizacoes" class="panel hidden"><h2>Autorizações de fichas</h2><p class="muted">Solicitações de alteração ou exclusão aguardando aprovação nacional. Nenhuma ficha é modificada ao enviar um pedido.</p><button type="button" id="requests-refresh" class="secondary">Atualizar solicitações</button><p id="requests-message" class="message" role="status"></p><div id="requests-list" class="report-list"></div></section><section id="relatorios" class="panel hidden">
 <h2>Relatórios</h2>
 <div class="tabs" style="margin-bottom:16px"><button type="button" class="active" data-report-tab="semanal">Relatório semanal</button><button type="button" data-report-tab="especial">Evento especial</button></div>
 <div id="report-weekly">
@@ -390,7 +390,9 @@ function renderYouth(){
     const detail=document.createElement('p');detail.className='muted';detail.textContent=`${r.patente||r.categoria||'Sem patente'} · ${r.nacionalidade_iso2||'—'}`;
     const edit=document.createElement('button');edit.type='button';edit.className='secondary';edit.textContent='Editar';edit.onclick=()=>editYouth(r.id);
     const view=document.createElement('button');view.type='button';view.className='secondary';view.textContent='Ver ficha';view.style.marginRight='8px';view.onclick=()=>viewYouth(r.id);
-    div.append(name,detail,view);if(currentProfile?.papel==='nacional')div.append(edit);list.append(div);
+    div.append(name,detail,view);if(currentProfile?.papel==='nacional')div.append(edit);
+    else {const request=document.createElement('button');request.type='button';request.className='secondary';request.textContent='Solicitar alteração / exclusão';request.onclick=()=>requestYouthChange(r);div.append(request);}
+    list.append(div);
   }
 }
 let detailPhotoUrl=null;
@@ -440,6 +442,43 @@ async function viewYouth(id){
     }
   }catch(e){const note=document.createElement('p');note.className='muted';note.textContent='Foto indisponível: '+e.message;panel.append(note);}
 }
+async function requestYouthChange(r){
+  if(currentProfile?.papel!=='coordenador')return;
+  const type=prompt('Digite 1 para solicitar ALTERAÇÃO ou 2 para solicitar EXCLUSÃO da ficha de '+r.nome_completo);
+  if(type!=='1'&&type!=='2')return;
+  const motivo=prompt(type==='1'?'Descreva exatamente o que precisa ser alterado (campo e novo valor) e o motivo:':'Informe o motivo da exclusão:');
+  if(!motivo?.trim())return;
+  const {data:{user}}=await supabase.auth.getUser();
+  const {error}=await supabase.from('fju_solicitacoes_fichas').insert({jovem_id:r.id,polo_id:r.polo_id,tipo:type==='1'?'alteracao':'exclusao',descricao:motivo.trim(),solicitado_por:user?.id});
+  if(error){youthMessage('Não foi possível solicitar. Verifique se a tabela de autorizações foi configurada: '+error.message,true);return;}
+  youthMessage('Solicitação enviada ao Administrador Nacional. A ficha não foi alterada.');
+}
+async function loadYouthRequests(){
+  const list=el('requests-list');list.replaceChildren();el('requests-message').textContent='Consultando solicitações...';
+  let query=supabase.from('fju_solicitacoes_fichas').select('id,jovem_id,polo_id,tipo,descricao,status,created_at').order('created_at',{ascending:false}).limit(100);
+  if(currentProfile?.papel==='coordenador')query=query.eq('polo_id',currentProfile.polo_id);
+  const {data,error}=await query;
+  if(error){message('requests-message','A área depende da configuração no Supabase: '+error.message,true);return;}
+  message('requests-message',(data||[]).length+' solicitação(ões) encontrada(s).');
+  for(const r of data||[]){
+    const card=document.createElement('article');card.className='report-card';
+    const title=document.createElement('strong');title.textContent=(r.tipo==='exclusao'?'Exclusão':'Alteração')+' · '+r.status;
+    const desc=document.createElement('p');desc.textContent=r.descricao;
+    const meta=document.createElement('p');meta.className='muted';meta.textContent='Ficha: '+r.jovem_id+' · Igreja: '+r.polo_id;
+    card.append(title,desc,meta);
+    if(currentProfile?.papel==='nacional'&&r.status==='pendente'){
+      const approve=document.createElement('button');approve.type='button';approve.textContent='Aprovar solicitação';
+      approve.onclick=async()=>{if(!confirm('Aprovar esta solicitação? A alteração/exclusão deve ser executada pelo administrador na ficha.'))return;
+        const {error}=await supabase.from('fju_solicitacoes_fichas').update({status:'aprovada'}).eq('id',r.id);
+        if(error)message('requests-message',error.message,true);else void loadYouthRequests();};
+      const deny=document.createElement('button');deny.type='button';deny.className='secondary';deny.textContent='Recusar';
+      deny.onclick=async()=>{const {error}=await supabase.from('fju_solicitacoes_fichas').update({status:'recusada'}).eq('id',r.id);if(error)message('requests-message',error.message,true);else void loadYouthRequests();};
+      card.append(approve,deny);
+    }
+    list.append(card);
+  }
+}
+el('requests-refresh').addEventListener('click',()=>void loadYouthRequests());
 function editYouth(id){
   if(currentProfile?.papel!=='nacional'){youthMessage('Alterações de fichas exigem autorização do Administrador Nacional.',true);return;}
   const r=youthRows.find(x=>x.id===id);if(!r)return;
@@ -586,7 +625,7 @@ el('login-form').addEventListener('submit',async e=>{e.preventDefault();message(
 el('forgot').addEventListener('click',async()=>{const email=el('email').value.trim();if(!email){message('auth-message','Digite seu e-mail acima para receber a recuperação.',true);return}const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});message('auth-message',error?'Não foi possível solicitar a recuperação: '+error.message:'Se a conta estiver cadastrada, enviaremos instruções ao e-mail.',!!error)});
 el('recovery-form').addEventListener('submit',async e=>{e.preventDefault();const pass=el('new-password').value;if(pass.length<8||pass!==el('confirm-password').value){message('recovery-message','As senhas precisam ser iguais e ter pelo menos 8 caracteres.',true);return}const {error}=await supabase.auth.updateUser({password:pass});if(error){message('recovery-message',error.message,true);return}recoveryMode=false;history.replaceState({},'',location.pathname);message('auth-message','Senha atualizada. Você já pode entrar.');await supabase.auth.signOut();show('auth')});
 el('logout').addEventListener('click',async()=>{++profileRequest;await supabase.auth.signOut();show('auth')});
-document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('#app section.panel').forEach(s=>s.classList.toggle('hidden',s.id!==b.dataset.tab))}));
+document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.tab==='autorizacoes')void loadYouthRequests();document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('#app section.panel').forEach(s=>s.classList.toggle('hidden',s.id!==b.dataset.tab))}));
 supabase.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){recoveryMode=true;show('recovery')}else if(event==='SIGNED_OUT'){recoveryMode=false;show('auth')}});
 if(location.search.includes('error=')){message('auth-message','O link de autenticação falhou ou expirou. Solicite outro.',true)}
 await refresh();
