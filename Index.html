@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FJU Connect JAPAN · Admin</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color:#172033;background:#f4f6fa}*{box-sizing:border-box}body{margin:0}header{background:#19264b;color:white;padding:22px 18px}header h1{margin:0;font-size:23px}header p{margin:6px 0 0;color:#cbd6f0}.wrap{max-width:1000px;margin:auto;padding:18px}.notice{background:#fff5db;border-left:4px solid #e6a100;padding:14px;border-radius:8px;margin-bottom:16px}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}button{border:0;border-radius:9px;padding:11px 15px;background:#253b75;color:white;font-weight:600;cursor:pointer}.tabs button{background:#e2e8f3;color:#1c2b4e}.tabs button.active{background:#253b75;color:white}.panel{background:white;border-radius:14px;padding:20px;box-shadow:0 3px 15px #14213d10;margin-bottom:18px}h2{margin-top:0;font-size:21px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.stat{padding:16px;background:#eef2fa;border-radius:12px}.stat b{display:block;font-size:25px;margin-top:8px}label{display:block;font-weight:600;font-size:13px;margin:12px 0 5px}input,select,textarea{width:100%;border:1px solid #b9c4d7;border-radius:8px;padding:11px;font:inherit}textarea{min-height:80px}.hidden{display:none}.muted{color:#61708b;font-size:14px}.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.secondary{background:#e2e8f3;color:#1c2b4e}.message{margin:12px 0;white-space:pre-wrap}.error{color:#b42318}.success{color:#176b44}footer{text-align:center;padding:20px;color:#71809a;font-size:12px}.auth{max-width:440px;margin:30px auto}.topline{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>FJU Connect JAPAN · Admin</h1><p>Painel administrativo — acesso restrito</p></div></header>
+<main class="wrap">
+<section id="auth" class="panel auth"><h2>Entrar</h2><form id="login-form"><label for="email">E-mail</label><input id="email" type="email" autocomplete="username" required><label for="password">Senha</label><input id="password" type="password" autocomplete="current-password" required><p><button type="submit">Entrar</button></p></form><button class="secondary" id="forgot">Enviar recuperação de senha</button><p id="auth-message" class="message" role="status" aria-live="polite"></p></section>
+<section id="recovery" class="panel auth hidden"><h2>Definir nova senha</h2><form id="recovery-form"><label for="new-password">Nova senha (mínimo de 8 caracteres)</label><input id="new-password" type="password" minlength="8" autocomplete="new-password" required><label for="confirm-password">Confirmar nova senha</label><input id="confirm-password" type="password" minlength="8" autocomplete="new-password" required><p><button type="submit">Salvar nova senha</button></p></form><p id="recovery-message" class="message" role="status" aria-live="polite"></p></section>
+<div id="app" class="hidden"><div class="topline"><p id="identity" class="muted"></p><button id="logout" class="secondary">Sair</button></div><div class="notice"><strong>Versão de teste.</strong> Login e perfil conectados ao Supabase. Cadastro e edição de fichas de teste ativados. Fotos armazenadas em bucket privado (em validação). Não insira dados reais até testar as permissões; relatórios e impressão continuam desativados.</div>
+<nav class="tabs"><button class="active" data-tab="inicio">Visão geral</button><button data-tab="jovens">Fichas</button><button data-tab="relatorios">Relatório semanal</button><button data-tab="config">Configuração</button></nav>
+<section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Polos</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><div class="stat">Relatórios recebidos<b id="report-count">—</b></div><div class="stat">Relatórios pendentes<b>—</b></div></div><p id="dashboard-note" class="muted">Os indicadores são consultados com as permissões da conta autenticada. Pendências serão ativadas após definirmos o período dos relatórios.</p></section>
+<section id="jovens" class="panel hidden">
+<h2>Fichas dos jovens — teste funcional</h2>
+<p class="muted">Use somente dados fictícios até a validação completa das permissões. Fotos de teste podem ser enviadas ao armazenamento privado após salvar a ficha. Ainda não use fotos reais até testar o isolamento entre polos.</p>
+<form id="youth-form">
+<input id="youth-id" type="hidden">
+<div class="grid">
+<div><label for="youth-polo">Polo</label><select id="youth-polo" required></select></div>
+<div><label for="youth-name">Nome completo</label><input id="youth-name" required maxlength="180"></div>
+<div><label for="youth-birth">Nascimento</label><input id="youth-birth" type="date"></div>
+<div><label for="youth-phone">Telefone</label><input id="youth-phone" maxlength="50"></div>
+<div><label for="youth-country">Nacionalidade</label><select id="youth-country"><option value="">Selecione</option><option value="BR">🇧🇷 Brasil</option><option value="JP">🇯🇵 Japão</option><option value="PH">🇵🇭 Filipinas</option><option value="PE">🇵🇪 Peru</option><option value="BO">🇧🇴 Bolívia</option><option value="PY">🇵🇾 Paraguai</option><option value="AR">🇦🇷 Argentina</option><option value="CO">🇨🇴 Colômbia</option><option value="VE">🇻🇪 Venezuela</option><option value="US">🇺🇸 Estados Unidos</option><option value="CN">🇨🇳 China</option><option value="KR">🇰🇷 Coreia do Sul</option><option value="VN">🇻🇳 Vietnã</option><option value="ID">🇮🇩 Indonésia</option><option value="NP">🇳🇵 Nepal</option><option value="IN">🇮🇳 Índia</option><option value="LK">🇱🇰 Sri Lanka</option><option value="MM">🇲🇲 Mianmar</option><option value="TH">🇹🇭 Tailândia</option><option value="PK">🇵🇰 Paquistão</option><option value="BD">🇧🇩 Bangladesh</option><option value="GB">🇬🇧 Reino Unido</option><option value="FR">🇫🇷 França</option><option value="DE">🇩🇪 Alemanha</option><option value="PT">🇵🇹 Portugal</option><option value="ES">🇪🇸 Espanha</option><option value="MX">🇲🇽 México</option><option value="NG">🇳🇬 Nigéria</option><option value="GH">🇬🇭 Gana</option><option value="OTHER">Outra nacionalidade</option></select></div>
+<div><label>Idiomas que fala (selecione um ou mais)</label><details id="youth-languages-picker"><summary id="youth-languages-summary">Selecionar idiomas</summary><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;padding:12px 4px"><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Português"> Português</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Japonês"> Japonês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Inglês"> Inglês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Espanhol"> Espanhol</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Tagalog"> Tagalog</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Hindi"> Hindi</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Nepali"> Nepali</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Indonésio"> Indonésio</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Birmanês"> Birmanês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Cingalês"> Cingalês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Coreano"> Coreano</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Chinês"> Chinês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Vietnamita"> Vietnamita</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Tailandês"> Tailandês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Outros"> Outros</label></div></details></div>
+<div><label for="youth-rank">Patente do jovem</label><select id="youth-rank" required><option value="">Selecione</option><option>Inconstante</option><option>Firme</option><option>CPO</option><option>Colaborador</option><option>Obreiro</option><option>Coordenador</option></select></div>
+<div><label for="youth-photo">Foto do jovem (galeria ou câmera)</label><input id="youth-photo" type="file" accept="image/jpeg,image/png,image/webp"><img id="youth-photo-preview" alt="Prévia da foto escolhida" class="hidden" style="width:90px;height:90px;object-fit:cover;border-radius:12px;margin-top:8px"><p class="muted">A foto será enviada ao bucket privado ao salvar a ficha. Use apenas imagens fictícias nesta fase de teste.</p></div>
+</div>
+<p class="actions"><button type="submit">Salvar ficha de teste</button><button type="button" id="youth-clear" class="secondary">Limpar formulário</button><button type="button" id="youth-refresh" class="secondary">Atualizar lista</button></p>
+</form><p id="youth-message" class="message" role="status"></p>
+<label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite parte do nome">
+<div id="youth-list" style="margin-top:12px"></div><div id="youth-detail" class="panel hidden" style="margin-top:16px;border:1px solid #dce3ef"></div>
+</section>
+<section id="relatorios" class="panel hidden"><h2>Relatório semanal</h2><p class="muted">Domingo: lembrete às 17h30, prazo às 22h. Envio posterior marcado como atrasado (ainda não automatizado).</p><div class="grid"><div><label>Jovens firmes durante a semana</label><input type="number" placeholder="0" disabled></div><div><label>Jovens novos durante a semana</label><input type="number" placeholder="0" disabled></div><div><label>Jovens afastados durante a semana</label><input type="number" placeholder="0" disabled></div><div><label>Domingo 9h30</label><input type="number" placeholder="0" disabled></div><div><label>Encontro FJU</label><input type="number" placeholder="0" disabled></div><div><label>Total único da semana (sem repetir)</label><input type="number" placeholder="0" disabled></div></div></section>
+<section id="config" class="panel hidden"><h2>Configuração</h2><p id="role-detail"></p><p class="muted">As regras de acesso efetivas são aplicadas no banco pelo RLS. A interface não substitui essas políticas.</p></section></div>
+</main><footer>FJU Connect JAPAN · Teste de autenticação</footer>
+<script type="module">
+import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+const SUPABASE_URL='https://hmacroktklgwkofxsygv.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_mdkfafhpqtthwzU8Hf7u9A_rErx3MFJ';
+const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const el=id=>document.getElementById(id);
+const show=(id)=>{for(const s of ['auth','recovery','app'])el(s).classList.toggle('hidden',s!==id)};
+const message=(id,msg,error=false)=>{el(id).textContent=msg;el(id).className='message '+(error?'error':'success')};
+let recoveryMode=false;
+let profileRequest=0; let currentProfile=null; let youthRows=[]; let photoUrl=null;
+async function countRows(table){const {count,error}=await supabase.from(table).select('*',{count:'exact',head:true});if(error)throw error;return count??0;}
+async function loadDashboard(profile,requestId){
+  const local=profile.papel==='coordenador';
+  el('scope-label').textContent=local?'Polo autorizado':'Polos cadastrados';
+  el('scope-count').textContent=local?'1':'—';
+  el('youth-count').textContent='…';el('report-count').textContent='…';
+  if(!local){try{const n=await countRows('fju_polos');if(requestId===profileRequest)el('scope-count').textContent=String(n)}catch{if(requestId===profileRequest)el('scope-count').textContent='Indisponível'}}
+  for(const [table,id] of [['fju_jovens','youth-count'],['fju_relatorios','report-count']]){
+    try{const n=await countRows(table);if(requestId===profileRequest)el(id).textContent=String(n)}
+    catch{if(requestId===profileRequest)el(id).textContent='Indisponível'}
+  }
+}
+
+async function loadProfile(user){
+  const {data,error}=await supabase.from('fju_perfis').select('papel,polo_id,ativo').eq('usuario_id',user.id).maybeSingle();
+  if(error)throw error;
+  if(!data?.ativo || !['nacional','coordenador'].includes(data.papel) || (data.papel==='coordenador'&&!data.polo_id))throw new Error('Esta conta não tem perfil ativo autorizado. Contate o administrador.');
+  const requestId=++profileRequest;
+  let poloNome='';
+  if(data.papel==='coordenador'){
+    const {data:polo,error:poloError}=await supabase.from('fju_polos').select('nome').eq('id',data.polo_id).maybeSingle();
+    if(poloError)throw new Error('Não foi possível consultar o polo autorizado: '+poloError.message);
+    if(!polo?.nome)throw new Error('Polo do coordenador não encontrado ou sem permissão de leitura.');
+    poloNome=polo.nome;
+  }
+  if(requestId!==profileRequest)return;
+  const role=data.papel==='nacional'?'Administrador Nacional':'Coordenador Local';
+  el('identity').textContent=`Conectado: ${user.email} · ${role}${poloNome?' · FJU '+poloNome:''}`;
+  el('role-detail').textContent=data.papel==='nacional'?'Perfil: Administrador Nacional — visão de todos os polos autorizados.':`Perfil: Coordenador Local — FJU ${poloNome}.`;
+  el('dashboard-note').textContent=`${data.papel==='nacional'?'Visão nacional':'Visão do polo FJU '+poloNome}. Contagens fornecidas pelo Supabase com as políticas RLS da conta autenticada. Relatórios pendentes ainda não calculados.`;
+  currentProfile=data;
+  show('app');
+  void initializeYouth();
+  void loadDashboard(data,requestId);
+}
+
+function youthMessage(text,error=false){message('youth-message',text,error)}
+function selectedYouthLanguages(){return [...document.querySelectorAll('input[name="youth-language"]:checked')].map(x=>x.value)}
+function refreshYouthLanguages(){const a=selectedYouthLanguages();el('youth-languages-summary').textContent=a.length?a.join(', '):'Selecionar idiomas'}
+document.querySelectorAll('input[name="youth-language"]').forEach(x=>x.addEventListener('change',refreshYouthLanguages));
+function resetYouth(){if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}el('youth-form').reset();refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
+async function initializeYouth(){
+  const {data,error}=await supabase.from('fju_polos').select('id,nome').order('nome');
+  if(error){youthMessage('Não foi possível carregar polos: '+error.message,true);return;}
+  const allowed=currentProfile.papel==='coordenador'?(data||[]).filter(x=>x.id===currentProfile.polo_id):(data||[]);
+  el('youth-polo').replaceChildren();
+  for(const polo of allowed){const opt=document.createElement('option');opt.value=polo.id;opt.textContent=polo.nome;el('youth-polo').append(opt);}
+  resetYouth();await loadYouth();
+}
+async function loadYouthPhoto(id){
+  const preview=el('youth-photo-preview');preview.classList.add('hidden');preview.removeAttribute('src');
+  if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}
+  const {data,error}=await supabase.storage.from('fju-fotos').list(id,{limit:20});
+  if(error){youthMessage('Ficha aberta, mas não foi possível consultar a foto: '+error.message,true);return;}
+  const file=(data||[]).find(f=>/^perfil\.(jpg|png|webp)$/.test(f.name));
+  if(!file)return;
+  const result=await supabase.storage.from('fju-fotos').download(id+'/'+file.name);
+  if(result.error){youthMessage('Foto indisponível: '+result.error.message,true);return;}
+  if(el('youth-id').value!==id)return;
+  photoUrl=URL.createObjectURL(result.data);preview.src=photoUrl;preview.classList.remove('hidden');
+}
+async function loadYouth(){
+  if(!currentProfile)return;
+  youthMessage('Consultando fichas de teste...');
+  let q=supabase.from('fju_jovens').select('id,polo_id,nome_completo,nascimento,telefone,nacionalidade_iso2,idiomas,patente,categoria,excluido_em').is('excluido_em',null).order('nome_completo').limit(200);
+  if(currentProfile.papel==='coordenador')q=q.eq('polo_id',currentProfile.polo_id);
+  const {data,error}=await q;
+  if(error){youthMessage('Erro na consulta: '+error.message,true);return;}
+  youthRows=data||[];renderYouth();youthMessage(`${youthRows.length} ficha(s) carregada(s). Limite da lista: 200.`);
+}
+function renderYouth(){
+  const term=el('youth-search').value.trim().toLocaleLowerCase();
+  const list=el('youth-list');list.replaceChildren();
+  const rows=youthRows.filter(r=>(r.nome_completo||'').toLocaleLowerCase().includes(term));
+  if(!rows.length){list.textContent='Nenhuma ficha encontrada.';return;}
+  for(const r of rows){
+    const div=document.createElement('div');div.className='stat';div.style.marginBottom='8px';
+    const name=document.createElement('strong');name.textContent=r.nome_completo||'(sem nome)';
+    const detail=document.createElement('p');detail.className='muted';detail.textContent=`${r.patente||r.categoria||'Sem patente'} · ${r.nacionalidade_iso2||'—'}`;
+    const edit=document.createElement('button');edit.type='button';edit.className='secondary';edit.textContent='Editar';edit.onclick=()=>editYouth(r.id);
+    const view=document.createElement('button');view.type='button';view.className='secondary';view.textContent='Ver ficha';view.style.marginRight='8px';view.onclick=()=>viewYouth(r.id);
+    div.append(name,detail,view,edit);list.append(div);
+  }
+}
+let detailPhotoUrl=null;
+async function viewYouth(id){
+  const r=youthRows.find(x=>x.id===id);if(!r)return;
+  const panel=el('youth-detail');panel.replaceChildren();panel.classList.remove('hidden');
+  if(detailPhotoUrl){URL.revokeObjectURL(detailPhotoUrl);detailPhotoUrl=null;}
+  const heading=document.createElement('h3');heading.textContent='Ficha individual';panel.append(heading);
+  const top=document.createElement('div');top.style.cssText='display:flex;align-items:center;gap:16px;flex-wrap:wrap';
+  const photo=document.createElement('img');photo.alt='Foto do jovem';photo.style.cssText='width:112px;height:112px;object-fit:cover;border-radius:14px;background:#e2e8f3';
+  const info=document.createElement('div');const name=document.createElement('h2');name.textContent=r.nome_completo;info.append(name);
+  const rank=document.createElement('p');rank.textContent='Patente: '+(r.categoria==='inconstante'?'Inconstante':r.patente||'—');info.append(rank);
+  top.append(photo,info);panel.append(top);
+  const details=document.createElement('div');details.className='grid';
+  const flag=(r.nacionalidade_iso2&&/^[A-Z]{2}$/.test(r.nacionalidade_iso2))?String.fromCodePoint(...[...r.nacionalidade_iso2].map(c=>127397+c.charCodeAt(0))):'🌐';
+  const country=el('youth-country').querySelector('option[value="'+(r.nacionalidade_iso2||'')+'"]');
+  for(const [label,value] of [['Nascimento',r.nascimento],['Telefone',r.telefone],['Nacionalidade',flag+' '+(country?.textContent||r.nacionalidade_iso2||'—')],['Idiomas',(r.idiomas||[]).join(', ')||'—']]){
+    const cell=document.createElement('div');cell.className='stat';const labelEl=document.createElement('strong');labelEl.textContent=label;const valueEl=document.createElement('p');valueEl.textContent=value||'—';cell.append(labelEl,valueEl);details.append(cell);
+  }
+  panel.append(details);
+  const history=document.createElement('p');history.className='muted';history.textContent='Histórico de evolução: integração em preparação. Nenhum histórico foi alterado.';panel.append(history);
+  const close=document.createElement('button');close.type='button';close.className='secondary';close.textContent='Fechar ficha';close.onclick=()=>{panel.classList.add('hidden');if(detailPhotoUrl){URL.revokeObjectURL(detailPhotoUrl);detailPhotoUrl=null;}};panel.append(close);
+  panel.scrollIntoView({behavior:'smooth'});
+  try{
+    const {data:files,error}=await supabase.storage.from('fju-fotos').list(id,{limit:20});
+    if(error)throw error;
+    const file=(files||[]).find(f=>/^perfil\.(jpg|png|webp)$/.test(f.name));
+    if(!file)return;
+    const result=await supabase.storage.from('fju-fotos').download(id+'/'+file.name);
+    if(result.error)throw result.error;
+    if(!panel.classList.contains('hidden')&&panel.contains(photo)){
+      detailPhotoUrl=URL.createObjectURL(result.data);photo.src=detailPhotoUrl;
+    }
+  }catch(e){const note=document.createElement('p');note.className='muted';note.textContent='Foto indisponível: '+e.message;panel.append(note);}
+}
+function editYouth(id){
+  const r=youthRows.find(x=>x.id===id);if(!r)return;
+  el('youth-id').value=r.id;el('youth-polo').value=r.polo_id;
+  for(const [field,key] of [['youth-name','nome_completo'],['youth-birth','nascimento'],['youth-phone','telefone'],['youth-country','nacionalidade_iso2'],['youth-rank','patente']])el(field).value=r[key]||'';
+  el('youth-rank').value=r.categoria==='inconstante'?'Inconstante':({'firme':'Firme','cpo':'CPO','colaborador':'Colaborador','obreiro':'Obreiro','coordenador':'Coordenador'}[r.patente]||r.patente||'');
+  document.querySelectorAll('input[name="youth-language"]').forEach(x=>x.checked=(r.idiomas||[]).includes(x.value));refreshYouthLanguages();
+  el('youth-photo').value='';void loadYouthPhoto(r.id);youthMessage('Editando ficha de teste: '+r.nome_completo);el('youth-form').scrollIntoView({behavior:'smooth'});
+}
+el('youth-form').addEventListener('submit',async e=>{
+  e.preventDefault();if(!currentProfile)return;
+  const polo_id=el('youth-polo').value;
+  if(currentProfile.papel==='coordenador'&&polo_id!==currentProfile.polo_id){youthMessage('Polo não autorizado.',true);return;}
+  const payload={
+    polo_id,nome_completo:el('youth-name').value.trim(),
+    nascimento:el('youth-birth').value||null,
+    telefone:el('youth-phone').value.trim()||null,
+    nacionalidade_iso2:el('youth-country').value.trim().toUpperCase()||null,
+    idiomas:selectedYouthLanguages(),
+    patente:el('youth-rank').value==='Inconstante'?null:el('youth-rank').value.toLowerCase(),
+    categoria:el('youth-rank').value==='Inconstante'?'inconstante':'firme'
+  };
+  if(!el('youth-rank').value){youthMessage('Selecione a patente do jovem.',true);return;}
+  if(!payload.nome_completo){youthMessage('Informe um nome fictício.',true);return;}
+  youthMessage('Salvando...');
+  const id=el('youth-id').value;
+  const result=id?await supabase.from('fju_jovens').update(payload).eq('id',id).select('id').single():await supabase.from('fju_jovens').insert(payload).select('id').single();
+  const {error}=result;
+  if(error){youthMessage('Não foi possível salvar: '+error.message,true);return;}
+  const file=el('youth-photo').files?.[0];
+  if(file){
+    const extension={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[file.type];
+    if(!extension||file.size>5*1024*1024){youthMessage('Ficha salva, mas foto inválida. Escolha JPG, PNG ou WebP de até 5 MB.',true);return;}
+    youthMessage('Ficha salva. Enviando foto privada...');
+    const path=result.data.id+'/perfil.'+extension;
+    const uploaded=await supabase.storage.from('fju-fotos').upload(path,file,{contentType:file.type,upsert:true});
+    if(uploaded.error){youthMessage('Ficha salva, mas não foi possível enviar a foto: '+uploaded.error.message,true);await loadYouth();return;}
+  }
+  resetYouth();await loadYouth();youthMessage(file?'Ficha e foto de teste salvas com sucesso.':'Ficha de teste salva com sucesso.');void loadDashboard(currentProfile,profileRequest);
+});
+el('youth-photo').addEventListener('change',e=>{const file=e.target.files?.[0];const preview=el('youth-photo-preview');if(!file){preview.classList.add('hidden');return;}if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){youthMessage('Escolha uma imagem JPG, PNG ou WebP de até 5 MB.',true);e.target.value='';return;}if(photoUrl)URL.revokeObjectURL(photoUrl);photoUrl=URL.createObjectURL(file);preview.src=photoUrl;preview.classList.remove('hidden');});
+el('youth-clear').onclick=resetYouth;
+el('youth-refresh').onclick=loadYouth;
+el('youth-search').addEventListener('input',renderYouth);
+
+async function refresh(){if(recoveryMode){show('recovery');return}const {data:{user},error}=await supabase.auth.getUser();if(error||!user){show('auth');return}try{await loadProfile(user)}catch(e){show('auth');message('auth-message',e.message,true)}}
+el('login-form').addEventListener('submit',async e=>{e.preventDefault();message('auth-message','Entrando...');const {error}=await supabase.auth.signInWithPassword({email:el('email').value.trim(),password:el('password').value});if(error){message('auth-message','Não foi possível entrar: '+error.message,true);return}await refresh()});
+el('forgot').addEventListener('click',async()=>{const email=el('email').value.trim();if(!email){message('auth-message','Digite seu e-mail acima para receber a recuperação.',true);return}const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});message('auth-message',error?'Não foi possível solicitar a recuperação: '+error.message:'Se a conta estiver cadastrada, enviaremos instruções ao e-mail.',!!error)});
+el('recovery-form').addEventListener('submit',async e=>{e.preventDefault();const pass=el('new-password').value;if(pass.length<8||pass!==el('confirm-password').value){message('recovery-message','As senhas precisam ser iguais e ter pelo menos 8 caracteres.',true);return}const {error}=await supabase.auth.updateUser({password:pass});if(error){message('recovery-message',error.message,true);return}recoveryMode=false;history.replaceState({},'',location.pathname);message('auth-message','Senha atualizada. Você já pode entrar.');await supabase.auth.signOut();show('auth')});
+el('logout').addEventListener('click',async()=>{++profileRequest;await supabase.auth.signOut();show('auth')});
+document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('#app section.panel').forEach(s=>s.classList.toggle('hidden',s.id!==b.dataset.tab))}));
+supabase.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){recoveryMode=true;show('recovery')}else if(event==='SIGNED_OUT'){recoveryMode=false;show('auth')}});
+if(location.search.includes('error=')){message('auth-message','O link de autenticação falhou ou expirou. Solicite outro.',true)}
+await refresh();
+</script>
+</body></html>
