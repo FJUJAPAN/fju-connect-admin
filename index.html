@@ -72,7 +72,7 @@ body.printing>#print-area{display:block!important}
 <h3 class="report-section-title">Tendência das últimas semanas</h3><div id="national-trend-chart" class="report-card">Carregando gráfico...</div>
 <h3 class="report-section-title">Comparação entre polos</h3><p class="muted">Total único informado no relatório da semana selecionada.</p><div id="national-polo-chart" class="report-card">Carregando comparação...</div>
 <h3 class="report-section-title">Acompanhamento dos polos</h3>
-<div class="grid"><div><label for="national-status-filter">Situação do envio</label><select id="national-status-filter"><option value="todos">Todos os polos</option><option value="enviado">Somente enviados</option><option value="pendente">Somente pendentes</option></select></div><div><label for="national-polo-filter">Igreja / polo</label><select id="national-polo-filter"><option value="">Todas as igrejas</option></select></div></div>
+<div class="grid"><div><label for="national-status-filter">Situação do envio</label><select id="national-status-filter"><option value="todos">Todos os polos</option><option value="enviado">Somente enviados</option><option value="pendente">Somente pendentes</option><option value="prazo">Enviados no prazo</option><option value="atrasado">Enviados com atraso</option><option value="indefinido">Enviados sem horário registrado</option></select></div><div><label for="national-polo-filter">Igreja / polo</label><select id="national-polo-filter"><option value="">Todas as igrejas</option></select></div></div>
 <p id="national-filter-count" class="muted"></p><div id="national-report-list" class="report-list">Carregando acompanhamento...</div>
 </div></section>
 <section id="jovens" class="panel hidden">
@@ -151,6 +151,14 @@ function localISODate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padSta
 function previousSundayISO(){
   const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-d.getDay());return localISODate(d);
 }
+function reportDeadlineStatus(r,week){
+  if(!r)return 'pendente';
+  const raw=r.criado_em||r.created_at||r.data_envio||r.enviado_em;
+  if(!raw)return 'indefinido';
+  const t=new Date(raw);if(Number.isNaN(t.getTime()))return 'indefinido';
+  const local=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(t);
+  return local<=week+' 22:00'?'prazo':'atrasado';
+}
 async function loadNationalReportOverview(){
   if(currentProfile?.papel!=='nacional')return;
   el('national-report-panel').classList.remove('hidden');
@@ -159,7 +167,7 @@ async function loadNationalReportOverview(){
   const list=el('national-report-list');list.textContent='Consultando polos e relatórios...';
   const [{data:polos,error:poloError},{data:reports,error:reportError}]=await Promise.all([
     supabase.from('fju_polos').select('id,nome').order('nome'),
-    supabase.from('fju_relatorios_semanais').select('id,polo_id,semana_domingo,jovens_firmes,jovens_novos,jovens_afastados,presenca_domingo_930,presenca_encontro_fju,batizados_espirito_santo,batizados_aguas,total_jovens_unicos').order('semana_domingo',{ascending:false}).limit(1000)
+    supabase.from('fju_relatorios_semanais').select('*').order('semana_domingo',{ascending:false}).limit(1000)
   ]);
   if(poloError||reportError){list.textContent='Não foi possível consultar o painel: '+(poloError?.message||reportError?.message);return;}
   const poloRows=polos||[], reportRows=reports||[];
@@ -222,10 +230,10 @@ async function loadNationalReportOverview(){
   if(!poloRows.length){list.textContent='Nenhum polo disponível para esta conta.';return;}
   for(const polo of poloRows){
     const r=byPolo.get(polo.id);
-    const row=document.createElement('article');row.className='report-card';row.dataset.polo=String(polo.id);row.dataset.status=r?'enviado':'pendente';
+    const row=document.createElement('article');row.className='report-card';row.dataset.polo=String(polo.id);row.dataset.status=reportDeadlineStatus(r,dateInput.value);
     const head=document.createElement('div');head.className='report-card-head';
     const title=document.createElement('div');title.className='report-card-title';title.textContent=polo.nome;
-    const badge=document.createElement('span');badge.className='report-badge';badge.textContent=r?'✓ Relatório enviado':'Pendente';if(!r){badge.style.background='#fff1e7';badge.style.color='#9a3412';}
+    const badge=document.createElement('span');badge.className='report-badge';badge.textContent=r?(row.dataset.status==='prazo'?'✓ Enviado no prazo':row.dataset.status==='atrasado'?'Enviado com atraso':'✓ Enviado · horário não registrado'):'Pendente';if(row.dataset.status==='atrasado'){badge.style.background='#fff1e7';badge.style.color='#9a3412';}if(!r){badge.style.background='#fff1e7';badge.style.color='#9a3412';}
     head.append(title,badge);row.append(head);const printBtn=document.createElement('button');printBtn.type='button';printBtn.className='secondary';printBtn.textContent='Imprimir ficha A4';printBtn.style.marginBottom='12px';printBtn.addEventListener('click',()=>void printWeeklyReport(polo.id));row.append(printBtn);
     if(r){
       const metrics=document.createElement('div');metrics.className='report-metrics';
@@ -240,7 +248,7 @@ function applyNationalFilters(){
   const status=el('national-status-filter').value,polo=el('national-polo-filter').value;
   let count=0;
   for(const row of el('national-report-list').querySelectorAll('article[data-polo]')){
-    const show=(status==='todos'||row.dataset.status===status)&&(!polo||row.dataset.polo===polo);
+    const show=(status==='todos'||(status==='enviado'&&row.dataset.status!=='pendente')||row.dataset.status===status)&&(!polo||row.dataset.polo===polo);
     row.hidden=!show;row.style.display=show?'':'none';if(show)count++;
   }
   el('national-filter-count').textContent=count+' polo(s) exibido(s)';
