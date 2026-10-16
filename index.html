@@ -17,7 +17,7 @@
 <section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Polos</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><div class="stat">Relatórios recebidos<b id="report-count">—</b></div><div class="stat">Relatórios pendentes<b>—</b></div></div><p id="dashboard-note" class="muted">Os indicadores são consultados com as permissões da conta autenticada. Pendências serão ativadas após definirmos o período dos relatórios.</p></section>
 <section id="jovens" class="panel hidden">
 <h2>Fichas dos jovens — teste funcional</h2>
-<p class="muted">Use somente dados fictícios até a validação completa das permissões. Fotos serão ativadas após configurar armazenamento privado.</p>
+<p class="muted">Use somente dados fictícios até a validação completa das permissões. A seleção de foto mostra somente uma prévia; o envio ao armazenamento privado ainda não está ativado.</p>
 <form id="youth-form">
 <input id="youth-id" type="hidden">
 <div class="grid">
@@ -27,8 +27,8 @@
 <div><label for="youth-phone">Telefone</label><input id="youth-phone" maxlength="50"></div>
 <div><label for="youth-country">Nacionalidade (ISO 2, ex.: BR, JP)</label><input id="youth-country" maxlength="2"></div>
 <div><label for="youth-languages">Idiomas (separados por vírgula)</label><input id="youth-languages" placeholder="Português, Japonês"></div>
-<div><label for="youth-rank">Patente</label><select id="youth-rank"><option value="">Não informada</option><option>Inconstante</option><option>Firme</option><option>CPO</option><option>Colaborador</option><option>Obreiro</option><option>Coordenador</option></select></div>
-<div><label for="youth-category">Categoria</label><select id="youth-category"><option value="">Não informada</option><option>Inconstante</option><option>Firme</option><option>CPO</option><option>Colaborador</option><option>Obreiro</option><option>Coordenador</option></select></div>
+<div><label for="youth-rank">Situação do jovem</label><select id="youth-rank" required><option value="">Selecione</option><option>Inconstante</option><option>Firme</option><option>CPO</option><option>Colaborador</option><option>Obreiro</option><option>Coordenador</option></select></div>
+<div><label for="youth-photo">Foto do jovem (prévia; envio privado em preparação)</label><input id="youth-photo" type="file" accept="image/jpeg,image/png,image/webp" capture="environment"><img id="youth-photo-preview" alt="Prévia da foto escolhida" class="hidden" style="width:90px;height:90px;object-fit:cover;border-radius:12px;margin-top:8px"><p class="muted">A foto ainda não será salva. Não use fotos reais nesta fase de teste.</p></div>
 </div>
 <p class="actions"><button type="submit">Salvar ficha de teste</button><button type="button" id="youth-clear" class="secondary">Limpar formulário</button><button type="button" id="youth-refresh" class="secondary">Atualizar lista</button></p>
 </form><p id="youth-message" class="message" role="status"></p>
@@ -85,7 +85,7 @@ async function loadProfile(user){
 }
 
 function youthMessage(text,error=false){message('youth-message',text,error)}
-function resetYouth(){el('youth-form').reset();el('youth-id').value='';if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
+function resetYouth(){el('youth-form').reset();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
 async function initializeYouth(){
   const {data,error}=await supabase.from('fju_polos').select('id,nome').order('nome');
   if(error){youthMessage('Não foi possível carregar polos: '+error.message,true);return;}
@@ -119,7 +119,8 @@ function renderYouth(){
 function editYouth(id){
   const r=youthRows.find(x=>x.id===id);if(!r)return;
   el('youth-id').value=r.id;el('youth-polo').value=r.polo_id;
-  for(const [field,key] of [['youth-name','nome_completo'],['youth-birth','nascimento'],['youth-phone','telefone'],['youth-country','nacionalidade_iso2'],['youth-rank','patente'],['youth-category','categoria']])el(field).value=r[key]||'';
+  for(const [field,key] of [['youth-name','nome_completo'],['youth-birth','nascimento'],['youth-phone','telefone'],['youth-country','nacionalidade_iso2'],['youth-rank','patente']])el(field).value=r[key]||'';
+  el('youth-rank').value=r.patente|| (r.categoria==='firme'?'Firme':'Inconstante');
   el('youth-languages').value=(r.idiomas||[]).join(', ');
   youthMessage('Editando ficha de teste: '+r.nome_completo);el('youth-form').scrollIntoView({behavior:'smooth'});
 }
@@ -133,9 +134,10 @@ el('youth-form').addEventListener('submit',async e=>{
     telefone:el('youth-phone').value.trim()||null,
     nacionalidade_iso2:el('youth-country').value.trim().toUpperCase()||null,
     idiomas:el('youth-languages').value.split(',').map(x=>x.trim()).filter(Boolean),
-    patente:el('youth-rank').value||null,
-    categoria:el('youth-category').value||null
+    patente:el('youth-rank').value,
+    categoria:el('youth-rank').value==='Inconstante'?'inconstante':'firme'
   };
+  if(!payload.patente){youthMessage('Selecione a situação do jovem.',true);return;}
   if(!payload.nome_completo){youthMessage('Informe um nome fictício.',true);return;}
   youthMessage('Salvando...');
   const id=el('youth-id').value;
@@ -143,6 +145,7 @@ el('youth-form').addEventListener('submit',async e=>{
   if(error){youthMessage('Não foi possível salvar: '+error.message,true);return;}
   resetYouth();await loadYouth();youthMessage('Ficha de teste salva com sucesso.');void loadDashboard(currentProfile,profileRequest);
 });
+el('youth-photo').addEventListener('change',e=>{const file=e.target.files?.[0];const preview=el('youth-photo-preview');if(!file){preview.classList.add('hidden');return;}if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){youthMessage('Escolha uma imagem JPG, PNG ou WebP de até 5 MB.',true);e.target.value='';return;}const reader=new FileReader();reader.onload=()=>{preview.src=reader.result;preview.classList.remove('hidden')};reader.readAsDataURL(file);});
 el('youth-clear').onclick=resetYouth;
 el('youth-refresh').onclick=loadYouth;
 el('youth-search').addEventListener('input',renderYouth);
