@@ -32,6 +32,25 @@
 .polo-rank-fill{height:100%;background:#536fbd;border-radius:99px}
 .polo-rank-value{text-align:right;font-weight:750;color:#253b75}
 @media(max-width:520px){.polo-rank-row{grid-template-columns:92px 1fr 38px;gap:7px}.polo-rank-name{font-size:11px}}
+#print-area{display:none}
+body.printing>header,body.printing>main,body.printing>footer{display:none!important}
+body.printing>#print-area{display:block!important}
+.print-report{font-family:Arial,Helvetica,sans-serif;color:#18233b;background:white;padding:0}
+.print-report h1{font-size:22px;margin:0 0 5px}
+.print-report h2{font-size:16px;margin:20px 0 8px}
+.print-report .print-meta{font-size:11px;color:#526079;margin-bottom:18px}
+.print-report .print-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.print-report .print-kpi{border:1px solid #d7deea;border-radius:7px;padding:9px}
+.print-report .print-kpi span{display:block;font-size:10px;color:#526079}
+.print-report .print-kpi b{font-size:18px;display:block;margin-top:4px}
+.print-report table{width:100%;border-collapse:collapse;font-size:10px}
+.print-report th,.print-report td{border:1px solid #cbd3e1;padding:6px;text-align:left}
+.print-report th{background:#eef2f8}
+.print-report .print-status{font-weight:bold}
+.print-report .print-footer{margin-top:18px;padding-top:8px;border-top:1px solid #d7deea;font-size:9px;color:#526079}
+@page{size:A4 portrait;margin:12mm}
+@media print{body{background:#fff!important}.print-report{display:block!important}.print-report .print-kpis{grid-template-columns:repeat(3,1fr)}.print-report tr{break-inside:avoid}.print-report h1,.print-report h2{break-after:avoid}}
+
 
 @media(max-width:520px){.report-card{padding:13px}.report-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.report-card-title{font-size:16px}}
 
@@ -47,7 +66,7 @@
 <section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Polos</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><div class="stat">Relatórios recebidos<b id="report-count">—</b></div><div class="stat">Relatórios pendentes<b id="pending-count">—</b></div></div><p id="dashboard-note" class="muted">Indicadores consultados conforme as permissões da conta autenticada.</p><div id="national-report-panel" class="hidden">
 <h3>Painel nacional de resultados</h3>
 <p class="muted">Indicadores calculados a partir dos relatórios semanais registrados pelos polos.</p>
-<div class="grid"><div><label for="national-report-date">Domingo do relatório</label><input id="national-report-date" type="date"></div><div style="align-self:end"><button type="button" id="national-report-refresh">Atualizar painel</button></div></div>
+<div class="grid"><div><label for="national-report-date">Domingo do relatório</label><input id="national-report-date" type="date"></div><div class="actions" style="align-self:end"><button type="button" id="national-report-refresh">Atualizar painel</button><button type="button" id="print-national-report" class="secondary">Imprimir relatório nacional A4</button></div></div>
 <div id="national-report-summary" class="grid"></div>
 <h3 class="report-section-title">Tendência das últimas semanas</h3><div id="national-trend-chart" class="report-card">Carregando gráfico...</div>
 <h3 class="report-section-title">Comparação entre polos</h3><p class="muted">Total único informado no relatório da semana selecionada.</p><div id="national-polo-chart" class="report-card">Carregando comparação...</div>
@@ -109,7 +128,7 @@
 <h3>Eventos registrados</h3><div id="special-event-list" class="stat">Carregando eventos...</div>
 </div></section>
 <section id="config" class="panel hidden"><h2>Configuração</h2><p id="role-detail"></p><p class="muted">As regras de acesso efetivas são aplicadas no banco pelo RLS. A interface não substitui essas políticas.</p></section></div>
-</main><footer>FJU Connect JAPAN · Teste de autenticação</footer>
+</main><div id="print-area" class="hidden"></div><footer>FJU Connect JAPAN · Teste de autenticação</footer>
 <script type="module">
 import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 const SUPABASE_URL='https://hmacroktklgwkofxsygv.supabase.co';
@@ -196,7 +215,7 @@ async function loadNationalReportOverview(){
     const head=document.createElement('div');head.className='report-card-head';
     const title=document.createElement('div');title.className='report-card-title';title.textContent=polo.nome;
     const badge=document.createElement('span');badge.className='report-badge';badge.textContent=r?'✓ Relatório enviado':'Pendente';if(!r){badge.style.background='#fff1e7';badge.style.color='#9a3412';}
-    head.append(title,badge);row.append(head);
+    head.append(title,badge);row.append(head);const printBtn=document.createElement('button');printBtn.type='button';printBtn.className='secondary';printBtn.textContent='Imprimir ficha A4';printBtn.style.marginBottom='12px';printBtn.addEventListener('click',()=>void printWeeklyReport(polo.id));row.append(printBtn);
     if(r){
       const metrics=document.createElement('div');metrics.className='report-metrics';
       const addMetric=(label,value)=>{const m=document.createElement('div');m.className='report-metric';const l=document.createElement('span');l.textContent=label;const v=document.createElement('b');v.textContent=String(Number(value)||0);m.append(l,v);metrics.append(m);};
@@ -205,6 +224,50 @@ async function loadNationalReportOverview(){
     list.append(row);
   }
 }
+async function printWeeklyReport(poloId=null){
+  const date=el('national-report-date').value||previousSundayISO();
+  const area=el('print-area');area.replaceChildren();
+  const [{data:polos,error:poloError},{data:reports,error:reportError}]=await Promise.all([
+    supabase.from('fju_polos').select('id,nome').order('nome'),
+    supabase.from('fju_relatorios_semanais').select('polo_id,semana_domingo,jovens_firmes,jovens_novos,jovens_afastados,presenca_domingo_930,presenca_encontro_fju,batizados_espirito_santo,batizados_aguas,total_jovens_unicos').eq('semana_domingo',date)
+  ]);
+  if(poloError||reportError){alert('Não foi possível preparar a impressão: '+(poloError?.message||reportError?.message));return;}
+  let selectedPolos=(polos||[]);if(poloId)selectedPolos=selectedPolos.filter(p=>p.id===poloId);
+  const byPolo=new Map((reports||[]).map(r=>[r.polo_id,r]));
+  const wrap=document.createElement('article');wrap.className='print-report';
+  const heading=document.createElement('h1');heading.textContent=poloId?'FJU CONNECT JAPAN — RELATÓRIO SEMANAL':'FJU CONNECT JAPAN — RELATÓRIO NACIONAL';
+  const meta=document.createElement('div');meta.className='print-meta';meta.textContent='Semana referente ao domingo: '+date+' · Gerado em '+new Date().toLocaleDateString('ja-JP');
+  wrap.append(heading,meta);
+  if(poloId){
+    const p=selectedPolos[0];const r=p?byPolo.get(p.id):null;
+    const name=document.createElement('h2');name.textContent=p?.nome||'Polo';wrap.append(name);
+    if(!r){const note=document.createElement('p');note.textContent='Este polo ainda não enviou o relatório referente a esta semana.';wrap.append(note);}
+    else{
+      const metrics=document.createElement('div');metrics.className='print-kpis';
+      for(const [label,key] of [['Total único','total_jovens_unicos'],['Jovens firmes','jovens_firmes'],['Jovens novos','jovens_novos'],['Jovens afastados','jovens_afastados'],['Presença domingo 9h30','presenca_domingo_930'],['Presença Encontro FJU','presenca_encontro_fju'],['Batizados com o Espírito Santo','batizados_espirito_santo'],['Batizados nas águas','batizados_aguas']]){
+        const box=document.createElement('div');box.className='print-kpi';const l=document.createElement('span');l.textContent=label;const v=document.createElement('b');v.textContent=String(Number(r[key])||0);box.append(l,v);metrics.append(box);
+      }wrap.append(metrics);
+    }
+  }else{
+    const current=(reports||[]).filter(r=>r.semana_domingo===date);
+    const sum=key=>current.reduce((n,r)=>n+(Number(r[key])||0),0);
+    const metrics=document.createElement('div');metrics.className='print-kpis';
+    for(const [label,value] of [['Polos',selectedPolos.length],['Relatórios enviados',selectedPolos.filter(p=>byPolo.has(p.id)).length],['Pendentes',selectedPolos.filter(p=>!byPolo.has(p.id)).length],['Total único informado',sum('total_jovens_unicos')],['Jovens novos',sum('jovens_novos')],['Batizados com o Espírito Santo',sum('batizados_espirito_santo')],['Batizados nas águas',sum('batizados_aguas')]]){
+      const box=document.createElement('div');box.className='print-kpi';const l=document.createElement('span');l.textContent=label;const v=document.createElement('b');v.textContent=String(value);box.append(l,v);metrics.append(box);
+    }wrap.append(metrics);
+    const table=document.createElement('table');const thead=document.createElement('thead');const trh=document.createElement('tr');
+    for(const label of ['Polo','Status','Total único','Firmes','Novos','Afastados','Domingo 9h30','Encontro','Bat. E.S.','Bat. águas']){const th=document.createElement('th');th.textContent=label;trh.append(th);}thead.append(trh);table.append(thead);
+    const tbody=document.createElement('tbody');
+    for(const p of selectedPolos){const r=byPolo.get(p.id);const tr=document.createElement('tr');const vals=[p.nome,r?'Enviado':'Pendente',r?.total_jovens_unicos??'—',r?.jovens_firmes??'—',r?.jovens_novos??'—',r?.jovens_afastados??'—',r?.presenca_domingo_930??'—',r?.presenca_encontro_fju??'—',r?.batizados_espirito_santo??'—',r?.batizados_aguas??'—'];for(const val of vals){const td=document.createElement('td');td.textContent=String(val);tr.append(td);}tbody.append(tr);}table.append(tbody);wrap.append(table);
+  }
+  const footer=document.createElement('div');footer.className='print-footer';footer.textContent='FJU JAPAN · Documento interno para acompanhamento dos polos.';wrap.append(footer);
+  area.append(wrap);document.body.classList.add('printing');
+  const cleanup=()=>{document.body.classList.remove('printing');area.replaceChildren();window.removeEventListener('afterprint',cleanup);};
+  window.addEventListener('afterprint',cleanup);
+  window.print();
+  setTimeout(cleanup,1500);
+}
+el('print-national-report').addEventListener('click',()=>void printWeeklyReport());
 el('national-report-refresh').addEventListener('click',()=>void loadNationalReportOverview());
 async function loadDashboard(profile,requestId){
   const local=profile.papel==='coordenador';
