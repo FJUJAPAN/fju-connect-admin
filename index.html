@@ -12,10 +12,29 @@
 <main class="wrap">
 <section id="auth" class="panel auth"><h2>Entrar</h2><form id="login-form"><label for="email">E-mail</label><input id="email" type="email" autocomplete="username" required><label for="password">Senha</label><input id="password" type="password" autocomplete="current-password" required><p><button type="submit">Entrar</button></p></form><button class="secondary" id="forgot">Enviar recuperação de senha</button><p id="auth-message" class="message" role="status" aria-live="polite"></p></section>
 <section id="recovery" class="panel auth hidden"><h2>Definir nova senha</h2><form id="recovery-form"><label for="new-password">Nova senha (mínimo de 8 caracteres)</label><input id="new-password" type="password" minlength="8" autocomplete="new-password" required><label for="confirm-password">Confirmar nova senha</label><input id="confirm-password" type="password" minlength="8" autocomplete="new-password" required><p><button type="submit">Salvar nova senha</button></p></form><p id="recovery-message" class="message" role="status" aria-live="polite"></p></section>
-<div id="app" class="hidden"><div class="topline"><p id="identity" class="muted"></p><button id="logout" class="secondary">Sair</button></div><div class="notice"><strong>Versão de teste.</strong> Login e perfil conectados ao Supabase. Cadastro de jovens, fotos, relatórios e impressão permanecem desativados até conferirmos as permissões e a estrutura completa das tabelas. Não insira dados reais nesta etapa.</div>
+<div id="app" class="hidden"><div class="topline"><p id="identity" class="muted"></p><button id="logout" class="secondary">Sair</button></div><div class="notice"><strong>Versão de teste.</strong> Login e perfil conectados ao Supabase. Cadastro e edição de fichas de teste ativados. Não insira dados reais; fotos, relatórios e impressão continuam desativados.</div>
 <nav class="tabs"><button class="active" data-tab="inicio">Visão geral</button><button data-tab="jovens">Fichas</button><button data-tab="relatorios">Relatório semanal</button><button data-tab="config">Configuração</button></nav>
 <section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Polos</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><div class="stat">Relatórios recebidos<b id="report-count">—</b></div><div class="stat">Relatórios pendentes<b>—</b></div></div><p id="dashboard-note" class="muted">Os indicadores são consultados com as permissões da conta autenticada. Pendências serão ativadas após definirmos o período dos relatórios.</p></section>
-<section id="jovens" class="panel hidden"><h2>Fichas dos jovens</h2><p class="muted">Prévia — formulário não salva dados nesta versão.</p><div class="grid"><div><label>Nome</label><input placeholder="Nome do jovem" disabled></div><div><label>Polo</label><input placeholder="Polo de origem" disabled></div><div><label>Nacionalidade</label><input placeholder="País" disabled></div><div><label>Idiomas</label><input placeholder="Português, japonês..." disabled></div><div><label>Etapa</label><select disabled><option>Inconstante</option><option>Firme</option><option>CPO</option><option>Colaborador</option><option>Obreiro</option><option>Coordenador</option></select></div><div><label>Foto</label><input type="file" accept="image/*" disabled></div></div><p class="muted">Impressão A4 com aproximadamente 20 fichas por página será adicionada depois.</p></section>
+<section id="jovens" class="panel hidden">
+<h2>Fichas dos jovens — teste funcional</h2>
+<p class="muted">Use somente dados fictícios até a validação completa das permissões. Fotos serão ativadas após configurar armazenamento privado.</p>
+<form id="youth-form">
+<input id="youth-id" type="hidden">
+<div class="grid">
+<div><label for="youth-polo">Polo</label><select id="youth-polo" required></select></div>
+<div><label for="youth-name">Nome completo</label><input id="youth-name" required maxlength="180"></div>
+<div><label for="youth-birth">Nascimento</label><input id="youth-birth" type="date"></div>
+<div><label for="youth-phone">Telefone</label><input id="youth-phone" maxlength="50"></div>
+<div><label for="youth-country">Nacionalidade (ISO 2, ex.: BR, JP)</label><input id="youth-country" maxlength="2"></div>
+<div><label for="youth-languages">Idiomas (separados por vírgula)</label><input id="youth-languages" placeholder="Português, Japonês"></div>
+<div><label for="youth-rank">Patente</label><select id="youth-rank"><option value="">Não informada</option><option>Inconstante</option><option>Firme</option><option>CPO</option><option>Colaborador</option><option>Obreiro</option><option>Coordenador</option></select></div>
+<div><label for="youth-category">Categoria</label><select id="youth-category"><option value="">Não informada</option><option>Inconstante</option><option>Firme</option><option>CPO</option><option>Colaborador</option><option>Obreiro</option><option>Coordenador</option></select></div>
+</div>
+<p class="actions"><button type="submit">Salvar ficha de teste</button><button type="button" id="youth-clear" class="secondary">Limpar formulário</button><button type="button" id="youth-refresh" class="secondary">Atualizar lista</button></p>
+</form><p id="youth-message" class="message" role="status"></p>
+<label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite parte do nome">
+<div id="youth-list" style="margin-top:12px"></div>
+</section>
 <section id="relatorios" class="panel hidden"><h2>Relatório semanal</h2><p class="muted">Domingo: lembrete às 17h30, prazo às 22h. Envio posterior marcado como atrasado (ainda não automatizado).</p><div class="grid"><div><label>Jovens firmes durante a semana</label><input type="number" placeholder="0" disabled></div><div><label>Jovens novos durante a semana</label><input type="number" placeholder="0" disabled></div><div><label>Jovens afastados durante a semana</label><input type="number" placeholder="0" disabled></div><div><label>Domingo 9h30</label><input type="number" placeholder="0" disabled></div><div><label>Encontro FJU</label><input type="number" placeholder="0" disabled></div><div><label>Total único da semana (sem repetir)</label><input type="number" placeholder="0" disabled></div></div></section>
 <section id="config" class="panel hidden"><h2>Configuração</h2><p id="role-detail"></p><p class="muted">As regras de acesso efetivas são aplicadas no banco pelo RLS. A interface não substitui essas políticas.</p></section></div>
 </main><footer>FJU Connect JAPAN · Teste de autenticação</footer>
@@ -28,7 +47,7 @@ const el=id=>document.getElementById(id);
 const show=(id)=>{for(const s of ['auth','recovery','app'])el(s).classList.toggle('hidden',s!==id)};
 const message=(id,msg,error=false)=>{el(id).textContent=msg;el(id).className='message '+(error?'error':'success')};
 let recoveryMode=false;
-let profileRequest=0;
+let profileRequest=0; let currentProfile=null; let youthRows=[];
 async function countRows(table){const {count,error}=await supabase.from(table).select('*',{count:'exact',head:true});if(error)throw error;return count??0;}
 async function loadDashboard(profile,requestId){
   const local=profile.papel==='coordenador';
@@ -59,9 +78,75 @@ async function loadProfile(user){
   el('identity').textContent=`Conectado: ${user.email} · ${role}${poloNome?' · FJU '+poloNome:''}`;
   el('role-detail').textContent=data.papel==='nacional'?'Perfil: Administrador Nacional — visão de todos os polos autorizados.':`Perfil: Coordenador Local — FJU ${poloNome}.`;
   el('dashboard-note').textContent=`${data.papel==='nacional'?'Visão nacional':'Visão do polo FJU '+poloNome}. Contagens fornecidas pelo Supabase com as políticas RLS da conta autenticada. Relatórios pendentes ainda não calculados.`;
+  currentProfile=data;
   show('app');
+  void initializeYouth();
   void loadDashboard(data,requestId);
 }
+
+function youthMessage(text,error=false){message('youth-message',text,error)}
+function resetYouth(){el('youth-form').reset();el('youth-id').value='';if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
+async function initializeYouth(){
+  const {data,error}=await supabase.from('fju_polos').select('id,nome').order('nome');
+  if(error){youthMessage('Não foi possível carregar polos: '+error.message,true);return;}
+  const allowed=currentProfile.papel==='coordenador'?(data||[]).filter(x=>x.id===currentProfile.polo_id):(data||[]);
+  el('youth-polo').replaceChildren();
+  for(const polo of allowed){const opt=document.createElement('option');opt.value=polo.id;opt.textContent=polo.nome;el('youth-polo').append(opt);}
+  resetYouth();await loadYouth();
+}
+async function loadYouth(){
+  if(!currentProfile)return;
+  youthMessage('Consultando fichas de teste...');
+  let q=supabase.from('fju_jovens').select('id,polo_id,nome_completo,nascimento,telefone,nacionalidade_iso2,idiomas,patente,categoria,excluido_em').is('excluido_em',null).order('nome_completo').limit(200);
+  if(currentProfile.papel==='coordenador')q=q.eq('polo_id',currentProfile.polo_id);
+  const {data,error}=await q;
+  if(error){youthMessage('Erro na consulta: '+error.message,true);return;}
+  youthRows=data||[];renderYouth();youthMessage(`${youthRows.length} ficha(s) carregada(s). Limite da lista: 200.`);
+}
+function renderYouth(){
+  const term=el('youth-search').value.trim().toLocaleLowerCase();
+  const list=el('youth-list');list.replaceChildren();
+  const rows=youthRows.filter(r=>(r.nome_completo||'').toLocaleLowerCase().includes(term));
+  if(!rows.length){list.textContent='Nenhuma ficha encontrada.';return;}
+  for(const r of rows){
+    const div=document.createElement('div');div.className='stat';div.style.marginBottom='8px';
+    const name=document.createElement('strong');name.textContent=r.nome_completo||'(sem nome)';
+    const detail=document.createElement('p');detail.className='muted';detail.textContent=`${r.patente||r.categoria||'Sem patente'} · ${r.nacionalidade_iso2||'—'}`;
+    const edit=document.createElement('button');edit.type='button';edit.className='secondary';edit.textContent='Editar';edit.onclick=()=>editYouth(r.id);
+    div.append(name,detail,edit);list.append(div);
+  }
+}
+function editYouth(id){
+  const r=youthRows.find(x=>x.id===id);if(!r)return;
+  el('youth-id').value=r.id;el('youth-polo').value=r.polo_id;
+  for(const [field,key] of [['youth-name','nome_completo'],['youth-birth','nascimento'],['youth-phone','telefone'],['youth-country','nacionalidade_iso2'],['youth-rank','patente'],['youth-category','categoria']])el(field).value=r[key]||'';
+  el('youth-languages').value=(r.idiomas||[]).join(', ');
+  youthMessage('Editando ficha de teste: '+r.nome_completo);el('youth-form').scrollIntoView({behavior:'smooth'});
+}
+el('youth-form').addEventListener('submit',async e=>{
+  e.preventDefault();if(!currentProfile)return;
+  const polo_id=el('youth-polo').value;
+  if(currentProfile.papel==='coordenador'&&polo_id!==currentProfile.polo_id){youthMessage('Polo não autorizado.',true);return;}
+  const payload={
+    polo_id,nome_completo:el('youth-name').value.trim(),
+    nascimento:el('youth-birth').value||null,
+    telefone:el('youth-phone').value.trim()||null,
+    nacionalidade_iso2:el('youth-country').value.trim().toUpperCase()||null,
+    idiomas:el('youth-languages').value.split(',').map(x=>x.trim()).filter(Boolean),
+    patente:el('youth-rank').value||null,
+    categoria:el('youth-category').value||null
+  };
+  if(!payload.nome_completo){youthMessage('Informe um nome fictício.',true);return;}
+  youthMessage('Salvando...');
+  const id=el('youth-id').value;
+  const {error}=id?await supabase.from('fju_jovens').update(payload).eq('id',id):await supabase.from('fju_jovens').insert(payload);
+  if(error){youthMessage('Não foi possível salvar: '+error.message,true);return;}
+  resetYouth();await loadYouth();youthMessage('Ficha de teste salva com sucesso.');void loadDashboard(currentProfile,profileRequest);
+});
+el('youth-clear').onclick=resetYouth;
+el('youth-refresh').onclick=loadYouth;
+el('youth-search').addEventListener('input',renderYouth);
+
 async function refresh(){if(recoveryMode){show('recovery');return}const {data:{user},error}=await supabase.auth.getUser();if(error||!user){show('auth');return}try{await loadProfile(user)}catch(e){show('auth');message('auth-message',e.message,true)}}
 el('login-form').addEventListener('submit',async e=>{e.preventDefault();message('auth-message','Entrando...');const {error}=await supabase.auth.signInWithPassword({email:el('email').value.trim(),password:el('password').value});if(error){message('auth-message','Não foi possível entrar: '+error.message,true);return}await refresh()});
 el('forgot').addEventListener('click',async()=>{const email=el('email').value.trim();if(!email){message('auth-message','Digite seu e-mail acima para receber a recuperação.',true);return}const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});message('auth-message',error?'Não foi possível solicitar a recuperação: '+error.message:'Se a conta estiver cadastrada, enviaremos instruções ao e-mail.',!!error)});
