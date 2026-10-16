@@ -35,7 +35,34 @@
 <label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite parte do nome">
 <div id="youth-list" style="margin-top:12px"></div><div id="youth-detail" class="panel hidden" style="margin-top:16px;border:1px solid #dce3ef"></div>
 </section>
-<section id="relatorios" class="panel hidden"><h2>Relatório semanal</h2><p class="muted">Domingo: lembrete às 17h30, prazo às 22h. Envio posterior marcado como atrasado (ainda não automatizado).</p><div class="grid"><div><label>Jovens firmes durante a semana</label><input type="number" placeholder="0" disabled></div><div><label>Jovens novos durante a semana</label><input type="number" placeholder="0" disabled></div><div><label>Jovens afastados durante a semana</label><input type="number" placeholder="0" disabled></div><div><label>Domingo 9h30</label><input type="number" placeholder="0" disabled></div><div><label>Encontro FJU</label><input type="number" placeholder="0" disabled></div><div><label>Total único da semana (sem repetir)</label><input type="number" placeholder="0" disabled></div></div></section>
+<section id="relatorios" class="panel hidden">
+<h2>Relatórios</h2>
+<div class="tabs" style="margin-bottom:16px"><button type="button" class="active" data-report-tab="semanal">Relatório semanal</button><button type="button" data-report-tab="especial">Evento especial</button></div>
+<div id="report-weekly">
+<p class="muted">Domingo: lembrete às 17h30, prazo às 22h. Envio e lembretes ainda precisam ser ativados.</p>
+<div class="grid">
+<div><label>Jovens firmes durante a semana</label><input type="number" min="0" placeholder="0" disabled></div>
+<div><label>Jovens novos durante a semana</label><input type="number" min="0" placeholder="0" disabled></div>
+<div><label>Jovens afastados durante a semana</label><input type="number" min="0" placeholder="0" disabled></div>
+<div><label>Presença domingo 9h30</label><input type="number" min="0" placeholder="0" disabled></div>
+<div><label>Presença no Encontro FJU</label><input type="number" min="0" placeholder="0" disabled></div>
+<div><label>Batizados com o Espírito Santo nesta semana</label><input type="number" min="0" placeholder="0" disabled></div>
+<div><label>Batizados nas águas nesta semana</label><input type="number" min="0" placeholder="0" disabled></div>
+<div><label>Total único da semana (sem repetir)</label><input type="number" min="0" placeholder="0" disabled></div>
+</div></div>
+<div id="report-special" class="hidden">
+<p>Registre o movimento especial realizado pelo polo e o total de jovens que participaram.</p>
+<form id="special-event-form">
+<div class="grid">
+<div><label for="special-event-name">Nome do evento / movimento</label><input id="special-event-name" maxlength="180" placeholder="Ex.: Evangelização especial" required></div>
+<div><label for="special-event-date">Data do evento</label><input id="special-event-date" type="date" required></div>
+<div><label for="special-event-total">Total de jovens no evento</label><input id="special-event-total" type="number" min="0" step="1" placeholder="0" required></div>
+</div>
+<p><button type="submit">Salvar evento especial</button></p>
+<p id="special-event-message" class="message" role="status" aria-live="polite"></p>
+</form>
+<h3>Eventos registrados</h3><div id="special-event-list" class="stat">Carregando eventos...</div>
+</div></section>
 <section id="config" class="panel hidden"><h2>Configuração</h2><p id="role-detail"></p><p class="muted">As regras de acesso efetivas são aplicadas no banco pelo RLS. A interface não substitui essas políticas.</p></section></div>
 </main><footer>FJU Connect JAPAN · Teste de autenticação</footer>
 <script type="module">
@@ -222,6 +249,42 @@ el('youth-photo').addEventListener('change',e=>{const file=e.target.files?.[0];c
 el('youth-clear').onclick=resetYouth;
 el('youth-refresh').onclick=loadYouth;
 el('youth-search').addEventListener('input',renderYouth);
+
+document.querySelectorAll('[data-report-tab]').forEach(btn=>btn.addEventListener('click',()=>{
+  document.querySelectorAll('[data-report-tab]').forEach(b=>b.classList.toggle('active',b===btn));
+  el('report-weekly').classList.toggle('hidden',btn.dataset.reportTab!=='semanal');
+  el('report-special').classList.toggle('hidden',btn.dataset.reportTab!=='especial');
+  if(btn.dataset.reportTab==='especial')void loadSpecialEvents();
+}));
+async function loadSpecialEvents(){
+  const list=el('special-event-list');list.textContent='Carregando eventos...';
+  let q=supabase.from('fju_eventos_especiais').select('id,nome_evento,data_evento,total_jovens,created_at').order('data_evento',{ascending:false}).limit(50);
+  if(currentProfile?.papel==='coordenador')q=q.eq('polo_id',currentProfile.polo_id);
+  const {data,error}=await q;
+  if(error){list.textContent='Não foi possível carregar eventos: '+error.message;return;}
+  list.replaceChildren();
+  if(!data?.length){list.textContent='Nenhum evento especial registrado ainda.';return;}
+  for(const ev of data){
+    const row=document.createElement('p');
+    row.textContent=new Date(ev.data_evento+'T12:00:00').toLocaleDateString('ja-JP')+' — '+ev.nome_evento+' — '+ev.total_jovens+' jovens';
+    list.append(row);
+  }
+}
+el('special-event-form').addEventListener('submit',async e=>{
+  e.preventDefault();if(!currentProfile)return;
+  const name=el('special-event-name').value.trim();
+  const date=el('special-event-date').value;
+  const total=Number(el('special-event-total').value);
+  if(!name||!date||!Number.isInteger(total)||total<0){message('special-event-message','Preencha o nome, a data e um total válido.',true);return;}
+  message('special-event-message','Salvando evento...');
+  const {error}=await supabase.from('fju_eventos_especiais').insert({
+    polo_id:currentProfile.polo_id||null,
+    nome_evento:name,data_evento:date,total_jovens:total,criado_por:(await supabase.auth.getUser()).data.user?.id||null
+  });
+  if(error){message('special-event-message','Não foi possível salvar: '+error.message,true);return;}
+  el('special-event-form').reset();message('special-event-message','Evento especial salvo com sucesso.');
+  await loadSpecialEvents();
+});
 
 async function refresh(){if(recoveryMode){show('recovery');return}const {data:{user},error}=await supabase.auth.getUser();if(error||!user){show('auth');return}try{await loadProfile(user)}catch(e){show('auth');message('auth-message',e.message,true)}}
 el('login-form').addEventListener('submit',async e=>{e.preventDefault();message('auth-message','Entrando...');const {error}=await supabase.auth.signInWithPassword({email:el('email').value.trim(),password:el('password').value});if(error){message('auth-message','Não foi possível entrar: '+error.message,true);return}await refresh()});
