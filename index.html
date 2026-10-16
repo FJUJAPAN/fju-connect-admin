@@ -120,7 +120,7 @@ function editYouth(id){
   const r=youthRows.find(x=>x.id===id);if(!r)return;
   el('youth-id').value=r.id;el('youth-polo').value=r.polo_id;
   for(const [field,key] of [['youth-name','nome_completo'],['youth-birth','nascimento'],['youth-phone','telefone'],['youth-country','nacionalidade_iso2'],['youth-rank','patente']])el(field).value=r[key]||'';
-  el('youth-rank').value=r.patente|| (r.categoria==='firme'?'Firme':'Inconstante');
+  el('youth-rank').value=r.categoria==='inconstante'?'Inconstante':({'firme':'Firme','cpo':'CPO','colaborador':'Colaborador','obreiro':'Obreiro','coordenador':'Coordenador'}[r.patente]||r.patente||'');
   el('youth-languages').value=(r.idiomas||[]).join(', ');
   youthMessage('Editando ficha de teste: '+r.nome_completo);el('youth-form').scrollIntoView({behavior:'smooth'});
 }
@@ -134,10 +134,10 @@ el('youth-form').addEventListener('submit',async e=>{
     telefone:el('youth-phone').value.trim()||null,
     nacionalidade_iso2:el('youth-country').value.trim().toUpperCase()||null,
     idiomas:el('youth-languages').value.split(',').map(x=>x.trim()).filter(Boolean),
-    patente:el('youth-rank').value,
+    patente:el('youth-rank').value==='Inconstante'?null:el('youth-rank').value.toLowerCase(),
     categoria:el('youth-rank').value==='Inconstante'?'inconstante':'firme'
   };
-  if(!payload.patente){youthMessage('Selecione a patente do jovem.',true);return;}
+  if(!el('youth-rank').value){youthMessage('Selecione a patente do jovem.',true);return;}
   if(!payload.nome_completo){youthMessage('Informe um nome fictício.',true);return;}
   youthMessage('Salvando...');
   const id=el('youth-id').value;
