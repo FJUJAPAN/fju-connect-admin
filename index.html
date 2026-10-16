@@ -121,6 +121,7 @@ body.printing>#print-area{display:block!important}
 <p>Registre o movimento especial realizado pelo polo e o total de jovens que participaram.</p>
 <form id="special-event-form">
 <div class="grid">
+<div id="special-event-polo-wrap"><label for="special-event-polo">Igreja responsável pelo evento</label><select id="special-event-polo" required></select></div>
 <div><label for="special-event-name">Nome do evento / movimento</label><input id="special-event-name" maxlength="180" placeholder="Ex.: Evangelização especial" required></div>
 <div><label for="special-event-date">Data do evento</label><input id="special-event-date" type="date" required></div>
 <div><label for="special-event-total">Total de jovens no evento</label><input id="special-event-total" type="number" min="0" step="1" placeholder="0" required></div>
@@ -501,8 +502,22 @@ document.querySelectorAll('[data-report-tab]').forEach(btn=>btn.addEventListener
   document.querySelectorAll('[data-report-tab]').forEach(b=>b.classList.toggle('active',b===btn));
   el('report-weekly').classList.toggle('hidden',btn.dataset.reportTab!=='semanal');
   el('report-special').classList.toggle('hidden',btn.dataset.reportTab!=='especial');
-  if(btn.dataset.reportTab==='especial')void loadSpecialEvents();
+  if(btn.dataset.reportTab==='especial'){void setupSpecialEventPolo();void loadSpecialEvents();}
 }));
+async function setupSpecialEventPolo(){
+  const select=el('special-event-polo'),wrap=el('special-event-polo-wrap');
+  const national=currentProfile?.papel==='nacional';
+  wrap.classList.toggle('hidden',!national);select.required=national;
+  select.replaceChildren();
+  if(national){
+    const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Selecione a igreja';select.append(placeholder);
+    const {data,error}=await supabase.from('fju_polos').select('id,nome').order('nome');
+    if(error){message('special-event-message','Não foi possível carregar igrejas: '+error.message,true);return;}
+    for(const p of data||[]){const option=document.createElement('option');option.value=String(p.id);option.textContent=p.nome;select.append(option);}
+  }else if(currentProfile?.polo_id){
+    const option=document.createElement('option');option.value=String(currentProfile.polo_id);option.textContent='Minha igreja';select.append(option);
+  }
+}
 async function loadSpecialEvents(){
   const list=el('special-event-list');list.textContent='Carregando eventos...';
   let q=supabase.from('fju_eventos_especiais').select('id,polo_id,nome_evento,data_evento,total_jovens,created_at').order('data_evento',{ascending:false}).limit(100);
@@ -533,9 +548,11 @@ el('special-event-form').addEventListener('submit',async e=>{
   const date=el('special-event-date').value;
   const total=Number(el('special-event-total').value);
   if(!name||!date||!Number.isInteger(total)||total<0){message('special-event-message','Preencha o nome, a data e um total válido.',true);return;}
+  const poloId=currentProfile.papel==='nacional'?el('special-event-polo').value:currentProfile.polo_id;
+  if(!poloId){message('special-event-message','Selecione a igreja responsável pelo evento.',true);return;}
   message('special-event-message','Salvando evento...');
   const {error}=await supabase.from('fju_eventos_especiais').insert({
-    polo_id:currentProfile.polo_id||null,
+    polo_id:poloId,
     nome_evento:name,data_evento:date,total_jovens:total,criado_por:(await supabase.auth.getUser()).data.user?.id||null
   });
   if(error){message('special-event-message','Não foi possível salvar: '+error.message,true);return;}
