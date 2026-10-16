@@ -14,7 +14,7 @@
 <section id="recovery" class="panel auth hidden"><h2>Definir nova senha</h2><form id="recovery-form"><label for="new-password">Nova senha (mínimo de 8 caracteres)</label><input id="new-password" type="password" minlength="8" autocomplete="new-password" required><label for="confirm-password">Confirmar nova senha</label><input id="confirm-password" type="password" minlength="8" autocomplete="new-password" required><p><button type="submit">Salvar nova senha</button></p></form><p id="recovery-message" class="message" role="status" aria-live="polite"></p></section>
 <div id="app" class="hidden"><div class="topline"><p id="identity" class="muted"></p><button id="logout" class="secondary">Sair</button></div><div class="notice"><strong>Versão de teste.</strong> Login e perfil conectados ao Supabase. Cadastro e edição de fichas de teste ativados. Fotos armazenadas em bucket privado (em validação). Não insira dados reais até testar as permissões; relatórios e impressão continuam desativados.</div>
 <nav class="tabs"><button class="active" data-tab="inicio">Visão geral</button><button data-tab="jovens">Fichas</button><button data-tab="relatorios">Relatório semanal</button><button data-tab="config">Configuração</button></nav>
-<section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Polos</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><div class="stat">Relatórios recebidos<b id="report-count">—</b></div><div class="stat">Relatórios pendentes<b>—</b></div></div><p id="dashboard-note" class="muted">Os indicadores são consultados com as permissões da conta autenticada. Pendências serão ativadas após definirmos o período dos relatórios.</p></section>
+<section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Polos</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><div class="stat">Relatórios recebidos<b id="report-count">—</b></div><div class="stat">Relatórios pendentes<b id="pending-count">—</b></div></div><p id="dashboard-note" class="muted">Indicadores consultados conforme as permissões da conta autenticada.</p><div id="national-report-panel" class="hidden"><h3>Acompanhamento nacional dos relatórios</h3><p>Selecione o domingo referente ao relatório para ver quais polos enviaram e quais estão pendentes.</p><div class="grid"><div><label for="national-report-date">Domingo do relatório</label><input id="national-report-date" type="date"></div><div style="align-self:end"><button type="button" id="national-report-refresh">Consultar polos</button></div></div><div id="national-report-summary" class="grid"></div><div id="national-report-list" class="stat">Carregando acompanhamento...</div></div></section>
 <section id="jovens" class="panel hidden">
 <h2>Fichas dos jovens — teste funcional</h2>
 <p class="muted">Use somente dados fictícios até a validação completa das permissões. Fotos de teste podem ser enviadas ao armazenamento privado após salvar a ficha. Ainda não use fotos reais até testar o isolamento entre polos.</p>
@@ -83,6 +83,41 @@ const message=(id,msg,error=false)=>{el(id).textContent=msg;el(id).className='me
 let recoveryMode=false;
 let profileRequest=0; let currentProfile=null; let youthRows=[]; let photoUrl=null;
 async function countRows(table){const {count,error}=await supabase.from(table).select('*',{count:'exact',head:true});if(error)throw error;return count??0;}
+function localISODate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return y+'-'+m+'-'+day;}
+function previousSundayISO(){
+  const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-d.getDay());return localISODate(d);
+}
+async function loadNationalReportOverview(){
+  if(currentProfile?.papel!=='nacional')return;
+  el('national-report-panel').classList.remove('hidden');
+  const dateInput=el('national-report-date');
+  if(!dateInput.value)dateInput.value=previousSundayISO();
+  const list=el('national-report-list');list.textContent='Consultando polos e relatórios...';
+  const [{data:polos,error:poloError},{data:reports,error:reportError}]=await Promise.all([
+    supabase.from('fju_polos').select('id,nome').order('nome'),
+    supabase.from('fju_relatorios_semanais').select('polo_id,semana_domingo,jovens_firmes,jovens_novos,jovens_afastados,presenca_domingo_930,presenca_encontro_fju,batizados_espirito_santo,batizados_aguas,total_jovens_unicos').eq('semana_domingo',dateInput.value)
+  ]);
+  if(poloError||reportError){list.textContent='Não foi possível consultar o acompanhamento: '+(poloError?.message||reportError?.message);return;}
+  const byPolo=new Map((reports||[]).map(r=>[r.polo_id,r]));
+  const submitted=(polos||[]).filter(p=>byPolo.has(p.id)).length;
+  const pending=Math.max(0,(polos||[]).length-submitted);
+  el('pending-count').textContent=String(pending);
+  const summary=el('national-report-summary');summary.replaceChildren();
+  for(const [label,value] of [['Polos',String((polos||[]).length)],['Enviados',String(submitted)],['Pendentes',String(pending)]]){
+    const box=document.createElement('div');box.className='stat';const t=document.createElement('span');t.textContent=label;const b=document.createElement('b');b.textContent=value;box.append(t,b);summary.append(box);
+  }
+  list.replaceChildren();
+  if(!polos?.length){list.textContent='Nenhum polo disponível para esta conta.';return;}
+  for(const polo of polos){
+    const r=byPolo.get(polo.id);
+    const row=document.createElement('div');row.className='stat';row.style.marginBottom='8px';
+    const title=document.createElement('strong');title.textContent=polo.nome+' — '+(r?'Relatório enviado':'Pendente');
+    const detail=document.createElement('p');detail.className='muted';
+    detail.textContent=r?('Firmes: '+r.jovens_firmes+' · Novos: '+r.jovens_novos+' · Afastados: '+r.jovens_afastados+' · Domingo: '+r.presenca_domingo_930+' · Encontro FJU: '+r.presenca_encontro_fju+' · Batizados Espírito Santo: '+r.batizados_espirito_santo+' · Batizados nas águas: '+r.batizados_aguas+' · Total único: '+r.total_jovens_unicos):'Ainda não há relatório registrado para este domingo.';
+    row.append(title,detail);list.append(row);
+  }
+}
+el('national-report-refresh').addEventListener('click',()=>void loadNationalReportOverview());
 async function loadDashboard(profile,requestId){
   const local=profile.papel==='coordenador';
   el('scope-label').textContent=local?'Polo autorizado':'Polos cadastrados';
@@ -113,6 +148,7 @@ async function loadProfile(user){
   el('role-detail').textContent=data.papel==='nacional'?'Perfil: Administrador Nacional — visão de todos os polos autorizados.':`Perfil: Coordenador Local — FJU ${poloNome}.`;
   el('dashboard-note').textContent=`${data.papel==='nacional'?'Visão nacional':'Visão do polo FJU '+poloNome}. Contagens fornecidas pelo Supabase com as políticas RLS da conta autenticada. Relatórios pendentes ainda não calculados.`;
   currentProfile=data;
+  if(data.papel==='nacional')void loadNationalReportOverview();else el('national-report-panel').classList.add('hidden');
   show('app');
   void initializeYouth();
   void loadDashboard(data,requestId);
