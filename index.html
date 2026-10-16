@@ -14,7 +14,7 @@
 <section id="recovery" class="panel auth hidden"><h2>Definir nova senha</h2><form id="recovery-form"><label for="new-password">Nova senha (mínimo de 8 caracteres)</label><input id="new-password" type="password" minlength="8" autocomplete="new-password" required><label for="confirm-password">Confirmar nova senha</label><input id="confirm-password" type="password" minlength="8" autocomplete="new-password" required><p><button type="submit">Salvar nova senha</button></p></form><p id="recovery-message" class="message" role="status" aria-live="polite"></p></section>
 <div id="app" class="hidden"><div class="topline"><p id="identity" class="muted"></p><button id="logout" class="secondary">Sair</button></div><div class="notice"><strong>Versão de teste.</strong> Login e perfil conectados ao Supabase. Cadastro de jovens, fotos, relatórios e impressão permanecem desativados até conferirmos as permissões e a estrutura completa das tabelas. Não insira dados reais nesta etapa.</div>
 <nav class="tabs"><button class="active" data-tab="inicio">Visão geral</button><button data-tab="jovens">Fichas</button><button data-tab="relatorios">Relatório semanal</button><button data-tab="config">Configuração</button></nav>
-<section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat">Polos previstos<b>23</b></div><div class="stat">Jovens cadastrados<b>—</b></div><div class="stat">Relatórios recebidos<b>—</b></div><div class="stat">Relatórios pendentes<b>—</b></div></div><p class="muted">Indicadores serão ativados após testes de autorização.</p></section>
+<section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Polos</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><div class="stat">Relatórios recebidos<b id="report-count">—</b></div><div class="stat">Relatórios pendentes<b>—</b></div></div><p id="dashboard-note" class="muted">Os indicadores são consultados com as permissões da conta autenticada. Pendências serão ativadas após definirmos o período dos relatórios.</p></section>
 <section id="jovens" class="panel hidden"><h2>Fichas dos jovens</h2><p class="muted">Prévia — formulário não salva dados nesta versão.</p><div class="grid"><div><label>Nome</label><input placeholder="Nome do jovem" disabled></div><div><label>Polo</label><input placeholder="Polo de origem" disabled></div><div><label>Nacionalidade</label><input placeholder="País" disabled></div><div><label>Idiomas</label><input placeholder="Português, japonês..." disabled></div><div><label>Etapa</label><select disabled><option>Inconstante</option><option>Firme</option><option>CPO</option><option>Colaborador</option><option>Obreiro</option><option>Coordenador</option></select></div><div><label>Foto</label><input type="file" accept="image/*" disabled></div></div><p class="muted">Impressão A4 com aproximadamente 20 fichas por página será adicionada depois.</p></section>
 <section id="relatorios" class="panel hidden"><h2>Relatório semanal</h2><p class="muted">Domingo: lembrete às 17h30, prazo às 22h. Envio posterior marcado como atrasado (ainda não automatizado).</p><div class="grid"><div><label>Jovens firmes durante a semana</label><input type="number" placeholder="0" disabled></div><div><label>Jovens novos durante a semana</label><input type="number" placeholder="0" disabled></div><div><label>Jovens afastados durante a semana</label><input type="number" placeholder="0" disabled></div><div><label>Domingo 9h30</label><input type="number" placeholder="0" disabled></div><div><label>Encontro FJU</label><input type="number" placeholder="0" disabled></div><div><label>Total único da semana (sem repetir)</label><input type="number" placeholder="0" disabled></div></div></section>
 <section id="config" class="panel hidden"><h2>Configuração</h2><p id="role-detail"></p><p class="muted">As regras de acesso efetivas são aplicadas no banco pelo RLS. A interface não substitui essas políticas.</p></section></div>
@@ -28,19 +28,45 @@ const el=id=>document.getElementById(id);
 const show=(id)=>{for(const s of ['auth','recovery','app'])el(s).classList.toggle('hidden',s!==id)};
 const message=(id,msg,error=false)=>{el(id).textContent=msg;el(id).className='message '+(error?'error':'success')};
 let recoveryMode=false;
+let profileRequest=0;
+async function countRows(table){const {count,error}=await supabase.from(table).select('*',{count:'exact',head:true});if(error)throw error;return count??0;}
+async function loadDashboard(profile,requestId){
+  const local=profile.papel==='coordenador';
+  el('scope-label').textContent=local?'Polo autorizado':'Polos cadastrados';
+  el('scope-count').textContent=local?'1':'—';
+  el('youth-count').textContent='…';el('report-count').textContent='…';
+  if(!local){try{const n=await countRows('fju_polos');if(requestId===profileRequest)el('scope-count').textContent=String(n)}catch{if(requestId===profileRequest)el('scope-count').textContent='Indisponível'}}
+  for(const [table,id] of [['fju_jovens','youth-count'],['fju_relatorios','report-count']]){
+    try{const n=await countRows(table);if(requestId===profileRequest)el(id).textContent=String(n)}
+    catch{if(requestId===profileRequest)el(id).textContent='Indisponível'}
+  }
+}
+
 async function loadProfile(user){
   const {data,error}=await supabase.from('fju_perfis').select('papel,polo_id,ativo').eq('usuario_id',user.id).maybeSingle();
   if(error)throw error;
   if(!data?.ativo || !['nacional','coordenador'].includes(data.papel) || (data.papel==='coordenador'&&!data.polo_id))throw new Error('Esta conta não tem perfil ativo autorizado. Contate o administrador.');
-  el('identity').textContent=`Conectado: ${user.email} · ${data.papel==='nacional'?'Administrador Nacional':'Coordenador local'}`;
-  el('role-detail').textContent=`Perfil: ${data.papel==='nacional'?'Administrador Nacional (todos os polos)':'Coordenador (polo vinculado ao perfil)'}.`;
+  const requestId=++profileRequest;
+  let poloNome='';
+  if(data.papel==='coordenador'){
+    const {data:polo,error:poloError}=await supabase.from('fju_polos').select('nome').eq('id',data.polo_id).maybeSingle();
+    if(poloError)throw new Error('Não foi possível consultar o polo autorizado: '+poloError.message);
+    if(!polo?.nome)throw new Error('Polo do coordenador não encontrado ou sem permissão de leitura.');
+    poloNome=polo.nome;
+  }
+  if(requestId!==profileRequest)return;
+  const role=data.papel==='nacional'?'Administrador Nacional':'Coordenador Local';
+  el('identity').textContent=`Conectado: ${user.email} · ${role}${poloNome?' · FJU '+poloNome:''}`;
+  el('role-detail').textContent=data.papel==='nacional'?'Perfil: Administrador Nacional — visão de todos os polos autorizados.':`Perfil: Coordenador Local — FJU ${poloNome}.`;
+  el('dashboard-note').textContent=`${data.papel==='nacional'?'Visão nacional':'Visão do polo FJU '+poloNome}. Contagens fornecidas pelo Supabase com as políticas RLS da conta autenticada. Relatórios pendentes ainda não calculados.`;
   show('app');
+  void loadDashboard(data,requestId);
 }
 async function refresh(){if(recoveryMode){show('recovery');return}const {data:{user},error}=await supabase.auth.getUser();if(error||!user){show('auth');return}try{await loadProfile(user)}catch(e){show('auth');message('auth-message',e.message,true)}}
 el('login-form').addEventListener('submit',async e=>{e.preventDefault();message('auth-message','Entrando...');const {error}=await supabase.auth.signInWithPassword({email:el('email').value.trim(),password:el('password').value});if(error){message('auth-message','Não foi possível entrar: '+error.message,true);return}await refresh()});
 el('forgot').addEventListener('click',async()=>{const email=el('email').value.trim();if(!email){message('auth-message','Digite seu e-mail acima para receber a recuperação.',true);return}const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});message('auth-message',error?'Não foi possível solicitar a recuperação: '+error.message:'Se a conta estiver cadastrada, enviaremos instruções ao e-mail.',!!error)});
 el('recovery-form').addEventListener('submit',async e=>{e.preventDefault();const pass=el('new-password').value;if(pass.length<8||pass!==el('confirm-password').value){message('recovery-message','As senhas precisam ser iguais e ter pelo menos 8 caracteres.',true);return}const {error}=await supabase.auth.updateUser({password:pass});if(error){message('recovery-message',error.message,true);return}recoveryMode=false;history.replaceState({},'',location.pathname);message('auth-message','Senha atualizada. Você já pode entrar.');await supabase.auth.signOut();show('auth')});
-el('logout').addEventListener('click',async()=>{await supabase.auth.signOut();show('auth')});
+el('logout').addEventListener('click',async()=>{++profileRequest;await supabase.auth.signOut();show('auth')});
 document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('#app section.panel').forEach(s=>s.classList.toggle('hidden',s.id!==b.dataset.tab))}));
 supabase.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){recoveryMode=true;show('recovery')}else if(event==='SIGNED_OUT'){recoveryMode=false;show('auth')}});
 if(location.search.includes('error=')){message('auth-message','O link de autenticação falhou ou expirou. Solicite outro.',true)}
