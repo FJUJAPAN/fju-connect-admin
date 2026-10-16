@@ -119,14 +119,14 @@ body.printing>#print-area{display:block!important}
 </div>
 <div id="report-special" class="hidden">
 <p>Registre o movimento especial realizado pelo polo e o total de jovens que participaram.</p>
-<form id="special-event-form">
+<form id="special-event-form"><input type="hidden" id="special-event-edit-id">
 <div class="grid">
 <div id="special-event-polo-wrap"><label for="special-event-polo">Igreja responsável pelo evento</label><select id="special-event-polo" required></select></div>
 <div><label for="special-event-name">Nome do evento / movimento</label><input id="special-event-name" maxlength="180" placeholder="Ex.: Evangelização especial" required></div>
 <div><label for="special-event-date">Data do evento</label><input id="special-event-date" type="date" required></div>
 <div><label for="special-event-total">Total de jovens no evento</label><input id="special-event-total" type="number" min="0" step="1" placeholder="0" required></div>
 </div>
-<p><button type="submit">Salvar evento especial</button></p>
+<p><button type="submit" id="special-event-submit">Salvar evento especial</button> <button type="button" id="special-event-cancel" class="secondary" hidden>Cancelar edição</button></p>
 <p id="special-event-message" class="message" role="status" aria-live="polite"></p>
 </form>
 <h3>Eventos registrados</h3><div id="special-event-list" class="stat">Carregando eventos...</div>
@@ -539,9 +539,27 @@ async function loadSpecialEvents(){
     const total=document.createElement('div');total.className='report-event-total';
     const count=document.createElement('b');count.textContent=Number(ev.total_jovens||0).toLocaleString('ja-JP');
     const label=document.createElement('div');label.innerHTML='<strong>jovens participantes</strong><div class="report-card-subtitle">Total informado pelo polo</div>';
-    total.append(count,label);card.append(head,total);list.append(card);
+    total.append(count,label);card.append(head,total);
+    const actions=document.createElement('div');actions.className='actions';
+    const edit=document.createElement('button');edit.type='button';edit.className='secondary';edit.textContent='Editar';
+    edit.addEventListener('click',async()=>{
+      await setupSpecialEventPolo();
+      el('special-event-edit-id').value=ev.id;el('special-event-name').value=ev.nome_evento;el('special-event-date').value=ev.data_evento;el('special-event-total').value=ev.total_jovens;
+      el('special-event-polo').value=String(ev.polo_id);el('special-event-submit').textContent='Salvar alterações';el('special-event-cancel').hidden=false;
+      el('special-event-form').scrollIntoView({behavior:'smooth',block:'start'});
+    });
+    const del=document.createElement('button');del.type='button';del.className='secondary';del.textContent='Excluir';
+    del.addEventListener('click',async()=>{
+      if(!confirm('Excluir definitivamente o evento '+ev.nome_evento+'?'))return;
+      const {data,error}=await supabase.from('fju_eventos_especiais').delete().eq('id',ev.id).select('id');
+      if(error||!data?.length){message('special-event-message','Não foi possível excluir. Verifique as permissões no Supabase: '+(error?.message||'nenhum registro alterado'),true);return;}
+      message('special-event-message','Evento excluído.');await loadSpecialEvents();
+    });
+    actions.append(edit,del);card.append(actions);list.append(card);
   }
 }
+function resetSpecialEventEdit(){el('special-event-form').reset();el('special-event-edit-id').value='';el('special-event-submit').textContent='Salvar evento especial';el('special-event-cancel').hidden=true;}
+el('special-event-cancel').addEventListener('click',resetSpecialEventEdit);
 el('special-event-form').addEventListener('submit',async e=>{
   e.preventDefault();if(!currentProfile)return;
   const name=el('special-event-name').value.trim();
@@ -551,12 +569,13 @@ el('special-event-form').addEventListener('submit',async e=>{
   const poloId=currentProfile.papel==='nacional'?el('special-event-polo').value:currentProfile.polo_id;
   if(!poloId){message('special-event-message','Selecione a igreja responsável pelo evento.',true);return;}
   message('special-event-message','Salvando evento...');
-  const {error}=await supabase.from('fju_eventos_especiais').insert({
-    polo_id:poloId,
-    nome_evento:name,data_evento:date,total_jovens:total,criado_por:(await supabase.auth.getUser()).data.user?.id||null
-  });
-  if(error){message('special-event-message','Não foi possível salvar: '+error.message,true);return;}
-  el('special-event-form').reset();message('special-event-message','Evento especial salvo com sucesso.');
+  const editId=el('special-event-edit-id').value;
+  const payload={polo_id:poloId,nome_evento:name,data_evento:date,total_jovens:total};
+  let result;
+  if(editId)result=await supabase.from('fju_eventos_especiais').update(payload).eq('id',editId).select('id');
+  else result=await supabase.from('fju_eventos_especiais').insert({...payload,criado_por:(await supabase.auth.getUser()).data.user?.id||null}).select('id');
+  if(result.error||!result.data?.length){message('special-event-message','Não foi possível salvar. Verifique as permissões: '+(result.error?.message||'nenhum registro alterado'),true);return;}
+  resetSpecialEventEdit();message('special-event-message',editId?'Evento atualizado com sucesso.':'Evento especial salvo com sucesso.');
   await loadSpecialEvents();
 });
 
