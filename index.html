@@ -447,13 +447,13 @@ async function requestYouthChange(r){
   const motivo=prompt('Informe o motivo da exclusão de '+r.nome_completo+':');
   if(!motivo?.trim())return;
   const {data:{user}}=await supabase.auth.getUser();
-  const {error}=await supabase.from('fju_solicitacoes_fichas').insert({jovem_id:r.id,polo_id:r.polo_id,tipo:'exclusao',descricao:motivo.trim(),solicitado_por:user?.id});
+  const {error}=await supabase.from('fju_solicitacoes').insert({jovem_id:r.id,polo_id:r.polo_id,tipo:'exclusao',justificativa:motivo.trim(),dados_propostos:{},solicitante_id:user?.id});
   if(error){youthMessage('Não foi possível solicitar. Verifique se a tabela de autorizações foi configurada: '+error.message,true);return;}
   youthMessage('Solicitação enviada ao Administrador Nacional. A ficha não foi alterada.');
 }
 async function loadYouthRequests(){
   const list=el('requests-list');list.replaceChildren();el('requests-message').textContent='Consultando solicitações...';
-  let query=supabase.from('fju_solicitacoes_fichas').select('id,jovem_id,polo_id,tipo,descricao,dados_propostos,status,created_at').order('created_at',{ascending:false}).limit(100);
+  let query=supabase.from('fju_solicitacoes') .select('id,jovem_id,polo_id,tipo,justificativa,dados_propostos,status,criado_em').order('criado_em',{ascending:false}).limit(100);
   if(currentProfile?.papel==='coordenador')query=query.eq('polo_id',currentProfile.polo_id);
   const {data,error}=await query;
   if(error){message('requests-message','A área depende da configuração no Supabase: '+error.message,true);return;}
@@ -461,8 +461,8 @@ async function loadYouthRequests(){
   for(const r of data||[]){
     const card=document.createElement('article');card.className='report-card';
     const title=document.createElement('strong');title.textContent=(r.tipo==='exclusao'?'Exclusão':'Alteração')+' · '+r.status;
-    const desc=document.createElement('p');desc.textContent=r.descricao;
-    if(r.dados_propostos&&r.tipo==='alteracao'){
+    const desc=document.createElement('p');desc.textContent=r.justificativa||'Sem justificativa';
+    if(r.dados_propostos&&(r.tipo==='edicao'||r.tipo==='patente')){
       const {data:original}=await supabase.from('fju_jovens').select('nome_completo,nascimento,telefone,nacionalidade_iso2,idiomas,patente,categoria').eq('id',r.jovem_id).maybeSingle();
       for(const [field,next] of Object.entries(r.dados_propostos)){const p=document.createElement('p');p.textContent=field+': '+JSON.stringify(original?.[field]??null)+' → '+JSON.stringify(next);card.append(p);}
     }
@@ -470,7 +470,7 @@ async function loadYouthRequests(){
     card.append(title,desc,meta);
     if(currentProfile?.papel==='nacional'&&r.status==='pendente'){
       const approve=document.createElement('button');approve.type='button';approve.textContent='Aprovar solicitação';
-      approve.onclick=async()=>{if(!confirm('Aprovar esta solicitação? A alteração/exclusão deve ser executada pelo administrador na ficha.'))return;
+      approve.onclick=async()=>{if(!confirm('Aprovar esta solicitação? Confirme apenas após a função segura de aprovação estar instalada e testada no Supabase.'))return;
         const {error}=await supabase.rpc('fju_decidir_solicitacao',{p_solicitacao_id:r.id,p_aprovar:true});
         if(error)message('requests-message',error.message,true);else void loadYouthRequests();};
       const deny=document.createElement('button');deny.type='button';deny.className='secondary';deny.textContent='Recusar';
@@ -511,7 +511,7 @@ el('youth-form').addEventListener('submit',async e=>{
     const changes={};for(const key of ['nome_completo','nascimento','telefone','nacionalidade_iso2','idiomas','patente','categoria'])if(JSON.stringify(original[key]??null)!==JSON.stringify(payload[key]??null))changes[key]=payload[key];
     if(!Object.keys(changes).length){youthMessage('Nenhuma alteração encontrada.',true);return;}
     const {data:{user}}=await supabase.auth.getUser();
-    const {error}=await supabase.from('fju_solicitacoes_fichas').insert({jovem_id:id,polo_id:original.polo_id,tipo:'alteracao',descricao:'Campos: '+Object.keys(changes).join(', '),dados_propostos:changes,solicitado_por:user?.id});
+    const {error}=await supabase.from('fju_solicitacoes').insert({jovem_id:id,polo_id:original.polo_id,tipo:(Object.keys(changes).every(k=>['patente','categoria'].includes(k))?'patente':'edicao'),justificativa:'Campos: '+Object.keys(changes).join(', '),dados_propostos:changes,solicitante_id:user?.id});
     if(error){youthMessage('Não foi possível enviar a solicitação: '+error.message,true);return;}
     resetYouth();youthMessage('Solicitação enviada. A ficha original não foi alterada.');return;
   }
