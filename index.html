@@ -453,7 +453,7 @@ async function requestYouthChange(r){
 }
 async function loadYouthRequests(){
   const list=el('requests-list');list.replaceChildren();el('requests-message').textContent='Consultando solicitações...';
-  let query=supabase.from('fju_solicitacoes') .select('id,jovem_id,polo_id,tipo,justificativa,dados_propostos,status,criado_em').order('criado_em',{ascending:false}).limit(100);
+  let query=supabase.from('fju_solicitacoes').select('id,jovem_id,polo_id,tipo,justificativa,dados_propostos,status,criado_em').order('criado_em',{ascending:false}).limit(100);
   if(currentProfile?.papel==='coordenador')query=query.eq('polo_id',currentProfile.polo_id);
   const {data,error}=await query;
   if(error){message('requests-message','A área depende da configuração no Supabase: '+error.message,true);return;}
@@ -470,11 +470,11 @@ async function loadYouthRequests(){
     card.append(title,desc,meta);
     if(currentProfile?.papel==='nacional'&&r.status==='pendente'){
       const approve=document.createElement('button');approve.type='button';approve.textContent='Aprovar solicitação';
-      approve.onclick=async()=>{if(!confirm('Aprovar esta solicitação? Confirme apenas após a função segura de aprovação estar instalada e testada no Supabase.'))return;
+      approve.onclick=async()=>{if(!confirm('Aprovar esta solicitação? A ficha será atualizada automaticamente.'))return;
         const {error}=await supabase.rpc('fju_decidir_solicitacao',{p_solicitacao_id:r.id,p_aprovar:true});
-        if(error)message('requests-message',error.message,true);else void loadYouthRequests();};
+        if(error)message('requests-message',error.message,true);else {await loadYouthRequests();await loadYouth();}};
       const deny=document.createElement('button');deny.type='button';deny.className='secondary';deny.textContent='Recusar';
-      deny.onclick=async()=>{const {error}=await supabase.rpc('fju_decidir_solicitacao',{p_solicitacao_id:r.id,p_aprovar:false});if(error)message('requests-message',error.message,true);else void loadYouthRequests();};
+      deny.onclick=async()=>{if(!confirm('Rejeitar esta solicitação? A ficha não será alterada.'))return;const {error}=await supabase.rpc('fju_decidir_solicitacao',{p_solicitacao_id:r.id,p_aprovar:false});if(error)message('requests-message',error.message,true);else void loadYouthRequests();};
       card.append(approve,deny);
     }
     list.append(card);
