@@ -162,7 +162,8 @@ let profileRequest=0; let currentProfile=null; let youthRows=[]; let photoUrl=nu
 async function countRows(table){const {count,error}=await supabase.from(table).select('*',{count:'exact',head:true});if(error)throw error;return count??0;}
 function localISODate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return y+'-'+m+'-'+day;}
 function previousSundayISO(){
-  const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-d.getDay());return localISODate(d);
+  const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const d=new Date(today+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-d.getUTCDay());return d.toISOString().slice(0,10);
 }
 function updateNationalWeekRange(sundayISO){
   const sunday=new Date(sundayISO+'T12:00:00Z');
@@ -193,6 +194,8 @@ function renderNationalCalendar(){
     btn.style.cssText='padding:9px 0;min-width:0;border-radius:7px;font-size:13px;background:#fff;color:#1f2937;border:1px solid #e5e7eb;box-shadow:none';
     if(iso>=start.toISOString().slice(0,10)&&iso<=selected){btn.style.background='#dbeafe';btn.style.color='#1e40af';}
     if(iso===selected){btn.style.background='#2563eb';btn.style.color='#fff';}
+    const locked=normalizeReportSunday(iso)>previousSundayISO();
+    if(locked){btn.disabled=true;btn.title='Disponível somente no domingo desta semana';btn.setAttribute('aria-label',day+' — semana ainda não liberada');btn.style.cssText='padding:9px 0;min-width:0;border-radius:7px;font-size:13px;background:#f3f4f6;color:#9ca3af;border:1px solid #e5e7eb;opacity:.75;cursor:not-allowed';}
     btn.addEventListener('click',()=>{el('national-report-date').value=normalizeReportSunday(iso);cal.classList.add('hidden');el('national-week-button').setAttribute('aria-expanded','false');void loadNationalReportOverview();});
     grid.append(btn);
   }
@@ -229,6 +232,7 @@ async function loadNationalReportOverview(){
   el('national-report-panel').classList.remove('hidden');
   const dateInput=el('national-report-date');
   dateInput.value=normalizeReportSunday(dateInput.value);
+  if(dateInput.value>previousSundayISO())dateInput.value=previousSundayISO();
   updateNationalWeekRange(dateInput.value);
   const list=el('national-report-list');list.textContent='Consultando polos e relatórios...';
   const [{data:polos,error:poloError},{data:reports,error:reportError}]=await Promise.all([
