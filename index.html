@@ -177,7 +177,7 @@ function reportDeadlineStatus(r,week){
   return local<=week+' 22:00'?'prazo':'atrasado';
 }
 function normalizeReportSunday(value){
-  if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(value||''))return previousSundayISO();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(value||''))return previousSundayISO();
   const d=new Date(value+'T12:00:00Z');
   if(Number.isNaN(d.getTime()))return previousSundayISO();
   d.setUTCDate(d.getUTCDate()-d.getUTCDay());
