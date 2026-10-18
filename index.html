@@ -113,7 +113,19 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 .weekly-status-card small{display:block;margin-top:8px;font-size:12px;color:#385b98}
 .weekly-status-card:hover{border-color:#829bc8}
 @media(max-width:600px){.grid{gap:10px}.stat{padding:14px}.stat b{font-size:21px}.panel{padding:15px}#menu-toggle{font-size:13px}}
-.weekly-calendar-wrap{position:relative}.weekly-calendar{margin-top:7px;padding:12px;background:#fff;border:1px solid #dce4f1;border-radius:12px;box-shadow:0 12px 28px #182a471b;max-width:420px}.weekly-calendar-header{display:flex;align-items:center;justify-content:space-between;gap:10px}.weekly-calendar-header button{font-size:21px;padding:6px 14px}.weekly-calendar-days{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:12px 0}.weekly-calendar-days button{padding:11px;border:1px solid #dce4f1;background:#f5f7fc;border-radius:8px;color:#23395d}.weekly-calendar-days button.selected{background:#243e77;color:#fff}.weekly-calendar small{font-size:12px;color:#64748b}#weekly-date-button{width:100%;text-align:left}</style>
+.weekly-calendar-wrap{position:relative}.weekly-calendar{margin-top:7px;padding:12px;background:#fff;border:1px solid #dce4f1;border-radius:12px;box-shadow:0 12px 28px #182a471b;max-width:420px}.weekly-calendar-header{display:flex;align-items:center;justify-content:space-between;gap:10px}.weekly-calendar-header button{font-size:21px;padding:6px 14px}.weekly-calendar-days{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:12px 0}.weekly-calendar-days button{padding:11px;border:1px solid #dce4f1;background:#f5f7fc;border-radius:8px;color:#23395d}.weekly-calendar-days button.selected{background:#243e77;color:#fff}.weekly-calendar small{font-size:12px;color:#64748b}#weekly-date-button{width:100%;text-align:left}
+/* Compact report: full-width date, two columns on phones */
+#weekly-report-form .weekly-report-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px;align-items:start}
+#weekly-report-form .weekly-date-full{grid-column:1/-1}
+#weekly-report-form #weekly-polo-wrap:not(.hidden){grid-column:1/-1}
+#weekly-report-form .weekly-report-grid>div{min-width:0}
+#weekly-report-form label{font-size:12px;font-weight:600;line-height:1.3;margin-bottom:5px;min-height:32px}
+#weekly-report-form .weekly-date-full label{min-height:0}
+#weekly-date-button{min-height:42px;padding:10px 12px;font-size:13px}
+#weekly-report-form select{width:100%;min-width:0;min-height:42px;padding:8px 10px;font-size:14px}
+#weekly-report-form .weekly-submit{display:block;width:100%;min-height:44px;font-size:14px}
+@media(max-width:600px){#weekly-report-form .weekly-report-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 10px}#weekly-report-form label{font-size:11.5px}#weekly-report-form .weekly-date-full label{font-size:12px}#weekly-date-button{white-space:normal}}
+</style>
 </head>
 <body>
 <header><div class="wrap"><h1>FJU Connect JAPAN · Admin</h1><p>Painel administrativo — acesso restrito</p></div></header>
@@ -162,9 +174,9 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <div id="weekly-entry-wrap">
 <p class="muted">Preencha os números referentes à semana e salve o relatório. Lembrete de domingo às 17h30 e prazo às 22h ainda não automatizados.</p>
 <form id="weekly-report-form">
-<div class="grid">
+<div class="grid weekly-report-grid">
 <div id="weekly-polo-wrap" class="hidden"><label for="weekly-polo">Igreja do relatório</label><select id="weekly-polo"><option value="">Selecione a igreja</option></select></div>
-<div class="weekly-calendar-wrap"><label for="weekly-date-button">Semana do relatório (domingo)</label><input id="weekly-report-date" type="hidden"><button type="button" id="weekly-date-button" class="secondary" aria-expanded="false" aria-controls="weekly-calendar">Selecionar domingo ▾</button><div id="weekly-calendar" class="hidden weekly-calendar"><div class="weekly-calendar-header"><button type="button" id="weekly-prev-month" aria-label="Mês anterior">‹</button><strong id="weekly-month-title"></strong><button type="button" id="weekly-next-month" aria-label="Próximo mês">›</button></div><div id="weekly-calendar-days" class="weekly-calendar-days"></div><small>Selecione um domingo para definir a semana.</small></div></div>
+<div class="weekly-calendar-wrap weekly-date-full"><label for="weekly-date-button">Semana do relatório (domingo)</label><input id="weekly-report-date" type="hidden"><button type="button" id="weekly-date-button" class="secondary" aria-expanded="false" aria-controls="weekly-calendar">Selecionar domingo ▾</button><div id="weekly-calendar" class="hidden weekly-calendar"><div class="weekly-calendar-header"><button type="button" id="weekly-prev-month" aria-label="Mês anterior">‹</button><strong id="weekly-month-title"></strong><button type="button" id="weekly-next-month" aria-label="Próximo mês">›</button></div><div id="weekly-calendar-days" class="weekly-calendar-days"></div><small>Selecione um domingo para definir a semana.</small></div></div>
 <div><label for="weekly-firmes">Jovens firmes durante a semana</label><select id="weekly-firmes" class="weekly-quantity" required></select></div>
 <div><label for="weekly-novos">Jovens novos durante a semana</label><select id="weekly-novos" class="weekly-quantity" required></select></div>
 <div><label for="weekly-afastados">Jovens afastados durante a semana</label><select id="weekly-afastados" class="weekly-quantity" required></select></div>
@@ -174,7 +186,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <div><label for="weekly-aguas">Batizados nas águas nesta semana</label><select id="weekly-aguas" class="weekly-quantity" required></select></div>
 <div><label for="weekly-total">Total único da semana (sem repetir)</label><select id="weekly-total" class="weekly-quantity" required></select></div>
 </div>
-<p><button type="submit">Salvar relatório semanal</button></p>
+<p><button type="submit" class="weekly-submit">Salvar relatório semanal</button></p>
 <p id="weekly-report-message" class="message" role="status" aria-live="polite"></p>
 </form>
 </div>
