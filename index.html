@@ -102,6 +102,17 @@ input,select,textarea{border:1px solid #d7deea;border-radius:10px;padding:11px 1
 #main-nav.tabs button{width:100%;text-align:left;padding:13px 16px;white-space:normal}
 #main-nav.tabs button.active{background:#eaf0fb}
 }
+
+/* Compact professional typography and weekly action card */
+header h1{font-size:clamp(19px,2.5vw,25px)}header p{font-size:13px}
+h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
+.panel{padding:clamp(15px,2.4vw,22px)}.stat{padding:15px}.stat b{font-size:22px;margin-top:5px}
+#scope-count{font-size:19px;overflow-wrap:anywhere}
+.tabs button,button{font-size:13px}
+.weekly-status-card{width:100%;text-align:left;cursor:pointer;color:#465675;border:1px solid #dce4f1}
+.weekly-status-card small{display:block;margin-top:8px;font-size:12px;color:#385b98}
+.weekly-status-card:hover{border-color:#829bc8}
+@media(max-width:600px){.grid{gap:10px}.stat{padding:14px}.stat b{font-size:21px}.panel{padding:15px}#menu-toggle{font-size:13px}}
 </style>
 </head>
 <body>
@@ -111,7 +122,7 @@ input,select,textarea{border:1px solid #d7deea;border-radius:10px;padding:11px 1
 <section id="recovery" class="panel auth hidden"><h2>Definir nova senha</h2><form id="recovery-form"><label for="new-password">Nova senha (mínimo de 8 caracteres)</label><input id="new-password" type="password" minlength="8" autocomplete="new-password" required><label for="confirm-password">Confirmar nova senha</label><input id="confirm-password" type="password" minlength="8" autocomplete="new-password" required><p><button type="submit">Salvar nova senha</button></p></form><p id="recovery-message" class="message" role="status" aria-live="polite"></p></section>
 <div id="app" class="hidden"><div class="topline"><p id="identity" class="muted"></p><button id="logout" class="secondary">Sair</button></div><div class="notice"><strong>Ambiente em validação.</strong> Login, fichas, autorizações, relatórios e impressão disponíveis para testes. Antes de cadastrar dados reais, confirme as permissões de acesso por igreja e a proteção das fotos.</div>
 <button type="button" id="menu-toggle" class="secondary" aria-expanded="false" aria-controls="main-nav">☰ Menu</button><nav id="main-nav" class="tabs"><button class="active" data-tab="inicio">Visão geral</button><button data-tab="jovens">Fichas</button><button data-tab="relatorios">Relatório semanal</button><button data-tab="autorizacoes">Autorizações</button><button data-tab="config">Configuração</button></nav>
-<section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Igreja</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><div class="stat">Relatórios pendentes<b id="pending-count">—</b></div></div><p id="dashboard-note" class="muted">Indicadores consultados conforme as permissões da conta autenticada.</p></section>
+<section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Igreja</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><button type="button" id="weekly-status-card" class="stat weekly-status-card" aria-label="Abrir relatório semanal"><span>Relatório desta semana</span><b id="pending-count">Verificando…</b><small>Toque para abrir o relatório →</small></button></div><p id="dashboard-note" class="muted">Indicadores consultados conforme as permissões da conta autenticada.</p></section>
 <section id="jovens" class="panel hidden">
 <h2>Fichas dos jovens — teste funcional</h2>
 <p class="muted">Use somente dados fictícios até a validação completa das permissões. Fotos de teste podem ser enviadas ao armazenamento privado após salvar a ficha. Ainda não use fotos reais até testar o isolamento entre polos.</p>
@@ -432,7 +443,18 @@ async function loadDashboard(profile,requestId){
     catch{if(requestId===profileRequest)el(id).textContent='Indisponível'}
   }
   if(local){
-    if(requestId===profileRequest)el('pending-count').textContent='Não calculado';
+    if(requestId!==profileRequest)return;
+    el('pending-count').textContent='Verificando…';
+    try{
+      const lastSunday=previousSundayISO();
+      const d=new Date(lastSunday+'T12:00:00Z');
+      const tokyoDay=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Tokyo',weekday:'short'}).format(new Date());
+      if(tokyoDay!=='Sun')d.setUTCDate(d.getUTCDate()+7);
+      const weekSunday=d.toISOString().slice(0,10);
+      const {data,error}=await supabase.from('fju_relatorios_semanais').select('polo_id').eq('polo_id',profile.polo_id).eq('semana_domingo',weekSunday).limit(1);
+      if(error)throw error;
+      if(requestId===profileRequest)el('pending-count').textContent=data?.length?'✓ Enviado':'● Pendente';
+    }catch(err){if(requestId===profileRequest)el('pending-count').textContent='Status indisponível';}
   }
 }
 
@@ -994,6 +1016,7 @@ el('forgot').addEventListener('click',async()=>{const email=el('email').value.tr
 el('recovery-form').addEventListener('submit',async e=>{e.preventDefault();const pass=el('new-password').value;if(pass.length<8||pass!==el('confirm-password').value){message('recovery-message','As senhas precisam ser iguais e ter pelo menos 8 caracteres.',true);return}const {error}=await supabase.auth.updateUser({password:pass});if(error){message('recovery-message',error.message,true);return}recoveryMode=false;history.replaceState({},'',location.pathname);message('auth-message','Senha atualizada. Você já pode entrar.');await supabase.auth.signOut();show('auth')});
 el('logout').addEventListener('click',async()=>{++profileRequest;await supabase.auth.signOut();show('auth')});
 document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.tab==='autorizacoes')void loadYouthRequests();document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.getElementById('main-nav')?.classList.remove('menu-open');document.getElementById('menu-toggle')?.setAttribute('aria-expanded','false');document.querySelectorAll('#app section.panel').forEach(s=>s.classList.toggle('hidden',s.id!==b.dataset.tab))}));
+document.getElementById('weekly-status-card')?.addEventListener('click',()=>document.querySelector('#main-nav [data-tab="relatorios"]')?.click());
 document.getElementById('menu-toggle')?.addEventListener('click',()=>{const nav=document.getElementById('main-nav');const open=nav.classList.toggle('menu-open');document.getElementById('menu-toggle').setAttribute('aria-expanded',String(open));});
 supabase.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){recoveryMode=true;show('recovery')}else if(event==='SIGNED_OUT'){recoveryMode=false;show('auth')}});
 if(location.search.includes('error=')){message('auth-message','O link de autenticação falhou ou expirou. Solicite outro.',true)}
