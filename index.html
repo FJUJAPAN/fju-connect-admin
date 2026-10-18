@@ -95,7 +95,7 @@ body.printing>#print-area{display:block!important}
 <div><label for="youth-country">Nacionalidade</label><select id="youth-country"><option value="">Selecione</option><option value="BR">🇧🇷 Brasil</option><option value="JP">🇯🇵 Japão</option><option value="PH">🇵🇭 Filipinas</option><option value="PE">🇵🇪 Peru</option><option value="BO">🇧🇴 Bolívia</option><option value="PY">🇵🇾 Paraguai</option><option value="AR">🇦🇷 Argentina</option><option value="CO">🇨🇴 Colômbia</option><option value="VE">🇻🇪 Venezuela</option><option value="US">🇺🇸 Estados Unidos</option><option value="CN">🇨🇳 China</option><option value="KR">🇰🇷 Coreia do Sul</option><option value="VN">🇻🇳 Vietnã</option><option value="ID">🇮🇩 Indonésia</option><option value="NP">🇳🇵 Nepal</option><option value="IN">🇮🇳 Índia</option><option value="LK">🇱🇰 Sri Lanka</option><option value="MM">🇲🇲 Mianmar</option><option value="TH">🇹🇭 Tailândia</option><option value="PK">🇵🇰 Paquistão</option><option value="BD">🇧🇩 Bangladesh</option><option value="GB">🇬🇧 Reino Unido</option><option value="FR">🇫🇷 França</option><option value="DE">🇩🇪 Alemanha</option><option value="PT">🇵🇹 Portugal</option><option value="ES">🇪🇸 Espanha</option><option value="MX">🇲🇽 México</option><option value="NG">🇳🇬 Nigéria</option><option value="GH">🇬🇭 Gana</option><option value="OTHER">Outra nacionalidade</option></select></div>
 <div><label>Idiomas que fala (selecione um ou mais)</label><details id="youth-languages-picker"><summary id="youth-languages-summary">Selecionar idiomas</summary><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;padding:12px 4px"><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Português"> Português</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Japonês"> Japonês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Inglês"> Inglês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Espanhol"> Espanhol</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Tagalog"> Tagalog</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Hindi"> Hindi</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Nepali"> Nepali</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Indonésio"> Indonésio</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Birmanês"> Birmanês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Cingalês"> Cingalês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Coreano"> Coreano</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Chinês"> Chinês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Vietnamita"> Vietnamita</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Tailandês"> Tailandês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Outros"> Outros</label></div></details></div>
 <div><label for="youth-rank">Patente do jovem</label><select id="youth-rank" required><option value="">Selecione</option><option>Inconstante</option><option>Firme</option><option>CPO</option><option>Colaborador</option><option>Obreiro</option><option>Coordenador</option></select></div>
-<div><label for="youth-photo">Foto do jovem (galeria ou câmera)</label><input id="youth-photo" type="file" accept="image/jpeg,image/png,image/webp"><img id="youth-photo-preview" alt="Prévia da foto escolhida" class="hidden" style="width:90px;height:90px;object-fit:cover;border-radius:12px;margin-top:8px"><p class="muted">A foto será enviada ao bucket privado ao salvar a ficha. Use apenas imagens fictícias nesta fase de teste.</p></div>
+<div><label for="youth-photo">Foto do jovem (galeria ou câmera)</label><input id="youth-photo" type="file" accept="image/jpeg,image/png,image/webp"><img id="youth-photo-preview" alt="Prévia da foto escolhida" class="hidden" style="width:90px;height:90px;object-fit:cover;border-radius:12px;margin-top:8px"><p class="muted">A foto será comprimida automaticamente para até 100 KB e enviada ao bucket privado ao salvar a ficha. Use apenas imagens fictícias nesta fase de teste.</p></div>
 </div>
 <p class="actions"><button type="submit">Salvar ficha de teste</button><button type="button" id="youth-clear" class="secondary">Limpar formulário</button><button type="button" id="youth-refresh" class="secondary">Atualizar lista</button></p>
 </form><p id="youth-message" class="message" role="status"></p>
@@ -374,6 +374,27 @@ async function loadYouthPhoto(id){
   if(el('youth-id').value!==id)return;
   photoUrl=URL.createObjectURL(result.data);preview.src=photoUrl;preview.classList.remove('hidden');
 }
+async function compactarFoto100KB(file){
+  if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw Error('Formato de foto não suportado.');
+  const bitmap=await createImageBitmap(file);
+  try{
+    const maxBytes=100*1024;
+    for(const dimension of [900,750,600,480,360,280,200,140]){
+      const scale=Math.min(1,dimension/Math.max(bitmap.width,bitmap.height));
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.max(1,Math.round(bitmap.width*scale));
+      canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+      const ctx=canvas.getContext('2d');
+      if(!ctx)throw Error('Não foi possível processar a foto.');
+      ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+      for(const quality of [0.82,0.7,0.58,0.45,0.3,0.18,0.08]){
+        const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
+        if(blob&&blob.size<=maxBytes)return blob;
+      }
+    }
+    throw Error('Não foi possível reduzir a foto para 100 KB.');
+  }finally{bitmap.close();}
+}
 async function loadYouth(){
   if(!currentProfile)return;
   youthMessage('Consultando fichas de teste...');
@@ -604,8 +625,11 @@ el('youth-form').addEventListener('submit',async e=>{
     const extension={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[file.type];
     if(!extension||file.size>5*1024*1024){youthMessage('Ficha salva, mas foto inválida. Escolha JPG, PNG ou WebP de até 5 MB.',true);return;}
     youthMessage('Ficha salva. Enviando foto privada...');
-    const path=result.data.id+'/perfil.'+extension;
-    const uploaded=await supabase.storage.from('fju-fotos').upload(path,file,{contentType:file.type,upsert:true});
+    let compactada;
+    try{compactada=await compactarFoto100KB(file);}
+    catch(e){youthMessage('Ficha salva, mas a foto não pôde ser comprimida: '+e.message,true);return;}
+    const path=result.data.id+'/perfil.jpg';
+    const uploaded=await supabase.storage.from('fju-fotos').upload(path,compactada,{contentType:'image/jpeg',upsert:true});
     if(uploaded.error){youthMessage('Ficha salva, mas não foi possível enviar a foto: '+uploaded.error.message,true);await loadYouth();return;}
   }
   resetYouth();await loadYouth();youthMessage(file?'Ficha e foto de teste salvas com sucesso.':'Ficha de teste salva com sucesso.');void loadDashboard(currentProfile,profileRequest);
