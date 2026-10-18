@@ -457,6 +457,9 @@ async function loadYouthRequests(){
   if(currentProfile?.papel==='coordenador')query=query.eq('polo_id',currentProfile.polo_id);
   const {data,error}=await query;
   if(error){message('requests-message','A área depende da configuração no Supabase: '+error.message,true);return;}
+  const {data:polos,error:polosError}=await supabase.from('fju_polos').select('id,nome');
+  if(polosError){message('requests-message','Não foi possível identificar as igrejas: '+polosError.message,true);return;}
+  const poloRows=polos||[];
   message('requests-message',(data||[]).length+' solicitação(ões) encontrada(s).');
   for(const r of data||[]){
     const card=document.createElement('article');card.className='report-card';
