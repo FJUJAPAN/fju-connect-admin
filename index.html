@@ -74,7 +74,7 @@ body.printing>#print-area{display:block!important}
 <section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Polos</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><div class="stat">Relatórios recebidos<b id="report-count">—</b></div><div class="stat">Relatórios pendentes<b id="pending-count">—</b></div></div><p id="dashboard-note" class="muted">Indicadores consultados conforme as permissões da conta autenticada.</p><div id="national-report-panel" class="hidden">
 <h3>Relatórios semanais por igreja</h3>
 <p class="muted">Indicadores calculados a partir dos relatórios semanais registrados pelos polos.</p>
-<div class="grid"><div><label for="national-report-date">Semana do relatório (segunda a domingo)</label><select id="national-report-date" aria-label="Selecionar semana do relatório"></select></div><div class="actions" style="align-self:end"><button type="button" id="national-report-refresh">Atualizar painel</button><button type="button" id="print-national-report" class="secondary">Imprimir relatório nacional A4</button></div></div>
+<div class="grid"><div><label for="national-report-date">Semana do relatório</label><div style="position:relative"><div id="national-week-label" aria-hidden="true" style="padding:14px 16px;border:1px solid #b9c5da;border-radius:10px;background:#f1f3f8;color:#202a42;text-align:center;font-weight:600;min-height:52px">Selecionar semana</div><input id="national-report-date" type="date" aria-label="Escolher dia da semana do relatório" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer"></div></div><div class="actions" style="align-self:end"><button type="button" id="national-report-refresh">Atualizar painel</button><button type="button" id="print-national-report" class="secondary">Imprimir relatório nacional A4</button></div></div>
 <h3 class="report-section-title">Relatórios das igrejas</h3>
 <div class="grid"><div><label for="national-status-filter">Situação do envio</label><select id="national-status-filter"><option value="enviado">Somente enviados</option><option value="todos" selected>Todos os polos</option><option value="pendente">Somente pendentes</option><option value="prazo">Enviados no prazo</option><option value="atrasado">Enviados com atraso</option><option value="indefinido">Enviados sem horário registrado</option></select></div><div><label for="national-polo-filter">Igreja / polo</label><select id="national-polo-filter"><option value="">Todas as igrejas</option></select></div></div>
 <p id="national-filter-count" class="muted"></p><div id="national-report-list" class="report-list">Carregando acompanhamento...</div>
@@ -165,22 +165,14 @@ function previousSundayISO(){
   const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-d.getDay());return localISODate(d);
 }
 function setupNationalWeekSelector(){
-  const select=el('national-report-date');
-  if(!select||select.options.length)return;
-  const current=previousSundayISO();
-  const base=new Date(current+'T12:00:00Z');
+  const input=el('national-report-date');
+  if(!input.value)input.value=previousSundayISO();
+  const sunday=normalizeReportSunday(input.value);
+  const end=new Date(sunday+'T12:00:00Z');
+  const start=new Date(end);
+  start.setUTCDate(start.getUTCDate()-6);
   const fmt=d=>String(d.getUTCDate()).padStart(2,'0')+'/'+String(d.getUTCMonth()+1).padStart(2,'0')+'/'+d.getUTCFullYear();
-  for(let offset=12;offset>=-52;offset--){
-    const sunday=new Date(base);
-    sunday.setUTCDate(sunday.getUTCDate()+offset*7);
-    const monday=new Date(sunday);
-    monday.setUTCDate(monday.getUTCDate()-6);
-    const option=document.createElement('option');
-    option.value=sunday.toISOString().slice(0,10);
-    option.textContent=fmt(monday)+' a '+fmt(sunday);
-    if(option.value===current)option.selected=true;
-    select.append(option);
-  }
+  el('national-week-label').textContent=fmt(start)+' a '+fmt(end);
 }
 function reportDeadlineStatus(r,week){
   if(!r)return 'pendente';
@@ -207,6 +199,7 @@ async function loadNationalReportOverview(){
   el('national-report-panel').classList.remove('hidden');
   setupNationalWeekSelector();
   const dateInput=el('national-report-date');
+  const selectedSunday=normalizeReportSunday(dateInput.value);
   const list=el('national-report-list');list.textContent='Consultando polos e relatórios...';
   const [{data:polos,error:poloError},{data:reports,error:reportError}]=await Promise.all([
     supabase.from('fju_polos').select('id,nome').order('nome'),
@@ -214,7 +207,7 @@ async function loadNationalReportOverview(){
   ]);
   if(poloError||reportError){list.textContent='Não foi possível consultar o painel: '+(poloError?.message||reportError?.message);return;}
   const poloRows=polos||[], reportRows=reports||[];
-  const selected=reportRows.filter(r=>r.semana_domingo===dateInput.value);
+  const selected=reportRows.filter(r=>r.semana_domingo===selectedSunday);
   const byPolo=new Map(selected.map(r=>[r.polo_id,r]));
   const submitted=poloRows.filter(p=>byPolo.has(p.id)).length;
   const pending=Math.max(0,poloRows.length-submitted);
@@ -274,7 +267,7 @@ async function loadNationalReportOverview(){
   if(!poloRows.length){list.textContent='Nenhum polo disponível para esta conta.';return;}
   for(const polo of poloRows){
     const r=byPolo.get(polo.id);
-    const row=document.createElement('article');row.className='report-card';row.dataset.polo=String(polo.id);row.dataset.status=reportDeadlineStatus(r,dateInput.value);
+    const row=document.createElement('article');row.className='report-card';row.dataset.polo=String(polo.id);row.dataset.status=reportDeadlineStatus(r,selectedSunday);
     const head=document.createElement('div');head.className='report-card-head';
     const title=document.createElement('div');title.className='report-card-title';title.textContent=polo.nome;
     const badge=document.createElement('span');badge.className='report-badge';badge.textContent=!r?'Pendente':row.dataset.status==='atrasado'?'Enviado com atraso':row.dataset.status==='indefinido'?'Verificar data do envio':'OK';if(row.dataset.status==='atrasado'){badge.style.background='#fff3c4';badge.style.color='#805600';}else if(!r){badge.style.background='#fee2e2';badge.style.color='#b91c1c';}else if(row.dataset.status==='indefinido'){badge.style.background='#e5e7eb';badge.style.color='#374151';}else{badge.style.background='#dcfce7';badge.style.color='#166534';}
@@ -288,7 +281,7 @@ async function loadNationalReportOverview(){
       const metrics=document.createElement('div');metrics.className='report-metrics';
       const addMetric=(label,value)=>{const m=document.createElement('div');m.className='report-metric';const l=document.createElement('span');l.textContent=label;const v=document.createElement('b');v.textContent=String(Number(value)||0);m.append(l,v);metrics.append(m);};
       addMetric('Total único',r.total_jovens_unicos);addMetric('Firmes',r.jovens_firmes);addMetric('Novos',r.jovens_novos);addMetric('Afastados',r.jovens_afastados);addMetric('Domingo 9h30',r.presenca_domingo_930);addMetric('Encontro FJU',r.presenca_encontro_fju);addMetric('Batizados Espírito Santo',r.batizados_espirito_santo);addMetric('Batizados nas águas',r.batizados_aguas);details.append(metrics);
-    }else{const p=document.createElement('p');p.className='muted';p.textContent='Nenhum relatório registrado para '+dateInput.value+'.';details.append(p);}
+    }else{const p=document.createElement('p');p.className='muted';p.textContent='Nenhum relatório registrado para '+selectedSunday+'.';details.append(p);}
     row.append(details);list.append(row);
   }
   applyNationalFilters();
@@ -305,7 +298,7 @@ function applyNationalFilters(){
 el('national-status-filter').addEventListener('change',applyNationalFilters);
 el('national-polo-filter').addEventListener('change',applyNationalFilters);
 async function printWeeklyReport(poloId=null){
-  const date=el('national-report-date').value||previousSundayISO();
+  const date=normalizeReportSunday(el('national-report-date').value);
   const area=el('print-area');area.replaceChildren();
   const [{data:polos,error:poloError},{data:reports,error:reportError}]=await Promise.all([
     supabase.from('fju_polos').select('id,nome').order('nome'),
