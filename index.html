@@ -113,7 +113,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 .weekly-status-card small{display:block;margin-top:8px;font-size:12px;color:#385b98}
 .weekly-status-card:hover{border-color:#829bc8}
 @media(max-width:600px){.grid{gap:10px}.stat{padding:14px}.stat b{font-size:21px}.panel{padding:15px}#menu-toggle{font-size:13px}}
-</style>
+.weekly-calendar-wrap{position:relative}.weekly-calendar{margin-top:7px;padding:12px;background:#fff;border:1px solid #dce4f1;border-radius:12px;box-shadow:0 12px 28px #182a471b;max-width:420px}.weekly-calendar-header{display:flex;align-items:center;justify-content:space-between;gap:10px}.weekly-calendar-header button{font-size:21px;padding:6px 14px}.weekly-calendar-days{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:12px 0}.weekly-calendar-days button{padding:11px;border:1px solid #dce4f1;background:#f5f7fc;border-radius:8px;color:#23395d}.weekly-calendar-days button.selected{background:#243e77;color:#fff}.weekly-calendar small{font-size:12px;color:#64748b}#weekly-date-button{width:100%;text-align:left}</style>
 </head>
 <body>
 <header><div class="wrap"><h1>FJU Connect JAPAN · Admin</h1><p>Painel administrativo — acesso restrito</p></div></header>
@@ -164,7 +164,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <form id="weekly-report-form">
 <div class="grid">
 <div id="weekly-polo-wrap" class="hidden"><label for="weekly-polo">Igreja do relatório</label><select id="weekly-polo"><option value="">Selecione a igreja</option></select></div>
-<div><label for="weekly-report-date">Data do domingo do relatório</label><input id="weekly-report-date" type="date" required></div>
+<div class="weekly-calendar-wrap"><label for="weekly-date-button">Semana do relatório (domingo)</label><input id="weekly-report-date" type="hidden"><button type="button" id="weekly-date-button" class="secondary" aria-expanded="false" aria-controls="weekly-calendar">Selecionar domingo ▾</button><div id="weekly-calendar" class="hidden weekly-calendar"><div class="weekly-calendar-header"><button type="button" id="weekly-prev-month" aria-label="Mês anterior">‹</button><strong id="weekly-month-title"></strong><button type="button" id="weekly-next-month" aria-label="Próximo mês">›</button></div><div id="weekly-calendar-days" class="weekly-calendar-days"></div><small>Selecione um domingo para definir a semana.</small></div></div>
 <div><label for="weekly-firmes">Jovens firmes durante a semana</label><select id="weekly-firmes" class="weekly-quantity" required></select></div>
 <div><label for="weekly-novos">Jovens novos durante a semana</label><select id="weekly-novos" class="weekly-quantity" required></select></div>
 <div><label for="weekly-afastados">Jovens afastados durante a semana</label><select id="weekly-afastados" class="weekly-quantity" required></select></div>
@@ -820,6 +820,32 @@ async function setupWeeklyReportPolo(){
   for(const p of data||[]){const opt=document.createElement('option');opt.value=p.id;opt.textContent=p.nome;select.append(opt);}
 }
 document.querySelector('[data-tab="relatorios"]')?.addEventListener('click',()=>void setupWeeklyReportPolo());
+
+/* Sunday-only in-page calendar: avoids native iOS date picker */
+(function(){
+ const field=document.getElementById('weekly-report-date'),btn=document.getElementById('weekly-date-button'),panel=document.getElementById('weekly-calendar');
+ if(!field||!btn||!panel)return;
+ field.value=previousSundayISO();
+ let month=field.value.slice(0,7);
+ const label=iso=>new Date(iso+'T12:00:00Z').toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric',timeZone:'UTC'});
+ function refreshButton(){btn.textContent='Semana até domingo '+label(field.value)+' ▾';}
+ function draw(){
+   const [year,m]=month.split('-').map(Number),first=new Date(Date.UTC(year,m-1,1)),days=new Date(Date.UTC(year,m,0)).getUTCDate();
+   document.getElementById('weekly-month-title').textContent=first.toLocaleDateString('pt-BR',{month:'long',year:'numeric',timeZone:'UTC'});
+   const grid=document.getElementById('weekly-calendar-days');grid.replaceChildren();
+   for(let day=1;day<=days;day++){
+     const date=new Date(Date.UTC(year,m-1,day));if(date.getUTCDay()!==0)continue;
+     const iso=date.toISOString().slice(0,10),item=document.createElement('button');item.type='button';item.textContent=label(iso);
+     item.className=iso===field.value?'selected':'';item.setAttribute('aria-pressed',String(iso===field.value));
+     item.addEventListener('click',()=>{field.value=iso;refreshButton();panel.classList.add('hidden');btn.setAttribute('aria-expanded','false');});
+     grid.appendChild(item);
+   }
+ }
+ btn.addEventListener('click',()=>{const opening=panel.classList.contains('hidden');panel.classList.toggle('hidden',!opening);btn.setAttribute('aria-expanded',String(opening));if(opening)draw();});
+ for(const [id,delta] of [['weekly-prev-month',-1],['weekly-next-month',1]])document.getElementById(id).addEventListener('click',()=>{const [y,m]=month.split('-').map(Number);month=new Date(Date.UTC(y,m-1+delta,1)).toISOString().slice(0,7);draw();});
+ refreshButton();
+})();
+
 el('weekly-report-form').addEventListener('submit',async e=>{
   e.preventDefault();if(!currentProfile)return;
   const date=el('weekly-report-date').value;
