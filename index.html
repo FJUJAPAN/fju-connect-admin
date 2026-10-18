@@ -837,10 +837,14 @@ document.querySelector('[data-tab="relatorios"]')?.addEventListener('click',()=>
 (function(){
  const field=document.getElementById('weekly-report-date'),btn=document.getElementById('weekly-date-button'),panel=document.getElementById('weekly-calendar');
  if(!field||!btn||!panel)return;
- field.value=previousSundayISO();
+ field.value=normalizeReportSunday(new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()));
  let month=field.value.slice(0,7);
  const label=iso=>new Date(iso+'T12:00:00Z').toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric',timeZone:'UTC'});
- function refreshButton(){btn.textContent='Semana até domingo '+label(field.value)+' ▾';}
+ function refreshButton(){
+   const end=new Date(field.value+'T12:00:00Z'),start=new Date(end);start.setUTCDate(start.getUTCDate()-6);
+   const fmt=d=>d.toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
+   btn.textContent='Semana de '+fmt(start)+' a '+fmt(end)+' ▾';
+ }
  function draw(){
    const [year,m]=month.split('-').map(Number),first=new Date(Date.UTC(year,m-1,1)),days=new Date(Date.UTC(year,m,0)).getUTCDate();
    document.getElementById('weekly-month-title').textContent=first.toLocaleDateString('pt-BR',{month:'long',year:'numeric',timeZone:'UTC'});
@@ -864,6 +868,7 @@ el('weekly-report-form').addEventListener('submit',async e=>{
   const poloId=currentProfile.papel==='nacional'?el('weekly-polo').value:currentProfile.polo_id;
   if(!poloId){message('weekly-report-message','Selecione a igreja antes de salvar.',true);return;}
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||new Date(date+'T12:00:00Z').getUTCDay()!==0){message('weekly-report-message','Selecione uma data de domingo para este relatório.',true);return;}
+  if(date>previousSundayISO()){message('weekly-report-message','O relatório desta semana será liberado no domingo (horário do Japão).',true);return;}
   const ids=['weekly-firmes','weekly-novos','weekly-afastados','weekly-domingo','weekly-encontro','weekly-espirito','weekly-aguas','weekly-total'];
   const values=ids.map(id=>Number(el(id).value));
   if(!date||values.some(v=>!Number.isInteger(v)||v<0)){message('weekly-report-message','Preencha todos os campos com números inteiros iguais ou maiores que zero.',true);return;}
