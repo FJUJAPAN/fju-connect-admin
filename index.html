@@ -937,14 +937,14 @@ async function setupSpecialEventPolo(){
   }
 }
 async function loadSpecialEvents(){
-  const list=el('special-event-list');list.textContent='Carregando eventos...';
+  const list=el('special-event-list');list.textContent='Carregando eventos...';el('special-event-submit').textContent=currentProfile?.papel==='coordenador'?'Solicitar inclusão':el('special-event-edit-id').value?'Salvar alterações':'Salvar evento especial';
   let q=supabase.from('fju_eventos_especiais').select('id,polo_id,nome_evento,data_evento,total_jovens,created_at').order('data_evento',{ascending:false}).limit(100);
   if(currentProfile?.papel==='coordenador')q=q.eq('polo_id',currentProfile.polo_id);
   const [{data:events,error},{data:polos,poloError}]=await Promise.all([q,supabase.from('fju_polos').select('id,nome')]);
   if(error||poloError){list.textContent='Não foi possível carregar eventos: '+(error?.message||poloError?.message);return;}
   const names=new Map((polos||[]).map(p=>[p.id,p.nome]));
   list.replaceChildren();list.className='report-list';
-  await loadEventRequests();
+  await loadEventRequests(events||[],names);
   if(!events?.length){list.textContent='Nenhum evento especial registrado ainda.';return;}
   for(const ev of events){
     const card=document.createElement('article');card.className='report-card';
@@ -974,7 +974,7 @@ async function loadSpecialEvents(){
         const {data:{user}}=await supabase.auth.getUser();
         const {error}=await supabase.from('fju_solicitacoes_eventos').insert({tipo:'exclusao',evento_id:String(ev.id),polo_id:String(ev.polo_id),solicitante_id:user.id});
         message('special-event-message',error?'Não foi possível solicitar: '+error.message:'Solicitação de exclusão enviada para aprovação nacional.',!!error);
-        if(!error)await loadEventRequests();return;
+        if(!error)await loadSpecialEvents();return;
       }
       if(!confirm('Excluir definitivamente o evento '+ev.nome_evento+'?'))return;
       const {data,error}=await supabase.from('fju_eventos_especiais').delete().eq('id',ev.id).select('id');
@@ -987,33 +987,40 @@ async function loadSpecialEvents(){
     actions.append(edit,del);card.append(actions);list.append(card);
   }
 }
-async function loadEventRequests(){
+async function loadEventRequests(events=[],poloNames=new Map()){
  const list=el('event-requests-list');if(!list||!currentProfile)return;
  const {data,error}=await supabase.from('fju_solicitacoes_eventos').select('id,tipo,evento_id,polo_id,dados_propostos,status,criado_em').order('criado_em',{ascending:false}).limit(100);
  list.replaceChildren();if(error){list.textContent='Não foi possível carregar solicitações: '+error.message;return;}
  if(!data?.length){list.textContent='Nenhuma solicitação registrada.';return;}
+ const eventsById=new Map(events.map(event=>[String(event.id),event]));
+ const fmt=iso=>iso?new Date(iso+'T12:00:00Z').toLocaleDateString('pt-BR',{timeZone:'UTC'}):'Data não informada';
  for(const req of data){
   const card=document.createElement('div');card.className='event-request-card';
-  const title=document.createElement('strong');title.textContent=(req.tipo==='inclusao'?'Inclusão':'Exclusão')+' · '+(req.dados_propostos?.nome_evento||'Evento '+(req.evento_id||''));
-  const meta=document.createElement('div');meta.className='muted';meta.textContent='Polo '+req.polo_id+' · '+req.status;
-  card.append(title,meta);
+  const original=eventsById.get(String(req.evento_id||''));
+  const detail=req.tipo==='inclusao'?req.dados_propostos:original;
+  const title=document.createElement('strong');title.textContent=(req.tipo==='inclusao'?'Incluir':'Excluir')+' · '+(detail?.nome_evento||'Evento indisponível');
+  const meta=document.createElement('div');meta.className='muted';
+  meta.textContent=(poloNames.get(req.polo_id)||'Igreja não identificada')+' · '+req.status;
+  const details=document.createElement('div');details.className='muted';details.textContent=(detail?.data_evento?fmt(detail.data_evento)+' · ':'')+(detail?.total_jovens!=null?detail.total_jovens+' jovens':'');
+  card.append(title,meta,details);
   if(currentProfile.papel==='nacional'&&req.status==='pendente'){
    const actions=document.createElement('div');actions.className='actions';
    for(const [approve,label] of [[true,'Aprovar'],[false,'Rejeitar']]){
     const btn=document.createElement('button');btn.type='button';btn.className=approve?'':'secondary';btn.textContent=label;
     btn.addEventListener('click',async()=>{
-     if(!confirm(label+' esta solicitação?'))return;
+     if(!confirm(label+' a solicitação de '+(req.tipo==='inclusao'?'inclusão':'exclusão')+' de '+(detail?.nome_evento||'evento')+'?'))return;
      btn.disabled=true;
      const {error}=await supabase.rpc('fju_decidir_solicitacao_evento',{p_id:req.id,p_aprovar:approve});
      message('special-event-message',error?'Não foi possível decidir: '+error.message:'Solicitação '+(approve?'aprovada.':'rejeitada.'),!!error);
-     await loadEventRequests();if(!error)await loadSpecialEvents();
+     if(error){btn.disabled=false;return;}
+     await loadSpecialEvents();
     });actions.append(btn);
    }card.append(actions);
   }
   list.append(card);
  }
 }
-function resetSpecialEventEdit(){el('special-event-form').reset();el('special-event-edit-id').value='';el('special-event-submit').textContent='Salvar evento especial';el('special-event-cancel').hidden=true;}
+function resetSpecialEventEdit(){el('special-event-form').reset();el('special-event-edit-id').value='';el('special-event-submit').textContent=currentProfile?.papel==='coordenador'?'Solicitar inclusão':'Salvar evento especial';el('special-event-cancel').hidden=true;}
 el('special-event-cancel').addEventListener('click',resetSpecialEventEdit);
 el('special-event-form').addEventListener('submit',async e=>{
   e.preventDefault();if(!currentProfile)return;
@@ -1031,7 +1038,7 @@ el('special-event-form').addEventListener('submit',async e=>{
     const {data:{user}}=await supabase.auth.getUser();
     const {error}=await supabase.from('fju_solicitacoes_eventos').insert({tipo:'inclusao',polo_id:String(poloId),dados_propostos:payload,solicitante_id:user.id});
     if(error){message('special-event-message','Não foi possível solicitar: '+error.message,true);return;}
-    resetSpecialEventEdit();message('special-event-message','Solicitação enviada. O evento aparecerá após a aprovação nacional.');await loadEventRequests();return;
+    resetSpecialEventEdit();message('special-event-message','Solicitação enviada. O evento aparecerá após a aprovação nacional.');await loadSpecialEvents();return;
   }
   let result;
   if(editId)result=await supabase.from('fju_eventos_especiais').update(payload).eq('id',editId).select('id');
