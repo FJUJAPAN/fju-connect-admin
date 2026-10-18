@@ -111,7 +111,7 @@ input,select,textarea{border:1px solid #d7deea;border-radius:10px;padding:11px 1
 <section id="recovery" class="panel auth hidden"><h2>Definir nova senha</h2><form id="recovery-form"><label for="new-password">Nova senha (mínimo de 8 caracteres)</label><input id="new-password" type="password" minlength="8" autocomplete="new-password" required><label for="confirm-password">Confirmar nova senha</label><input id="confirm-password" type="password" minlength="8" autocomplete="new-password" required><p><button type="submit">Salvar nova senha</button></p></form><p id="recovery-message" class="message" role="status" aria-live="polite"></p></section>
 <div id="app" class="hidden"><div class="topline"><p id="identity" class="muted"></p><button id="logout" class="secondary">Sair</button></div><div class="notice"><strong>Ambiente em validação.</strong> Login, fichas, autorizações, relatórios e impressão disponíveis para testes. Antes de cadastrar dados reais, confirme as permissões de acesso por igreja e a proteção das fotos.</div>
 <button type="button" id="menu-toggle" class="secondary" aria-expanded="false" aria-controls="main-nav">☰ Menu</button><nav id="main-nav" class="tabs"><button class="active" data-tab="inicio">Visão geral</button><button data-tab="jovens">Fichas</button><button data-tab="relatorios">Relatório semanal</button><button data-tab="autorizacoes">Autorizações</button><button data-tab="config">Configuração</button></nav>
-<section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Polos</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><div class="stat">Relatórios recebidos<b id="report-count">—</b></div><div class="stat">Relatórios pendentes<b id="pending-count">—</b></div></div><p id="dashboard-note" class="muted">Indicadores consultados conforme as permissões da conta autenticada.</p></section>
+<section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Igreja</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><div class="stat">Relatórios pendentes<b id="pending-count">—</b></div></div><p id="dashboard-note" class="muted">Indicadores consultados conforme as permissões da conta autenticada.</p></section>
 <section id="jovens" class="panel hidden">
 <h2>Fichas dos jovens — teste funcional</h2>
 <p class="muted">Use somente dados fictícios até a validação completa das permissões. Fotos de teste podem ser enviadas ao armazenamento privado após salvar a ficha. Ainda não use fotos reais até testar o isolamento entre polos.</p>
@@ -287,7 +287,7 @@ async function loadNationalReportOverview(){
   const submitted=poloRows.filter(p=>byPolo.has(p.id)).length;
   const pending=Math.max(0,poloRows.length-submitted);
   el('pending-count').textContent=String(pending);
-  el('report-count').textContent=String(submitted);
+
   const total=(key,rows=selected)=>rows.reduce((sum,r)=>sum+(Number(r[key])||0),0);
   const summary=el('national-report-summary');summary.replaceChildren();
   const summaryItems=[
@@ -420,20 +420,19 @@ el('print-national-report').addEventListener('click',()=>void printWeeklyReport(
 el('national-report-refresh').addEventListener('click',()=>void loadNationalReportOverview());
 el('national-report-date').addEventListener('change',()=>void loadNationalReportOverview());
 
+let currentPoloNome='';
 async function loadDashboard(profile,requestId){
   const local=profile.papel==='coordenador';
-  el('scope-label').textContent=local?'Polo autorizado':'Polos cadastrados';
-  el('scope-count').textContent=local?'1':'—';
-  el('youth-count').textContent='…';el('report-count').textContent='…';
+  el('scope-label').textContent=local?'Igreja':'Polos cadastrados';
+  el('scope-count').textContent=local?('FJU '+(currentPoloNome||'Polo')):'—';
+  el('youth-count').textContent='…';
   if(!local){try{const n=await countRows('fju_polos');if(requestId===profileRequest)el('scope-count').textContent=String(n)}catch{if(requestId===profileRequest)el('scope-count').textContent='Indisponível'}}
   for(const [table,id] of [['fju_jovens','youth-count']]){
     try{const n=await countRows(table);if(requestId===profileRequest)el(id).textContent=String(n)}
     catch{if(requestId===profileRequest)el(id).textContent='Indisponível'}
   }
   if(local){
-    try{const n=await countRows('fju_relatorios_semanais');if(requestId===profileRequest)el('report-count').textContent=String(n)}
-    catch{if(requestId===profileRequest)el('report-count').textContent='Indisponível'}
-    if(requestId===profileRequest)el('pending-count').textContent='—';
+    if(requestId===profileRequest)el('pending-count').textContent='Não calculado';
   }
 }
 
@@ -453,8 +452,9 @@ async function loadProfile(user){
   const role=data.papel==='nacional'?'Administrador Nacional':'Coordenador Local';
   el('identity').textContent=`Conectado: ${user.email} · ${role}${poloNome?' · FJU '+poloNome:''}`;
   el('role-detail').textContent=data.papel==='nacional'?'Perfil: Administrador Nacional — visão de todos os polos autorizados.':`Perfil: Coordenador Local — FJU ${poloNome}.`;
-  el('dashboard-note').textContent=`${data.papel==='nacional'?'Visão nacional':'Visão do polo FJU '+poloNome}. Contagens fornecidas pelo Supabase com as políticas RLS da conta autenticada. Relatórios pendentes ainda não calculados.`;
+  el('dashboard-note').textContent=`${data.papel==='nacional'?'Visão nacional':'Visão do polo FJU '+poloNome}. Contagens fornecidas pelo Supabase com as políticas RLS da conta autenticada. Pendências locais ainda não calculadas.`;
   currentProfile=data;
+  currentPoloNome=poloNome;
   configureWeeklyReportAccess();
   if(data.papel==='nacional')void loadNationalReportOverview();else el('national-report-panel').classList.add('hidden');
   show('app');
