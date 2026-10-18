@@ -133,6 +133,27 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 #weekly-report-form .weekly-date-full label{font-size:12px}
 #weekly-report-form #weekly-date-button{font-size:13px}
 #weekly-entry-wrap>p.muted{font-size:12px;line-height:1.45;margin-bottom:12px}
+/* Special event mobile polish: prevent date input overflow and reduce card height */
+#report-special>p{font-size:13px;line-height:1.45;margin:6px 0 14px;color:#64748b}
+#special-event-form .special-event-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+#special-event-form .special-event-grid>div{min-width:0}
+#special-event-form .special-event-grid>div:first-child{grid-column:1/-1}
+#special-event-form .special-event-grid>div:nth-child(2){grid-column:1/-1}
+#special-event-form label{font-size:12px;font-weight:600;line-height:1.35;margin-bottom:5px}
+#special-event-form input,#special-event-form select{box-sizing:border-box;width:100%;max-width:100%;min-width:0;font-size:14px;min-height:42px;padding:8px 10px}
+#special-event-form input[type=date]{appearance:auto;-webkit-appearance:auto;display:block}
+#special-event-form>p{margin:12px 0}
+#special-event-submit{font-size:13px;padding:10px 15px}
+#report-special .special-event-list-title{font-size:16px;margin:20px 0 10px}
+#special-event-list .report-card{padding:12px;border-radius:14px;margin-bottom:10px}
+#special-event-list .report-card h3{font-size:16px;margin:0 0 3px}
+#special-event-list .report-badge{font-size:10px;padding:4px 7px}
+#special-event-list .report-event-total{padding:9px 11px;margin-top:9px;gap:10px}
+#special-event-list .report-event-total b{font-size:24px}
+#special-event-list .report-event-total strong{font-size:12px}
+#special-event-list .report-card-subtitle{font-size:11px}
+#special-event-list .actions{margin-top:8px;gap:8px}
+#special-event-list .actions button{font-size:12px;padding:8px 12px}
 </style>
 </head>
 <body>
@@ -203,7 +224,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <div id="report-special" class="hidden">
 <p>Registre o movimento especial realizado pelo polo e o total de jovens que participaram.</p>
 <form id="special-event-form"><input type="hidden" id="special-event-edit-id">
-<div class="grid">
+<div class="grid special-event-grid">
 <div id="special-event-polo-wrap"><label for="special-event-polo">Igreja responsável pelo evento</label><select id="special-event-polo" required></select></div>
 <div><label for="special-event-name">Nome do evento / movimento</label><input id="special-event-name" maxlength="180" placeholder="Ex.: Evangelização especial" required></div>
 <div><label for="special-event-date">Data do evento</label><input id="special-event-date" type="date" required></div>
@@ -212,7 +233,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <p><button type="submit" id="special-event-submit">Salvar evento especial</button> <button type="button" id="special-event-cancel" class="secondary" hidden>Cancelar edição</button></p>
 <p id="special-event-message" class="message" role="status" aria-live="polite"></p>
 </form>
-<h3>Eventos registrados</h3><div id="special-event-list" class="stat">Carregando eventos...</div>
+<h3 class="special-event-list-title">Eventos registrados</h3><div id="special-event-list" class="stat">Carregando eventos...</div>
 </div></section>
 <section id="config" class="panel hidden"><div id="notification-settings" class="panel" style="margin-bottom:14px"><h3 style="margin:0 0 8px">🔔 Notificações de relatórios</h3><p id="notification-status" class="muted" role="status" aria-live="polite">Verificando disponibilidade...</p><button type="button" id="enable-notifications">Ativar notificações neste aparelho</button> <button type="button" class="secondary" id="register-device" hidden>Registrar este aparelho</button> <button type="button" class="secondary" id="unlink-device" hidden>Desvincular este aparelho</button> <button type="button" class="secondary" id="test-push" hidden>Enviar notificação de teste</button><p class="muted" style="font-size:12px">Esta etapa autoriza notificações no aparelho. Os lembretes automáticos serão ativados após a configuração do serviço de envio.</p></div>
 <h2>Configuração</h2><p id="role-detail"></p><p class="muted">As regras de acesso efetivas são aplicadas no banco pelo RLS. A interface não substitui essas políticas.</p></section></div>
