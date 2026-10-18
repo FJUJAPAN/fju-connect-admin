@@ -60,7 +60,7 @@ body.printing>#print-area{display:block!important}
 
 @media(max-width:520px){.report-card{padding:13px}.report-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.report-card-title{font-size:16px}}
 
-.authorization-head{display:flex;align-items:center;gap:14px;padding-bottom:14px;border-bottom:1px solid #e0e6f0;margin-bottom:12px}.authorization-avatar{width:78px;height:78px;border-radius:16px;background:#e7ecf6;color:#253b75;display:grid;place-items:center;font-size:25px;font-weight:750;flex:none;object-fit:cover}.authorization-name{margin:0 0 4px;font-size:20px;color:#19264b}.authorization-church{margin:0;color:#61708b;font-size:14px}.authorization-status{display:inline-block;margin:10px 0;padding:5px 10px;background:#fff2d9;color:#825600;border-radius:20px;font-size:12px;font-weight:700}.authorization-changes{display:grid;gap:8px;margin:12px 0}.authorization-change{padding:11px 13px;background:#f4f6fb;border-radius:11px}.authorization-change b{display:block;margin-bottom:6px;font-size:13px}.authorization-change span{display:block;overflow-wrap:anywhere;font-size:13px}.authorization-old{color:#61708b}.authorization-new{color:#176b44;font-weight:700}.authorization-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.authorization-note{font-size:13px;color:#61708b;margin:8px 0}
+.authorization-head{display:flex;align-items:center;gap:14px;padding-bottom:14px;border-bottom:1px solid #e0e6f0;margin-bottom:12px}.authorization-avatar{width:78px;height:78px;border-radius:16px;background:#e7ecf6;color:#253b75;display:grid;place-items:center;font-size:25px;font-weight:750;flex:none;object-fit:cover}.authorization-name{margin:0 0 4px;font-size:20px;color:#19264b}.authorization-church{margin:0;color:#61708b;font-size:14px}.authorization-status.aprovada{background:#e4f6e9;color:#146c37}.authorization-status.rejeitada{background:#fce8e8;color:#a52a2a}.authorization-status.pendente{background:#fff2d9;color:#825600}.authorization-status{display:inline-block;margin:10px 0;padding:5px 10px;background:#fff2d9;color:#825600;border-radius:20px;font-size:12px;font-weight:700}.authorization-changes{display:grid;gap:8px;margin:12px 0}.authorization-change{padding:11px 13px;background:#f4f6fb;border-radius:11px}.authorization-change b{display:block;margin-bottom:6px;font-size:13px}.authorization-change span{display:block;overflow-wrap:anywhere;font-size:13px}.authorization-old{color:#61708b}.authorization-new{color:#176b44;font-weight:700}.authorization-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.authorization-note{font-size:13px;color:#61708b;margin:8px 0}
 .authorization-filters{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.authorization-filters button{background:#e2e8f3;color:#1c2b4e}.authorization-filters button.active{background:#253b75;color:white}.authorization-status.aprovada{background:#e8f5ed;color:#176b44}.authorization-status.rejeitada{background:#fde8e8;color:#9c2929}.authorization-history-note{padding:9px 12px;border-radius:10px;background:#fff5db;color:#795817;font-size:12px}
 </style>
 </head>
@@ -540,7 +540,7 @@ async function loadYouthRequests(){
     }
     const status=document.createElement('div');status.className='authorization-status';
     status.classList.add(r.status);
-    status.textContent=(r.tipo==='exclusao'?'Exclusão':r.tipo==='patente'?'Patente':'Alteração')+' · '+r.status;
+    status.textContent=(r.tipo==='exclusao'?'Exclusão':r.tipo==='patente'?'Patente':'Alteração')+' · '+({pendente:'Pendente',aprovada:'Aprovada',rejeitada:'Recusada'}[r.status]||r.status);
     card.append(status);
     const desc=document.createElement('p');desc.className='authorization-note';
     desc.textContent='Motivo: '+(r.justificativa||'Não informado');card.append(desc);
@@ -563,7 +563,7 @@ async function loadYouthRequests(){
       }
     }
     const meta=document.createElement('p');meta.className='authorization-note';
-    meta.textContent='Ficha: '+r.jovem_id;card.append(meta);
+    meta.textContent='Solicitada em: '+(r.criado_em?new Intl.DateTimeFormat('pt-BR',{dateStyle:'short',timeStyle:'short',timeZone:'Asia/Tokyo'}).format(new Date(r.criado_em)):'Data não disponível');card.append(meta);
     if(!identificado){
       const warn=document.createElement('p');warn.style.color='#b42318';
       warn.textContent='Não foi possível confirmar o jovem e a igreja. Aprovação bloqueada até corrigir a identificação.';
