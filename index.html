@@ -106,6 +106,8 @@ body.printing>#print-area{display:block!important}
 <h2>Relatórios</h2>
 <div class="tabs" style="margin-bottom:16px"><button type="button" class="active" data-report-tab="semanal">Relatório semanal</button><button type="button" data-report-tab="especial">Evento especial</button></div>
 <div id="report-weekly">
+<div id="national-weekly-controls" class="hidden"><p class="muted">Os relatórios semanais são enviados pelos coordenadores. Acompanhe os resultados na Visão geral.</p><button type="button" id="national-weekly-toggle" class="secondary" aria-expanded="false">Preencher relatório excepcionalmente</button></div>
+<div id="weekly-entry-wrap">
 <p class="muted">Preencha os números referentes à semana e salve o relatório. Lembrete de domingo às 17h30 e prazo às 22h ainda não automatizados.</p>
 <form id="weekly-report-form">
 <div class="grid">
@@ -123,6 +125,7 @@ body.printing>#print-area{display:block!important}
 <p><button type="submit">Salvar relatório semanal</button></p>
 <p id="weekly-report-message" class="message" role="status" aria-live="polite"></p>
 </form>
+</div>
 
 </div>
 <div id="report-special" class="hidden">
@@ -346,6 +349,7 @@ async function loadProfile(user){
   el('role-detail').textContent=data.papel==='nacional'?'Perfil: Administrador Nacional — visão de todos os polos autorizados.':`Perfil: Coordenador Local — FJU ${poloNome}.`;
   el('dashboard-note').textContent=`${data.papel==='nacional'?'Visão nacional':'Visão do polo FJU '+poloNome}. Contagens fornecidas pelo Supabase com as políticas RLS da conta autenticada. Relatórios pendentes ainda não calculados.`;
   currentProfile=data;
+  configureWeeklyReportAccess();
   if(data.papel==='nacional')void loadNationalReportOverview();else el('national-report-panel').classList.add('hidden');
   show('app');
   void initializeYouth();
@@ -659,6 +663,21 @@ el('youth-refresh').onclick=loadYouth;
 el('youth-search').addEventListener('input',renderYouth);
 el('youth-list-polo').addEventListener('change',()=>{el('youth-detail').classList.add('hidden');void loadYouth();});
 
+function configureWeeklyReportAccess(){
+  const national=currentProfile?.papel==='nacional';
+  el('national-weekly-controls').classList.toggle('hidden',!national);
+  el('weekly-entry-wrap').classList.toggle('hidden',national);
+  const toggle=el('national-weekly-toggle');
+  toggle.textContent='Preencher relatório excepcionalmente';
+  toggle.setAttribute('aria-expanded','false');
+}
+el('national-weekly-toggle').addEventListener('click',()=>{
+  const wrap=el('weekly-entry-wrap'),opening=wrap.classList.contains('hidden');
+  wrap.classList.toggle('hidden',!opening);
+  el('national-weekly-toggle').textContent=opening?'Ocultar formulário':'Preencher relatório excepcionalmente';
+  el('national-weekly-toggle').setAttribute('aria-expanded',String(opening));
+  if(opening)void setupWeeklyReportPolo();
+});
 async function setupWeeklyReportPolo(){
   const national=currentProfile?.papel==='nacional';
   const wrap=el('weekly-polo-wrap'),select=el('weekly-polo');
