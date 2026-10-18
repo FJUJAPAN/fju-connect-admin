@@ -125,7 +125,15 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 #weekly-report-form select{width:100%;min-width:0;min-height:42px;padding:8px 10px;font-size:14px}
 #weekly-report-form .weekly-submit{display:block;width:100%;min-height:44px;font-size:14px}
 @media(max-width:600px){#weekly-report-form .weekly-report-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 10px}#weekly-report-form label{font-size:11.5px}#weekly-report-form .weekly-date-full label{font-size:12px}#weekly-date-button{white-space:normal}}
-.weekly-calendar-days button:disabled{opacity:.45;cursor:not-allowed;background:#e8ebf1;color:#67758b}</style>
+.weekly-calendar-days button:disabled{opacity:.45;cursor:not-allowed;background:#e8ebf1;color:#67758b}/* Compact weekly report calendar on mobile */
+#weekly-report-form .weekly-calendar-days{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:10px 0}
+#weekly-report-form .weekly-calendar-days button{padding:12px 2px;min-width:0;font-size:14px;font-weight:650;line-height:1.2}
+#weekly-report-form .weekly-calendar-header button{font-size:18px;padding:5px 11px}
+#weekly-report-form .weekly-calendar{padding:12px}
+#weekly-report-form .weekly-date-full label{font-size:12px}
+#weekly-report-form #weekly-date-button{font-size:13px}
+#weekly-entry-wrap>p.muted{font-size:12px;line-height:1.45;margin-bottom:12px}
+</style>
 </head>
 <body>
 <header><div class="wrap"><h1>FJU Connect JAPAN · Admin</h1><p>Painel administrativo — acesso restrito</p></div></header>
@@ -172,11 +180,11 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 </div>
 <div id="national-weekly-controls" class="hidden"><p class="muted">Os relatórios são enviados pelos coordenadores. Use o botão abaixo somente quando precisar preencher excepcionalmente.</p><button type="button" id="national-weekly-toggle" class="secondary" aria-expanded="false">Preencher relatório excepcionalmente</button></div>
 <div id="weekly-entry-wrap">
-<p class="muted">Preencha os números referentes à semana e salve o relatório. Lembrete de domingo às 17h30 e prazo às 22h ainda não automatizados.</p>
+<p class="muted">Preencha os números referentes à semana e salve o relatório. Disponível para preenchimento aos domingos, com prazo até às 22h (horário do Japão).</p>
 <form id="weekly-report-form">
 <div class="grid weekly-report-grid">
 <div id="weekly-polo-wrap" class="hidden"><label for="weekly-polo">Igreja do relatório</label><select id="weekly-polo"><option value="">Selecione a igreja</option></select></div>
-<div class="weekly-calendar-wrap weekly-date-full"><label for="weekly-date-button">Semana do relatório (domingo)</label><input id="weekly-report-date" type="hidden"><button type="button" id="weekly-date-button" class="secondary" aria-expanded="false" aria-controls="weekly-calendar">Selecionar domingo ▾</button><div id="weekly-calendar" class="hidden weekly-calendar"><div class="weekly-calendar-header"><button type="button" id="weekly-prev-month" aria-label="Mês anterior">‹</button><strong id="weekly-month-title"></strong><button type="button" id="weekly-next-month" aria-label="Próximo mês">›</button></div><div id="weekly-calendar-days" class="weekly-calendar-days"></div><small>Selecione um domingo para definir a semana.</small></div></div>
+<div class="weekly-calendar-wrap weekly-date-full"><label for="weekly-date-button">Semana do relatório (domingo)</label><input id="weekly-report-date" type="hidden"><button type="button" id="weekly-date-button" class="secondary" aria-expanded="false" aria-controls="weekly-calendar">Selecionar domingo ▾</button><div id="weekly-calendar" class="hidden weekly-calendar"><div class="weekly-calendar-header"><button type="button" id="weekly-prev-month" aria-label="Mês anterior">‹</button><strong id="weekly-month-title"></strong><button type="button" id="weekly-next-month" aria-label="Próximo mês">›</button></div><div id="weekly-calendar-days" class="weekly-calendar-days"></div><small>Selecione o domingo correspondente à semana.</small></div></div>
 <div><label for="weekly-firmes">Jovens firmes durante a semana</label><select id="weekly-firmes" class="weekly-quantity" required></select></div>
 <div><label for="weekly-novos">Jovens novos durante a semana</label><select id="weekly-novos" class="weekly-quantity" required></select></div>
 <div><label for="weekly-afastados">Jovens afastados durante a semana</label><select id="weekly-afastados" class="weekly-quantity" required></select></div>
@@ -244,7 +252,7 @@ function renderNationalCalendar(){
   const bar=document.createElement('div');bar.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:12px';
   const shift=(n)=>{const d=new Date(Date.UTC(year,month-1+n,1,12));cal.dataset.month=d.toISOString().slice(0,7);renderNationalCalendar();};
   const prev=document.createElement('button');prev.type='button';prev.textContent='‹';prev.setAttribute('aria-label','Mês anterior');prev.addEventListener('click',()=>shift(-1));
-  const title=document.createElement('strong');title.textContent=first.toLocaleDateString('pt-BR',{month:'long',year:'numeric',timeZone:'UTC'});
+  const title=document.createElement('strong');title.textContent=first.toLocaleDateString('pt-BR',{month:'long',timeZone:'UTC'});
   const next=document.createElement('button');next.type='button';next.textContent='›';next.setAttribute('aria-label','Próximo mês');next.addEventListener('click',()=>shift(1));
   bar.append(prev,title,next);cal.append(bar);
   const grid=document.createElement('div');grid.style.cssText='display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;text-align:center';
@@ -839,7 +847,7 @@ document.querySelector('[data-tab="relatorios"]')?.addEventListener('click',()=>
  if(!field||!btn||!panel)return;
  field.value=previousSundayISO();
  let month=field.value.slice(0,7);
- const label=iso=>new Date(iso+'T12:00:00Z').toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric',timeZone:'UTC'});
+ const label=iso=>String(new Date(iso+'T12:00:00Z').getUTCDate()).padStart(2,'0');
  function refreshButton(){
    const end=new Date(field.value+'T12:00:00Z'),start=new Date(end);start.setUTCDate(start.getUTCDate()-6);
    const day=d=>d.getUTCDate();
@@ -857,7 +865,7 @@ document.querySelector('[data-tab="relatorios"]')?.addEventListener('click',()=>
      const date=new Date(Date.UTC(year,m-1,day));if(date.getUTCDay()!==0)continue;
      const iso=date.toISOString().slice(0,10),item=document.createElement('button');item.type='button';item.textContent=label(iso);
      item.className=iso===field.value?'selected':'';item.setAttribute('aria-pressed',String(iso===field.value));
-     if(iso>previousSundayISO()){item.disabled=true;item.title='Disponível somente no domingo desta semana';item.textContent+=' · Bloqueado';}
+     if(iso>previousSundayISO()){item.disabled=true;item.title='Disponível somente no domingo desta semana';item.setAttribute('aria-label',label(iso)+' de '+first.toLocaleDateString('pt-BR',{month:'long',timeZone:'UTC'})+' — bloqueado até domingo');}
      item.addEventListener('click',()=>{if(iso>previousSundayISO())return;field.value=iso;refreshButton();panel.classList.add('hidden');btn.setAttribute('aria-expanded','false');});
      grid.appendChild(item);
    }
