@@ -942,5 +942,20 @@ supabase.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){recove
 if(location.search.includes('error=')){message('auth-message','O link de autenticação falhou ou expirou. Solicite outro.',true)}
 await refresh();
 </script>
-<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('PWA:',err)));}</script>
+<script>
+if('serviceWorker' in navigator){
+  let updating=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(!updating){updating=true;location.reload();}
+  });
+  async function checkPwaVersion(){
+    try{
+      const reg=await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});
+      await reg.update();
+    }catch(err){console.warn('Atualização do aplicativo:',err);}
+  }
+  window.addEventListener('load',checkPwaVersion);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkPwaVersion();});
+}
+</script>
 </body></html>
