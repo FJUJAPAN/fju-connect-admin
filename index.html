@@ -77,6 +77,35 @@ body.printing>#print-area{display:block!important}
 <section id="recovery" class="panel auth hidden"><h2>Definir nova senha</h2><form id="recovery-form"><label for="new-password">Nova senha (mínimo de 8 caracteres)</label><input id="new-password" type="password" minlength="8" autocomplete="new-password" required><label for="confirm-password">Confirmar nova senha</label><input id="confirm-password" type="password" minlength="8" autocomplete="new-password" required><p><button type="submit">Salvar nova senha</button></p></form><p id="recovery-message" class="message" role="status" aria-live="polite"></p></section>
 <div id="app" class="hidden"><div class="topline"><p id="identity" class="muted"></p><button id="logout" class="secondary">Sair</button></div><div class="notice"><strong>Ambiente em validação.</strong> Login, fichas, autorizações, relatórios e impressão disponíveis para testes. Antes de cadastrar dados reais, confirme as permissões de acesso por igreja e a proteção das fotos.</div>
 <div id="notification-settings" class="panel" style="margin-bottom:14px"><h3 style="margin:0 0 8px">🔔 Notificações de relatórios</h3><p id="notification-status" class="muted" role="status" aria-live="polite">Verificando disponibilidade...</p><button type="button" id="enable-notifications">Ativar notificações neste aparelho</button><p class="muted" style="font-size:12px">Esta etapa autoriza notificações no aparelho. Os lembretes automáticos serão ativados após a configuração do serviço de envio.</p></div>
+<script>
+(function(){
+  const status=document.getElementById('notification-status');
+  const button=document.getElementById('enable-notifications');
+  if(!status||!button)return;
+  function update(){
+    if(!window.isSecureContext||!('Notification' in window)||!('serviceWorker' in navigator)){
+      status.textContent='Notificações não disponíveis neste navegador. Abra o aplicativo pela Tela de Início do iPhone.';
+      button.disabled=true;return;
+    }
+    if(Notification.permission==='granted'){
+      status.textContent='Permissão concedida neste aparelho. O envio automático ainda não está ativo.';
+      button.textContent='Permissão ativada';button.disabled=true;
+    }else if(Notification.permission==='denied'){
+      status.textContent='Notificações bloqueadas. Altere a permissão nos Ajustes do iPhone.';
+      button.disabled=true;
+    }else{
+      status.textContent='Toque no botão abaixo para autorizar notificações.';
+      button.disabled=false;
+    }
+  }
+  button.addEventListener('click',async function(){
+    status.textContent='Solicitando permissão ao aparelho...';
+    try{await Notification.requestPermission();update();}
+    catch(err){status.textContent='Falha ao solicitar permissão: '+(err.message||String(err));}
+  });
+  update();
+})();
+</script>
 <nav class="tabs"><button class="active" data-tab="inicio">Visão geral</button><button data-tab="jovens">Fichas</button><button data-tab="relatorios">Relatório semanal</button><button data-tab="autorizacoes">Autorizações</button><button data-tab="config">Configuração</button></nav>
 <section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Polos</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><div class="stat">Relatórios recebidos<b id="report-count">—</b></div><div class="stat">Relatórios pendentes<b id="pending-count">—</b></div></div><p id="dashboard-note" class="muted">Indicadores consultados conforme as permissões da conta autenticada.</p><div id="national-report-panel" class="hidden">
 <h3>Relatórios semanais por igreja</h3>
@@ -861,22 +890,6 @@ el('special-event-form').addEventListener('submit',async e=>{
   await loadSpecialEvents();
 });
 
-function updateNotificationPermissionUI(){
-  const status=el('notification-status'),button=el('enable-notifications');
-  if(!('Notification' in window)||!('serviceWorker' in navigator)||!window.isSecureContext){
-    status.textContent='Este navegador não oferece notificações web compatíveis.';button.disabled=true;return;
-  }
-  const permission=Notification.permission;
-  if(permission==='granted'){status.textContent='Permissão concedida neste aparelho. O envio automático ainda está em configuração.';button.disabled=true;button.textContent='Permissão ativada';}
-  else if(permission==='denied'){status.textContent='Notificações bloqueadas. Ative a permissão nas configurações do navegador ou do aplicativo.';button.disabled=true;}
-  else{status.textContent='Notificações ainda não autorizadas neste aparelho.';button.disabled=false;}
-}
-el('enable-notifications').addEventListener('click',async()=>{
-  if(!('Notification' in window))return;
-  try{await Notification.requestPermission();}catch(e){el('notification-status').textContent='Não foi possível solicitar permissão: '+e.message;}
-  updateNotificationPermissionUI();
-});
-updateNotificationPermissionUI();
 async function refresh(){if(recoveryMode){show('recovery');return}const {data:{user},error}=await supabase.auth.getUser();if(error||!user){show('auth');return}try{await loadProfile(user)}catch(e){show('auth');message('auth-message',e.message,true)}}
 el('login-form').addEventListener('submit',async e=>{e.preventDefault();message('auth-message','Entrando...');const {error}=await supabase.auth.signInWithPassword({email:el('email').value.trim(),password:el('password').value});if(error){message('auth-message','Não foi possível entrar: '+error.message,true);return}await refresh()});
 el('forgot').addEventListener('click',async()=>{const email=el('email').value.trim();if(!email){message('auth-message','Digite seu e-mail acima para receber a recuperação.',true);return}const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});message('auth-message',error?'Não foi possível solicitar a recuperação: '+error.message:'Se a conta estiver cadastrada, enviaremos instruções ao e-mail.',!!error)});
