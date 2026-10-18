@@ -1,0 +1,10 @@
+FJU JAPAN — IDENTIFICAÇÃO INSTITUCIONAL
+
+© 2026 FJU JAPAN.
+Projeto: FJU Connect JAPAN
+Organização responsável: FJU JAPAN
+
+Este repositório contém componentes desenvolvidos para o projeto FJU Connect JAPAN.
+A identificação institucional acima aplica-se aos componentes próprios do projeto, respeitados os direitos, avisos de copyright e licenças de terceiros.
+
+Este aviso não substitui licenças de software nem constitui assinatura criptográfica de integridade.
