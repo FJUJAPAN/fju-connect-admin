@@ -149,7 +149,7 @@ body.printing>#print-area{display:block!important}
 </form>
 <h3>Eventos registrados</h3><div id="special-event-list" class="stat">Carregando eventos...</div>
 </div></section>
-<section id="config" class="panel hidden"><div id="notification-settings" class="panel" style="margin-bottom:14px"><h3 style="margin:0 0 8px">🔔 Notificações de relatórios</h3><p id="notification-status" class="muted" role="status" aria-live="polite">Verificando disponibilidade...</p><button type="button" id="enable-notifications">Ativar notificações neste aparelho</button> <button type="button" class="secondary" id="register-device" hidden>Registrar este aparelho</button><p class="muted" style="font-size:12px">Esta etapa autoriza notificações no aparelho. Os lembretes automáticos serão ativados após a configuração do serviço de envio.</p></div>
+<section id="config" class="panel hidden"><div id="notification-settings" class="panel" style="margin-bottom:14px"><h3 style="margin:0 0 8px">🔔 Notificações de relatórios</h3><p id="notification-status" class="muted" role="status" aria-live="polite">Verificando disponibilidade...</p><button type="button" id="enable-notifications">Ativar notificações neste aparelho</button> <button type="button" class="secondary" id="register-device" hidden>Registrar este aparelho</button> <button type="button" class="secondary" id="unlink-device" hidden>Desvincular este aparelho</button><p class="muted" style="font-size:12px">Esta etapa autoriza notificações no aparelho. Os lembretes automáticos serão ativados após a configuração do serviço de envio.</p></div>
 <h2>Configuração</h2><p id="role-detail"></p><p class="muted">As regras de acesso efetivas são aplicadas no banco pelo RLS. A interface não substitui essas políticas.</p></section></div>
 </main><div id="print-area" class="hidden"></div><footer>FJU Connect JAPAN · Teste de autenticação</footer>
 <script type="module">
@@ -866,6 +866,28 @@ function pushKeyBytes(key){
   const normalized=key.replace(/-/g,'+').replace(/_/g,'/');
   return Uint8Array.from(atob(normalized.padEnd(Math.ceil(normalized.length/4)*4,'=')),c=>c.charCodeAt(0));
 }
+async function currentPushEndpoint(){
+  if(!('serviceWorker' in navigator))return null;
+  const worker=await navigator.serviceWorker.ready;
+  const subscription=await worker.pushManager?.getSubscription();
+  return subscription?.endpoint||null;
+}
+async function unlinkDevice(){
+  const status=el('notification-status'),button=el('unlink-device');
+  button.disabled=true;
+  try{
+    const {data:{user},error:userError}=await supabase.auth.getUser();
+    if(userError||!user)throw new Error('Entre novamente na sua conta.');
+    const endpoint=await currentPushEndpoint();
+    if(!endpoint)throw new Error('Nenhuma inscrição encontrada neste aparelho.');
+    const {data,error}=await supabase.from('fju_push_inscricoes').delete().eq('usuario_id',user.id).eq('endpoint',endpoint).select('id');
+    if(error)throw error;
+    if(!data?.length)throw new Error('Este aparelho não está vinculado a esta conta. Entre na conta que o registrou anteriormente para desvincular.');
+    status.textContent='Aparelho desvinculado desta conta. Agora você pode entrar com outra conta e registrá-lo.';
+  }catch(error){status.textContent='Não foi possível desvincular: '+error.message;}
+  finally{button.disabled=false;}
+}
+el('unlink-device').addEventListener('click',unlinkDevice);
 async function registerDevice(){
   const button=el('register-device'),status=el('notification-status');
   button.disabled=true;status.textContent='Registrando este aparelho...';
@@ -883,7 +905,10 @@ async function registerDevice(){
       usuario_id:user.id,endpoint:json.endpoint,p256dh:json.keys.p256dh,auth_key:json.keys.auth,
       ativo:true,atualizado_em:new Date().toISOString()
     },{onConflict:'endpoint'});
-    if(error)throw error;
+    if(error){
+      if(error.code==='42501'||/row-level security/i.test(error.message||''))throw new Error('Este aparelho pode estar registrado em outra conta. Entre na conta anterior, toque em Desvincular este aparelho e depois tente novamente.');
+      throw error;
+    }
     status.textContent='Aparelho registrado com sucesso. O envio automático ainda não está ativo.';
     button.textContent='Atualizar registro';
   }catch(error){status.textContent='Erro no registro: '+error.message;}
@@ -891,13 +916,13 @@ async function registerDevice(){
 }
 el('register-device').addEventListener('click',registerDevice);
 function updateNotificationPermissionUI(){
-  const status=el('notification-status'),button=el('enable-notifications'),register=el('register-device');
-  register.hidden=true;
+  const status=el('notification-status'),button=el('enable-notifications'),register=el('register-device'),unlink=el('unlink-device');
+  register.hidden=true;unlink.hidden=true;
   if(!('Notification' in window)||!('serviceWorker' in navigator)||!window.isSecureContext){
     status.textContent='Este navegador não oferece notificações web compatíveis.';button.disabled=true;return;
   }
   const permission=Notification.permission;
-  if(permission==='granted'){status.textContent='Permissão concedida. Registre este aparelho para os futuros lembretes.';button.disabled=true;button.textContent='Permissão ativada';register.hidden=false;}
+  if(permission==='granted'){status.textContent='Permissão concedida. Registre este aparelho para os futuros lembretes.';button.disabled=true;button.textContent='Permissão ativada';register.hidden=false;unlink.hidden=false;}
   else if(permission==='denied'){status.textContent='Notificações bloqueadas. Ative a permissão nas configurações do navegador ou do aplicativo.';button.disabled=true;}
   else{status.textContent='Notificações ainda não autorizadas neste aparelho.';button.disabled=false;}
 }
