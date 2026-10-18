@@ -69,7 +69,7 @@ body.printing>#print-area{display:block!important}
 <main class="wrap">
 <section id="auth" class="panel auth"><h2>Entrar</h2><form id="login-form"><label for="email">E-mail</label><input id="email" type="email" autocomplete="username" required><label for="password">Senha</label><input id="password" type="password" autocomplete="current-password" required><p><button type="submit">Entrar</button></p></form><button class="secondary" id="forgot">Enviar recuperação de senha</button><p id="auth-message" class="message" role="status" aria-live="polite"></p></section>
 <section id="recovery" class="panel auth hidden"><h2>Definir nova senha</h2><form id="recovery-form"><label for="new-password">Nova senha (mínimo de 8 caracteres)</label><input id="new-password" type="password" minlength="8" autocomplete="new-password" required><label for="confirm-password">Confirmar nova senha</label><input id="confirm-password" type="password" minlength="8" autocomplete="new-password" required><p><button type="submit">Salvar nova senha</button></p></form><p id="recovery-message" class="message" role="status" aria-live="polite"></p></section>
-<div id="app" class="hidden"><div class="topline"><p id="identity" class="muted"></p><button id="logout" class="secondary">Sair</button></div><div class="notice"><strong>Versão de teste.</strong> Login e perfil conectados ao Supabase. Cadastro e edição de fichas de teste ativados. Fotos armazenadas em bucket privado (em validação). Não insira dados reais até testar as permissões; relatórios e impressão continuam desativados.</div>
+<div id="app" class="hidden"><div class="topline"><p id="identity" class="muted"></p><button id="logout" class="secondary">Sair</button></div><div class="notice"><strong>Ambiente em validação.</strong> Login, fichas, autorizações, relatórios e impressão disponíveis para testes. Antes de cadastrar dados reais, confirme as permissões de acesso por igreja e a proteção das fotos.</div>
 <nav class="tabs"><button class="active" data-tab="inicio">Visão geral</button><button data-tab="jovens">Fichas</button><button data-tab="relatorios">Relatório semanal</button><button data-tab="autorizacoes">Autorizações</button><button data-tab="config">Configuração</button></nav>
 <section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Polos</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><div class="stat">Relatórios recebidos<b id="report-count">—</b></div><div class="stat">Relatórios pendentes<b id="pending-count">—</b></div></div><p id="dashboard-note" class="muted">Indicadores consultados conforme as permissões da conta autenticada.</p><div id="national-report-panel" class="hidden">
 <h3>Painel nacional de resultados</h3>
@@ -490,9 +490,15 @@ async function requestYouthChange(r){
 let currentRequestFilter='pendente';
 async function loadYouthRequests(){
   const list=el('requests-list');list.replaceChildren();el('requests-message').textContent='Consultando solicitações...';
-  let query=supabase.from('fju_solicitacoes').select('id,jovem_id,polo_id,tipo,justificativa,dados_propostos,dados_anteriores,status,criado_em').order('criado_em',{ascending:false}).limit(100);
+  let query=supabase.from('fju_solicitacoes').select('id,jovem_id,polo_id,tipo,justificativa,dados_propostos,dados_anteriores,solicitante_id,status,criado_em').order('criado_em',{ascending:false}).limit(100);
   if(currentProfile?.papel==='coordenador')query=query.eq('polo_id',currentProfile.polo_id);
   const {data,error}=await query;
+  let requesterNames={};
+  if(currentProfile?.papel==='nacional'&&(data||[]).length){
+    const {data:people,error:peopleError}=await supabase.rpc('fju_nomes_solicitantes');
+    if(!peopleError)for(const person of people||[])requesterNames[person.usuario_id]=person.nome;
+    else console.warn('Identificação de solicitantes indisponível',peopleError.message);
+  }
   if(error){message('requests-message','A área depende da configuração no Supabase: '+error.message,true);return;}
   const {data:polos,error:polosError}=await supabase.from('fju_polos').select('id,nome');
   if(polosError){message('requests-message','Não foi possível identificar as igrejas: '+polosError.message,true);return;}
@@ -521,7 +527,13 @@ async function loadYouthRequests(){
     heading.textContent=identificado?jovem.nome_completo:'Ficha não identificada';
     const church=document.createElement('p');church.className='authorization-church';
     church.textContent='Igreja: '+(polo?.nome||'Não identificada');
-    identity.append(heading,church);head.append(avatar,identity);card.append(head);
+    identity.append(heading,church);
+    if(currentProfile?.papel==='nacional'){
+      const requester=document.createElement('p');requester.className='authorization-church';
+      requester.textContent='Solicitante: '+(requesterNames[r.solicitante_id]||'Não identificado');
+      identity.append(requester);
+    }
+    head.append(avatar,identity);card.append(head);
     if(identificado){
       void (async()=>{
         try{
