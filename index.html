@@ -156,6 +156,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 #special-event-list .report-card-subtitle{font-size:11px}
 #special-event-list .actions{margin-top:8px;gap:8px}
 #special-event-list .actions button{font-size:12px;padding:8px 12px}
+#event-requests-list{display:grid;gap:8px;font-size:13px}.event-request-card{border:1px solid #dce4f1;border-radius:10px;padding:11px}.event-request-card .actions{margin-top:8px;gap:8px}.event-request-card button{padding:7px 11px;font-size:12px}
 </style>
 </head>
 <body>
@@ -235,7 +236,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <p><button type="submit" id="special-event-submit">Salvar evento especial</button> <button type="button" id="special-event-cancel" class="secondary" hidden>Cancelar edição</button></p>
 <p id="special-event-message" class="message" role="status" aria-live="polite"></p>
 </form>
-<h3 class="special-event-list-title">Eventos registrados</h3><div id="special-event-list" class="stat">Carregando eventos...</div>
+<div id="event-requests-panel"><h3 class="special-event-list-title">Solicitações de eventos</h3><div id="event-requests-list">Carregando...</div></div><h3 class="special-event-list-title">Eventos registrados</h3><div id="special-event-list" class="stat">Carregando eventos...</div>
 </div></section>
 <section id="config" class="panel hidden"><div id="notification-settings" class="panel" style="margin-bottom:14px"><h3 style="margin:0 0 8px">🔔 Notificações de relatórios</h3><p id="notification-status" class="muted" role="status" aria-live="polite">Verificando disponibilidade...</p><button type="button" id="enable-notifications">Ativar notificações neste aparelho</button> <button type="button" class="secondary" id="register-device" hidden>Registrar este aparelho</button> <button type="button" class="secondary" id="unlink-device" hidden>Desvincular este aparelho</button> <button type="button" class="secondary" id="test-push" hidden>Enviar notificação de teste</button><p class="muted" style="font-size:12px">Esta etapa autoriza notificações no aparelho. Os lembretes automáticos serão ativados após a configuração do serviço de envio.</p></div>
 <h2>Configuração</h2><p id="role-detail"></p><p class="muted">As regras de acesso efetivas são aplicadas no banco pelo RLS. A interface não substitui essas políticas.</p></section></div>
@@ -943,6 +944,7 @@ async function loadSpecialEvents(){
   if(error||poloError){list.textContent='Não foi possível carregar eventos: '+(error?.message||poloError?.message);return;}
   const names=new Map((polos||[]).map(p=>[p.id,p.nome]));
   list.replaceChildren();list.className='report-list';
+  await loadEventRequests();
   if(!events?.length){list.textContent='Nenhum evento especial registrado ainda.';return;}
   for(const ev of events){
     const card=document.createElement('article');card.className='report-card';
@@ -967,13 +969,49 @@ async function loadSpecialEvents(){
     });
     const del=document.createElement('button');del.type='button';del.className='secondary';del.textContent='Excluir';
     del.addEventListener('click',async()=>{
+      if(currentProfile?.papel==='coordenador'){
+        if(!confirm('Solicitar autorização nacional para excluir '+ev.nome_evento+'?'))return;
+        const {data:{user}}=await supabase.auth.getUser();
+        const {error}=await supabase.from('fju_solicitacoes_eventos').insert({tipo:'exclusao',evento_id:String(ev.id),polo_id:String(ev.polo_id),solicitante_id:user.id});
+        message('special-event-message',error?'Não foi possível solicitar: '+error.message:'Solicitação de exclusão enviada para aprovação nacional.',!!error);
+        if(!error)await loadEventRequests();return;
+      }
       if(!confirm('Excluir definitivamente o evento '+ev.nome_evento+'?'))return;
       const {data,error}=await supabase.from('fju_eventos_especiais').delete().eq('id',ev.id).select('id');
       if(error||!data?.length){message('special-event-message','Não foi possível excluir. Verifique as permissões no Supabase: '+(error?.message||'nenhum registro alterado'),true);return;}
       message('special-event-message','Evento excluído.');await loadSpecialEvents();
     });
+    if(currentProfile?.papel==='coordenador'){
+      edit.hidden=true;del.textContent='Solicitar exclusão';
+    }
     actions.append(edit,del);card.append(actions);list.append(card);
   }
+}
+async function loadEventRequests(){
+ const list=el('event-requests-list');if(!list||!currentProfile)return;
+ const {data,error}=await supabase.from('fju_solicitacoes_eventos').select('id,tipo,evento_id,polo_id,dados_propostos,status,criado_em').order('criado_em',{ascending:false}).limit(100);
+ list.replaceChildren();if(error){list.textContent='Não foi possível carregar solicitações: '+error.message;return;}
+ if(!data?.length){list.textContent='Nenhuma solicitação registrada.';return;}
+ for(const req of data){
+  const card=document.createElement('div');card.className='event-request-card';
+  const title=document.createElement('strong');title.textContent=(req.tipo==='inclusao'?'Inclusão':'Exclusão')+' · '+(req.dados_propostos?.nome_evento||'Evento '+(req.evento_id||''));
+  const meta=document.createElement('div');meta.className='muted';meta.textContent='Polo '+req.polo_id+' · '+req.status;
+  card.append(title,meta);
+  if(currentProfile.papel==='nacional'&&req.status==='pendente'){
+   const actions=document.createElement('div');actions.className='actions';
+   for(const [approve,label] of [[true,'Aprovar'],[false,'Rejeitar']]){
+    const btn=document.createElement('button');btn.type='button';btn.className=approve?'':'secondary';btn.textContent=label;
+    btn.addEventListener('click',async()=>{
+     if(!confirm(label+' esta solicitação?'))return;
+     btn.disabled=true;
+     const {error}=await supabase.rpc('fju_decidir_solicitacao_evento',{p_id:req.id,p_aprovar:approve});
+     message('special-event-message',error?'Não foi possível decidir: '+error.message:'Solicitação '+(approve?'aprovada.':'rejeitada.'),!!error);
+     await loadEventRequests();if(!error)await loadSpecialEvents();
+    });actions.append(btn);
+   }card.append(actions);
+  }
+  list.append(card);
+ }
 }
 function resetSpecialEventEdit(){el('special-event-form').reset();el('special-event-edit-id').value='';el('special-event-submit').textContent='Salvar evento especial';el('special-event-cancel').hidden=true;}
 el('special-event-cancel').addEventListener('click',resetSpecialEventEdit);
@@ -985,9 +1023,16 @@ el('special-event-form').addEventListener('submit',async e=>{
   if(!name||!date||!Number.isInteger(total)||total<0){message('special-event-message','Preencha o nome, a data e um total válido.',true);return;}
   const poloId=currentProfile.papel==='nacional'?el('special-event-polo').value:currentProfile.polo_id;
   if(!poloId){message('special-event-message','Selecione a igreja responsável pelo evento.',true);return;}
-  message('special-event-message','Salvando evento...');
+  message('special-event-message',currentProfile.papel==='coordenador'?'Enviando solicitação...':'Salvando evento...');
   const editId=el('special-event-edit-id').value;
   const payload={polo_id:poloId,nome_evento:name,data_evento:date,total_jovens:total};
+  if(currentProfile.papel==='coordenador'){
+    if(editId){message('special-event-message','A edição de eventos existentes é exclusiva do Administrador Nacional.',true);return;}
+    const {data:{user}}=await supabase.auth.getUser();
+    const {error}=await supabase.from('fju_solicitacoes_eventos').insert({tipo:'inclusao',polo_id:String(poloId),dados_propostos:payload,solicitante_id:user.id});
+    if(error){message('special-event-message','Não foi possível solicitar: '+error.message,true);return;}
+    resetSpecialEventEdit();message('special-event-message','Solicitação enviada. O evento aparecerá após a aprovação nacional.');await loadEventRequests();return;
+  }
   let result;
   if(editId)result=await supabase.from('fju_eventos_especiais').update(payload).eq('id',editId).select('id');
   else result=await supabase.from('fju_eventos_especiais').insert({...payload,criado_por:(await supabase.auth.getUser()).data.user?.id||null}).select('id');
