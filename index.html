@@ -471,7 +471,7 @@ async function loadYouthRequests(){
     const identificado=Boolean(jovem&&!jovemError&&polo&&String(jovem.polo_id)===String(r.polo_id));
     const head=document.createElement('div');head.className='authorization-head';
     const avatar=document.createElement('div');avatar.className='authorization-avatar';
-    avatar.textContent=(jovem?.nome_completo||'?').trim().split(/\\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+    avatar.textContent=(jovem?.nome_completo||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
     const identity=document.createElement('div');
     const heading=document.createElement('h3');heading.className='authorization-name';
     heading.textContent=identificado?jovem.nome_completo:'Ficha não identificada';
@@ -483,7 +483,7 @@ async function loadYouthRequests(){
         try{
           const {data:files,error:filesError}=await supabase.storage.from('fju-fotos').list(r.jovem_id,{limit:20});
           if(filesError)return;
-          const file=(files||[]).find(x=>/^perfil\\.(jpg|png|webp)$/i.test(x.name));
+          const file=(files||[]).find(x=>/^perfil\.(jpg|png|webp)$/i.test(x.name));
           if(!file)return;
           const {data:blob,error:photoError}=await supabase.storage.from('fju-fotos').download(r.jovem_id+'/'+file.name);
           if(photoError||!blob||!avatar.isConnected)return;
