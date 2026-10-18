@@ -332,6 +332,8 @@ async function printWeeklyReport(poloId=null){
 }
 el('print-national-report').addEventListener('click',()=>void printWeeklyReport());
 el('national-report-refresh').addEventListener('click',()=>void loadNationalReportOverview());
+el('national-report-date').addEventListener('change',()=>void loadNationalReportOverview());
+el('national-report-date').addEventListener('input',()=>{const v=el('national-report-date').value;if(/^\d{4}-\d{2}-\d{2}$/.test(v))void loadNationalReportOverview();});
 async function loadDashboard(profile,requestId){
   const local=profile.papel==='coordenador';
   el('scope-label').textContent=local?'Polo autorizado':'Polos cadastrados';
