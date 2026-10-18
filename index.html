@@ -56,6 +56,7 @@ body.printing>#print-area{display:block!important}
 @media(max-width:520px){.report-card{padding:13px}.report-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.report-card-title{font-size:16px}}
 
 .authorization-head{display:flex;align-items:center;gap:14px;padding-bottom:14px;border-bottom:1px solid #e0e6f0;margin-bottom:12px}.authorization-avatar{width:78px;height:78px;border-radius:16px;background:#e7ecf6;color:#253b75;display:grid;place-items:center;font-size:25px;font-weight:750;flex:none;object-fit:cover}.authorization-name{margin:0 0 4px;font-size:20px;color:#19264b}.authorization-church{margin:0;color:#61708b;font-size:14px}.authorization-status{display:inline-block;margin:10px 0;padding:5px 10px;background:#fff2d9;color:#825600;border-radius:20px;font-size:12px;font-weight:700}.authorization-changes{display:grid;gap:8px;margin:12px 0}.authorization-change{padding:11px 13px;background:#f4f6fb;border-radius:11px}.authorization-change b{display:block;margin-bottom:6px;font-size:13px}.authorization-change span{display:block;overflow-wrap:anywhere;font-size:13px}.authorization-old{color:#61708b}.authorization-new{color:#176b44;font-weight:700}.authorization-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.authorization-note{font-size:13px;color:#61708b;margin:8px 0}
+.authorization-filters{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.authorization-filters button{background:#e2e8f3;color:#1c2b4e}.authorization-filters button.active{background:#253b75;color:white}.authorization-status.aprovada{background:#e8f5ed;color:#176b44}.authorization-status.rejeitada{background:#fde8e8;color:#9c2929}.authorization-history-note{padding:9px 12px;border-radius:10px;background:#fff5db;color:#795817;font-size:12px}
 </style>
 </head>
 <body>
@@ -96,7 +97,7 @@ body.printing>#print-area{display:block!important}
 <label for="youth-list-polo">Visualizar fichas da igreja</label><select id="youth-list-polo"><option value="">Selecione uma igreja</option></select><label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite parte do nome">
 <div id="youth-list" style="margin-top:12px"></div><div id="youth-detail" class="panel hidden" style="margin-top:16px;border:1px solid #dce3ef"></div>
 </section>
-<section id="autorizacoes" class="panel hidden"><h2>Autorizações de fichas</h2><p class="muted">Solicitações de alteração ou exclusão aguardando aprovação nacional. Nenhuma ficha é modificada ao enviar um pedido.</p><button type="button" id="requests-refresh" class="secondary">Atualizar solicitações</button><p id="requests-message" class="message" role="status"></p><div id="requests-list" class="report-list"></div></section><section id="relatorios" class="panel hidden">
+<section id="autorizacoes" class="panel hidden"><h2>Autorizações de fichas</h2><p class="muted">Solicitações de alteração ou exclusão aguardando aprovação nacional. Nenhuma ficha é modificada ao enviar um pedido.</p><button type="button" id="requests-refresh" class="secondary">Atualizar solicitações</button><p id="requests-message" class="message" role="status"></p><div class="authorization-filters" id="requests-filters"><button type="button" data-request-filter="pendente" class="active">Pendentes</button><button type="button" data-request-filter="aprovada">Aprovadas</button><button type="button" data-request-filter="rejeitada">Rejeitadas</button><button type="button" data-request-filter="todas">Todas</button></div><div id="requests-list" class="report-list"></div></section><section id="relatorios" class="panel hidden">
 <h2>Relatórios</h2>
 <div class="tabs" style="margin-bottom:16px"><button type="button" class="active" data-report-tab="semanal">Relatório semanal</button><button type="button" data-report-tab="especial">Evento especial</button></div>
 <div id="report-weekly">
@@ -452,6 +453,7 @@ async function requestYouthChange(r){
   if(error){youthMessage('Não foi possível solicitar. Verifique se a tabela de autorizações foi configurada: '+error.message,true);return;}
   youthMessage('Solicitação enviada ao Administrador Nacional. A ficha não foi alterada.');
 }
+let currentRequestFilter='pendente';
 async function loadYouthRequests(){
   const list=el('requests-list');list.replaceChildren();el('requests-message').textContent='Consultando solicitações...';
   let query=supabase.from('fju_solicitacoes').select('id,jovem_id,polo_id,tipo,justificativa,dados_propostos,status,criado_em').order('criado_em',{ascending:false}).limit(100);
@@ -461,8 +463,16 @@ async function loadYouthRequests(){
   const {data:polos,error:polosError}=await supabase.from('fju_polos').select('id,nome');
   if(polosError){message('requests-message','Não foi possível identificar as igrejas: '+polosError.message,true);return;}
   const poloRows=polos||[];
-  message('requests-message',(data||[]).length+' solicitação(ões) encontrada(s).');
-  for(const r of data||[]){
+  const counts={pendente:0,aprovada:0,rejeitada:0};
+  for(const request of data||[])if(Object.hasOwn(counts,request.status))counts[request.status]++;
+  for(const btn of document.querySelectorAll('[data-request-filter]')){
+    const filter=btn.dataset.requestFilter;
+    btn.classList.toggle('active',filter===currentRequestFilter);
+    btn.textContent=({pendente:'Pendentes',aprovada:'Aprovadas',rejeitada:'Rejeitadas',todas:'Todas'})[filter]+' ('+(filter==='todas'?(data||[]).length:counts[filter])+')';
+  }
+  const visible=(data||[]).filter(r=>currentRequestFilter==='todas'||r.status===currentRequestFilter);
+  message('requests-message',visible.length+' solicitação(ões) nesta categoria.');
+  for(const r of visible){
     const card=document.createElement('article');card.className='report-card';
     const {data:jovem,error:jovemError}=await supabase.from('fju_jovens')
       .select('nome_completo,polo_id,nascimento,telefone,nacionalidade_iso2,idiomas,patente,categoria')
@@ -495,6 +505,7 @@ async function loadYouthRequests(){
       })();
     }
     const status=document.createElement('div');status.className='authorization-status';
+    status.classList.add(r.status);
     status.textContent=(r.tipo==='exclusao'?'Exclusão':r.tipo==='patente'?'Patente':'Alteração')+' · '+r.status;
     card.append(status);
     const desc=document.createElement('p');desc.className='authorization-note';
@@ -506,11 +517,16 @@ async function loadYouthRequests(){
       for(const [field,next] of Object.entries(r.dados_propostos)){
         const item=document.createElement('div');item.className='authorization-change';
         const label=document.createElement('b');label.textContent=nomes[field]||field;
-        const before=document.createElement('span');before.className='authorization-old';before.textContent='Atual: '+fmt(jovem?.[field]);
-        const after=document.createElement('span');after.className='authorization-new';after.textContent='Solicitado: '+fmt(next);
+        const before=document.createElement('span');before.className='authorization-old';before.textContent=(r.status==='pendente'?'Atual: '+fmt(jovem?.[field]):'Valor anterior: não registrado nesta solicitação');
+        const after=document.createElement('span');after.className='authorization-new';after.textContent=(r.status==='pendente'?'Solicitado: ':'Valor solicitado: ')+fmt(next);
         item.append(label,before,after);changes.append(item);
       }
       card.append(changes);
+      if(r.status!=='pendente'){
+        const note=document.createElement('p');note.className='authorization-history-note';
+        note.textContent='Histórico anterior: esta solicitação não armazenou os valores originais. O valor solicitado está preservado; não é possível reconstruir com segurança o valor anterior.';
+        card.append(note);
+      }
     }
     const meta=document.createElement('p');meta.className='authorization-note';
     meta.textContent='Ficha: '+r.jovem_id;card.append(meta);
@@ -531,6 +547,7 @@ async function loadYouthRequests(){
     list.append(card);
   }
 }
+document.querySelectorAll('[data-request-filter]').forEach(btn=>btn.addEventListener('click',()=>{currentRequestFilter=btn.dataset.requestFilter;void loadYouthRequests();}));
 el('requests-refresh').addEventListener('click',()=>void loadYouthRequests());
 function editYouth(id){
   const r=youthRows.find(x=>x.id===id);if(!r)return;
