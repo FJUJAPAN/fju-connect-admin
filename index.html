@@ -460,15 +460,36 @@ async function loadYouthRequests(){
   message('requests-message',(data||[]).length+' solicitação(ões) encontrada(s).');
   for(const r of data||[]){
     const card=document.createElement('article');card.className='report-card';
-    const title=document.createElement('strong');title.textContent=(r.tipo==='exclusao'?'Exclusão':'Alteração')+' · '+r.status;
+    const {data:jovem,error:jovemError}=await supabase.from('fju_jovens')
+      .select('nome_completo,polo_id,nascimento,telefone,nacionalidade_iso2,idiomas,patente,categoria')
+      .eq('id',r.jovem_id).maybeSingle();
+    const polo=poloRows.find(p=>String(p.id)===String(r.polo_id));
+    const identificado=Boolean(jovem&&!jovemError&&polo&&String(jovem.polo_id)===String(r.polo_id));
+    const heading=document.createElement('h3');
+    heading.textContent=identificado?jovem.nome_completo:'Ficha não identificada';
+    const church=document.createElement('p');church.className='muted';
+    church.textContent='Igreja: '+(polo?.nome||'Não identificada');
+    const title=document.createElement('strong');
+    title.textContent=(r.tipo==='exclusao'?'Exclusão':r.tipo==='patente'?'Patente':'Alteração')+' · '+r.status;
     const desc=document.createElement('p');desc.textContent=r.justificativa||'Sem justificativa';
+    card.append(heading,church,title,desc);
+    const nomes={nome_completo:'Nome',nascimento:'Nascimento',telefone:'Telefone',nacionalidade_iso2:'Nacionalidade',idiomas:'Idiomas',patente:'Patente',categoria:'Categoria'};
     if(r.dados_propostos&&(r.tipo==='edicao'||r.tipo==='patente')){
-      const {data:original}=await supabase.from('fju_jovens').select('nome_completo,nascimento,telefone,nacionalidade_iso2,idiomas,patente,categoria').eq('id',r.jovem_id).maybeSingle();
-      for(const [field,next] of Object.entries(r.dados_propostos)){const p=document.createElement('p');p.textContent=field+': '+JSON.stringify(original?.[field]??null)+' → '+JSON.stringify(next);card.append(p);}
+      for(const [field,next] of Object.entries(r.dados_propostos)){
+        const p=document.createElement('p');
+        p.textContent=(nomes[field]||field)+': '+JSON.stringify(jovem?.[field]??null)+' → '+JSON.stringify(next);
+        card.append(p);
+      }
     }
-    const meta=document.createElement('p');meta.className='muted';meta.textContent='Ficha: '+r.jovem_id+' · Igreja: '+r.polo_id;
-    card.append(title,desc,meta);
-    if(currentProfile?.papel==='nacional'&&r.status==='pendente'){
+    const meta=document.createElement('p');meta.className='muted';
+    meta.textContent='Identificação da ficha: '+r.jovem_id;
+    card.append(meta);
+    if(!identificado){
+      const warn=document.createElement('p');warn.style.color='#b42318';
+      warn.textContent='Não foi possível confirmar o jovem e a igreja. Aprovação bloqueada até corrigir a identificação.';
+      card.append(warn);
+    }
+    if(currentProfile?.papel==='nacional'&&r.status==='pendente'&&identificado){
       const approve=document.createElement('button');approve.type='button';approve.textContent='Aprovar solicitação';
       approve.onclick=async()=>{if(!confirm('Aprovar esta solicitação? A ficha será atualizada automaticamente.'))return;
         const {error}=await supabase.rpc('fju_decidir_solicitacao',{p_solicitacao_id:r.id,p_aprovar:true});
