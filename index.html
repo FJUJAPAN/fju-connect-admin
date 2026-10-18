@@ -185,6 +185,7 @@ async function loadNationalReportOverview(){
   const submitted=poloRows.filter(p=>byPolo.has(p.id)).length;
   const pending=Math.max(0,poloRows.length-submitted);
   el('pending-count').textContent=String(pending);
+  el('report-count').textContent=String(submitted);
   const total=(key,rows=selected)=>rows.reduce((sum,r)=>sum+(Number(r[key])||0),0);
   const summary=el('national-report-summary');summary.replaceChildren();
   const summaryItems=[
@@ -316,9 +317,14 @@ async function loadDashboard(profile,requestId){
   el('scope-count').textContent=local?'1':'—';
   el('youth-count').textContent='…';el('report-count').textContent='…';
   if(!local){try{const n=await countRows('fju_polos');if(requestId===profileRequest)el('scope-count').textContent=String(n)}catch{if(requestId===profileRequest)el('scope-count').textContent='Indisponível'}}
-  for(const [table,id] of [['fju_jovens','youth-count'],['fju_relatorios','report-count']]){
+  for(const [table,id] of [['fju_jovens','youth-count']]){
     try{const n=await countRows(table);if(requestId===profileRequest)el(id).textContent=String(n)}
     catch{if(requestId===profileRequest)el(id).textContent='Indisponível'}
+  }
+  if(local){
+    try{const n=await countRows('fju_relatorios_semanais');if(requestId===profileRequest)el('report-count').textContent=String(n)}
+    catch{if(requestId===profileRequest)el('report-count').textContent='Indisponível'}
+    if(requestId===profileRequest)el('pending-count').textContent='—';
   }
 }
 
