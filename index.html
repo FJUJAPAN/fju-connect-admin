@@ -109,6 +109,7 @@ body.printing>#print-area{display:block!important}
 <p class="muted">Preencha os números referentes à semana e salve o relatório. Lembrete de domingo às 17h30 e prazo às 22h ainda não automatizados.</p>
 <form id="weekly-report-form">
 <div class="grid">
+<div id="weekly-polo-wrap" class="hidden"><label for="weekly-polo">Igreja do relatório</label><select id="weekly-polo"><option value="">Selecione a igreja</option></select></div>
 <div><label for="weekly-report-date">Data do domingo do relatório</label><input id="weekly-report-date" type="date" required></div>
 <div><label for="weekly-firmes">Jovens firmes durante a semana</label><select id="weekly-firmes" class="weekly-quantity" required></select></div>
 <div><label for="weekly-novos">Jovens novos durante a semana</label><select id="weekly-novos" class="weekly-quantity" required></select></div>
@@ -652,14 +653,29 @@ el('youth-refresh').onclick=loadYouth;
 el('youth-search').addEventListener('input',renderYouth);
 el('youth-list-polo').addEventListener('change',()=>{el('youth-detail').classList.add('hidden');void loadYouth();});
 
+async function setupWeeklyReportPolo(){
+  const national=currentProfile?.papel==='nacional';
+  const wrap=el('weekly-polo-wrap'),select=el('weekly-polo');
+  wrap.classList.toggle('hidden',!national);select.required=national;
+  if(!national)return;
+  select.replaceChildren();
+  const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Selecione a igreja';select.append(placeholder);
+  const {data,error}=await supabase.from('fju_polos').select('id,nome').order('nome');
+  if(error){message('weekly-report-message','Não foi possível carregar as igrejas: '+error.message,true);return;}
+  for(const p of data||[]){const opt=document.createElement('option');opt.value=p.id;opt.textContent=p.nome;select.append(opt);}
+}
+document.querySelector('[data-tab="relatorios"]')?.addEventListener('click',()=>void setupWeeklyReportPolo());
 el('weekly-report-form').addEventListener('submit',async e=>{
   e.preventDefault();if(!currentProfile)return;
   const date=el('weekly-report-date').value;
+  const poloId=currentProfile.papel==='nacional'?el('weekly-polo').value:currentProfile.polo_id;
+  if(!poloId){message('weekly-report-message','Selecione a igreja antes de salvar.',true);return;}
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||new Date(date+'T12:00:00Z').getUTCDay()!==0){message('weekly-report-message','Selecione uma data de domingo para este relatório.',true);return;}
   const ids=['weekly-firmes','weekly-novos','weekly-afastados','weekly-domingo','weekly-encontro','weekly-espirito','weekly-aguas','weekly-total'];
   const values=ids.map(id=>Number(el(id).value));
   if(!date||values.some(v=>!Number.isInteger(v)||v<0)){message('weekly-report-message','Preencha todos os campos com números inteiros iguais ou maiores que zero.',true);return;}
   const user=(await supabase.auth.getUser()).data.user;
-  const payload={polo_id:currentProfile.polo_id||null,semana_domingo:date,jovens_firmes:values[0],jovens_novos:values[1],jovens_afastados:values[2],presenca_domingo_930:values[3],presenca_encontro_fju:values[4],batizados_espirito_santo:values[5],batizados_aguas:values[6],total_jovens_unicos:values[7],criado_por:user?.id||null};
+  const payload={polo_id:poloId,semana_domingo:date,jovens_firmes:values[0],jovens_novos:values[1],jovens_afastados:values[2],presenca_domingo_930:values[3],presenca_encontro_fju:values[4],batizados_espirito_santo:values[5],batizados_aguas:values[6],total_jovens_unicos:values[7],criado_por:user?.id||null};
   message('weekly-report-message','Salvando relatório...');
   const {error}=await supabase.from('fju_relatorios_semanais').upsert(payload,{onConflict:'polo_id,semana_domingo'});
   if(error){message('weekly-report-message','Não foi possível salvar: '+error.message,true);return;}
