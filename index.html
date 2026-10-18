@@ -461,7 +461,7 @@ async function requestYouthChange(r){
 let currentRequestFilter='pendente';
 async function loadYouthRequests(){
   const list=el('requests-list');list.replaceChildren();el('requests-message').textContent='Consultando solicitações...';
-  let query=supabase.from('fju_solicitacoes').select('id,jovem_id,polo_id,tipo,justificativa,dados_propostos,status,criado_em').order('criado_em',{ascending:false}).limit(100);
+  let query=supabase.from('fju_solicitacoes').select('id,jovem_id,polo_id,tipo,justificativa,dados_propostos,dados_anteriores,status,criado_em').order('criado_em',{ascending:false}).limit(100);
   if(currentProfile?.papel==='coordenador')query=query.eq('polo_id',currentProfile.polo_id);
   const {data,error}=await query;
   if(error){message('requests-message','A área depende da configuração no Supabase: '+error.message,true);return;}
@@ -522,12 +522,12 @@ async function loadYouthRequests(){
       for(const [field,next] of Object.entries(r.dados_propostos)){
         const item=document.createElement('div');item.className='authorization-change';
         const label=document.createElement('b');label.textContent=nomes[field]||field;
-        const before=document.createElement('span');before.className='authorization-old';before.textContent=(r.status==='pendente'?'Atual: '+fmt(jovem?.[field]):'Valor anterior: não registrado nesta solicitação');
+        const before=document.createElement('span');before.className='authorization-old';before.textContent=Object.prototype.hasOwnProperty.call(r.dados_anteriores||{},field)?'Anterior: '+fmt(r.dados_anteriores[field]):(r.status==='pendente'?'Atual (não registrado): '+fmt(jovem?.[field]):'Valor anterior: não registrado');
         const after=document.createElement('span');after.className='authorization-new';after.textContent=(r.status==='pendente'?'Solicitado: ':'Valor solicitado: ')+fmt(next);
         item.append(label,before,after);changes.append(item);
       }
       card.append(changes);
-      if(r.status!=='pendente'){
+      if(r.status!=='pendente'&&!r.dados_anteriores){
         const note=document.createElement('p');note.className='authorization-history-note';
         note.textContent='Histórico anterior: esta solicitação não armazenou os valores originais. O valor solicitado está preservado; não é possível reconstruir com segurança o valor anterior.';
         card.append(note);
