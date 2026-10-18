@@ -377,12 +377,20 @@ async function loadYouthPhoto(id){
 async function loadYouth(){
   if(!currentProfile)return;
   youthMessage('Consultando fichas de teste...');
-  let q=supabase.from('fju_jovens').select('id,polo_id,nome_completo,nascimento,telefone,nacionalidade_iso2,idiomas,patente,categoria,excluido_em').is('excluido_em',null).order('nome_completo').limit(200);
-  if(currentProfile.papel==='coordenador')q=q.eq('polo_id',currentProfile.polo_id);
-  else if(el('youth-list-polo').value)q=q.eq('polo_id',el('youth-list-polo').value);
-  const {data,error}=await q;
-  if(error){youthMessage('Erro na consulta: '+error.message,true);return;}
-  youthRows=data||[];renderYouth();youthMessage(`${youthRows.length} ficha(s) carregada(s) da igreja selecionada. Limite da lista: 200.`);
+  const polo=currentProfile.papel==='coordenador'?currentProfile.polo_id:el('youth-list-polo').value;
+  if(!polo){youthRows=[];renderYouth();youthMessage('Selecione uma igreja para visualizar as fichas.');return;}
+  const all=[],batchSize=500;
+  for(let start=0;;start+=batchSize){
+    const {data,error}=await supabase.from('fju_jovens')
+      .select('id,polo_id,nome_completo,nascimento,telefone,nacionalidade_iso2,idiomas,patente,categoria,excluido_em')
+      .is('excluido_em',null).eq('polo_id',polo)
+      .order('nome_completo').order('id')
+      .range(start,start+batchSize-1);
+    if(error){youthMessage('Erro na consulta: '+error.message,true);return;}
+    all.push(...(data||[]));
+    if(!data||data.length<batchSize)break;
+  }
+  youthRows=all;renderYouth();youthMessage(`${youthRows.length} ficha(s) carregada(s) da igreja selecionada.`);
 }
 function renderYouth(){
   const term=el('youth-search').value.trim().toLocaleLowerCase();
