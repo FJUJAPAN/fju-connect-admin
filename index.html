@@ -74,7 +74,7 @@ body.printing>#print-area{display:block!important}
 <section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Polos</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><div class="stat">Relatórios recebidos<b id="report-count">—</b></div><div class="stat">Relatórios pendentes<b id="pending-count">—</b></div></div><p id="dashboard-note" class="muted">Indicadores consultados conforme as permissões da conta autenticada.</p><div id="national-report-panel" class="hidden">
 <h3>Relatórios semanais por igreja</h3>
 <p class="muted">Indicadores calculados a partir dos relatórios semanais registrados pelos polos.</p>
-<div class="grid"><div><label for="national-report-date">Escolha um dia da semana</label><input id="national-report-date" type="date"><p id="national-week-range" class="muted" style="font-weight:600;margin:8px 0 0"></p></div><div class="actions" style="align-self:end"><button type="button" id="national-report-refresh">Atualizar painel</button><button type="button" id="print-national-report" class="secondary">Imprimir relatório nacional A4</button></div></div>
+<div class="grid"><div><label for="national-week-button">Semana do relatório</label><div style="position:relative"><button type="button" id="national-week-button" class="secondary" style="width:100%;text-align:left;min-height:46px">📅 Selecionar semana</button><input id="national-report-date" type="date" aria-label="Escolher um dia da semana" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer"></div></div><div class="actions" style="align-self:end"><button type="button" id="national-report-refresh">Atualizar painel</button><button type="button" id="print-national-report" class="secondary">Imprimir relatório nacional A4</button></div></div>
 <h3 class="report-section-title">Relatórios das igrejas</h3>
 <div class="grid"><div><label for="national-status-filter">Situação do envio</label><select id="national-status-filter"><option value="enviado">Somente enviados</option><option value="todos" selected>Todos os polos</option><option value="pendente">Somente pendentes</option><option value="prazo">Enviados no prazo</option><option value="atrasado">Enviados com atraso</option><option value="indefinido">Enviados sem horário registrado</option></select></div><div><label for="national-polo-filter">Igreja / polo</label><select id="national-polo-filter"><option value="">Todas as igrejas</option></select></div></div>
 <p id="national-filter-count" class="muted"></p><div id="national-report-list" class="report-list">Carregando acompanhamento...</div>
@@ -168,7 +168,7 @@ function updateNationalWeekRange(sundayISO){
   const sunday=new Date(sundayISO+'T12:00:00Z');
   const monday=new Date(sunday);monday.setUTCDate(monday.getUTCDate()-6);
   const fmt=d=>String(d.getUTCDate()).padStart(2,'0')+'/'+String(d.getUTCMonth()+1).padStart(2,'0')+'/'+d.getUTCFullYear();
-  el('national-week-range').textContent='Semana: '+fmt(monday)+' (seg) — '+fmt(sunday)+' (dom)';
+  el('national-week-button').textContent='📅  '+fmt(monday)+' (seg) — '+fmt(sunday)+' (dom)  ▾';
 }
 function reportDeadlineStatus(r,week){
   if(!r)return 'pendente';
