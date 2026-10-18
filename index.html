@@ -125,7 +125,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 #weekly-report-form select{width:100%;min-width:0;min-height:42px;padding:8px 10px;font-size:14px}
 #weekly-report-form .weekly-submit{display:block;width:100%;min-height:44px;font-size:14px}
 @media(max-width:600px){#weekly-report-form .weekly-report-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 10px}#weekly-report-form label{font-size:11.5px}#weekly-report-form .weekly-date-full label{font-size:12px}#weekly-date-button{white-space:normal}}
-</style>
+.weekly-calendar-days button:disabled{opacity:.45;cursor:not-allowed;background:#e8ebf1;color:#67758b}</style>
 </head>
 <body>
 <header><div class="wrap"><h1>FJU Connect JAPAN · Admin</h1><p>Painel administrativo — acesso restrito</p></div></header>
@@ -837,7 +837,7 @@ document.querySelector('[data-tab="relatorios"]')?.addEventListener('click',()=>
 (function(){
  const field=document.getElementById('weekly-report-date'),btn=document.getElementById('weekly-date-button'),panel=document.getElementById('weekly-calendar');
  if(!field||!btn||!panel)return;
- field.value=normalizeReportSunday(new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()));
+ field.value=previousSundayISO();
  let month=field.value.slice(0,7);
  const label=iso=>new Date(iso+'T12:00:00Z').toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric',timeZone:'UTC'});
  function refreshButton(){
@@ -853,7 +853,8 @@ document.querySelector('[data-tab="relatorios"]')?.addEventListener('click',()=>
      const date=new Date(Date.UTC(year,m-1,day));if(date.getUTCDay()!==0)continue;
      const iso=date.toISOString().slice(0,10),item=document.createElement('button');item.type='button';item.textContent=label(iso);
      item.className=iso===field.value?'selected':'';item.setAttribute('aria-pressed',String(iso===field.value));
-     item.addEventListener('click',()=>{field.value=iso;refreshButton();panel.classList.add('hidden');btn.setAttribute('aria-expanded','false');});
+     if(iso>previousSundayISO()){item.disabled=true;item.title='Disponível somente no domingo desta semana';item.textContent+=' · Bloqueado';}
+     item.addEventListener('click',()=>{if(iso>previousSundayISO())return;field.value=iso;refreshButton();panel.classList.add('hidden');btn.setAttribute('aria-expanded','false');});
      grid.appendChild(item);
    }
  }
