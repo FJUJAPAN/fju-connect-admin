@@ -55,6 +55,7 @@ body.printing>#print-area{display:block!important}
 
 @media(max-width:520px){.report-card{padding:13px}.report-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.report-card-title{font-size:16px}}
 
+.authorization-head{display:flex;align-items:center;gap:14px;padding-bottom:14px;border-bottom:1px solid #e0e6f0;margin-bottom:12px}.authorization-avatar{width:78px;height:78px;border-radius:16px;background:#e7ecf6;color:#253b75;display:grid;place-items:center;font-size:25px;font-weight:750;flex:none;object-fit:cover}.authorization-name{margin:0 0 4px;font-size:20px;color:#19264b}.authorization-church{margin:0;color:#61708b;font-size:14px}.authorization-status{display:inline-block;margin:10px 0;padding:5px 10px;background:#fff2d9;color:#825600;border-radius:20px;font-size:12px;font-weight:700}.authorization-changes{display:grid;gap:8px;margin:12px 0}.authorization-change{padding:11px 13px;background:#f4f6fb;border-radius:11px}.authorization-change b{display:block;margin-bottom:6px;font-size:13px}.authorization-change span{display:block;overflow-wrap:anywhere;font-size:13px}.authorization-old{color:#61708b}.authorization-new{color:#176b44;font-weight:700}.authorization-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.authorization-note{font-size:13px;color:#61708b;margin:8px 0}
 </style>
 </head>
 <body>
@@ -468,25 +469,51 @@ async function loadYouthRequests(){
       .eq('id',r.jovem_id).maybeSingle();
     const polo=poloRows.find(p=>String(p.id)===String(r.polo_id));
     const identificado=Boolean(jovem&&!jovemError&&polo&&String(jovem.polo_id)===String(r.polo_id));
-    const heading=document.createElement('h3');
+    const head=document.createElement('div');head.className='authorization-head';
+    const avatar=document.createElement('div');avatar.className='authorization-avatar';
+    avatar.textContent=(jovem?.nome_completo||'?').trim().split(/\\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+    const identity=document.createElement('div');
+    const heading=document.createElement('h3');heading.className='authorization-name';
     heading.textContent=identificado?jovem.nome_completo:'Ficha não identificada';
-    const church=document.createElement('p');church.className='muted';
+    const church=document.createElement('p');church.className='authorization-church';
     church.textContent='Igreja: '+(polo?.nome||'Não identificada');
-    const title=document.createElement('strong');
-    title.textContent=(r.tipo==='exclusao'?'Exclusão':r.tipo==='patente'?'Patente':'Alteração')+' · '+r.status;
-    const desc=document.createElement('p');desc.textContent=r.justificativa||'Sem justificativa';
-    card.append(heading,church,title,desc);
-    const nomes={nome_completo:'Nome',nascimento:'Nascimento',telefone:'Telefone',nacionalidade_iso2:'Nacionalidade',idiomas:'Idiomas',patente:'Patente',categoria:'Categoria'};
-    if(r.dados_propostos&&(r.tipo==='edicao'||r.tipo==='patente')){
-      for(const [field,next] of Object.entries(r.dados_propostos)){
-        const p=document.createElement('p');
-        p.textContent=(nomes[field]||field)+': '+JSON.stringify(jovem?.[field]??null)+' → '+JSON.stringify(next);
-        card.append(p);
-      }
+    identity.append(heading,church);head.append(avatar,identity);card.append(head);
+    if(identificado){
+      void (async()=>{
+        try{
+          const {data:files,error:filesError}=await supabase.storage.from('fju-fotos').list(r.jovem_id,{limit:20});
+          if(filesError)return;
+          const file=(files||[]).find(x=>/^perfil\\.(jpg|png|webp)$/i.test(x.name));
+          if(!file)return;
+          const {data:blob,error:photoError}=await supabase.storage.from('fju-fotos').download(r.jovem_id+'/'+file.name);
+          if(photoError||!blob||!avatar.isConnected)return;
+          const url=URL.createObjectURL(blob);
+          const img=document.createElement('img');img.className='authorization-avatar';img.alt='Foto de '+jovem.nome_completo;
+          img.onload=()=>URL.revokeObjectURL(url);img.onerror=()=>URL.revokeObjectURL(url);
+          img.src=url;avatar.replaceWith(img);
+        }catch(e){console.warn('Foto indisponível na autorização',e);}
+      })();
     }
-    const meta=document.createElement('p');meta.className='muted';
-    meta.textContent='Identificação da ficha: '+r.jovem_id;
-    card.append(meta);
+    const status=document.createElement('div');status.className='authorization-status';
+    status.textContent=(r.tipo==='exclusao'?'Exclusão':r.tipo==='patente'?'Patente':'Alteração')+' · '+r.status;
+    card.append(status);
+    const desc=document.createElement('p');desc.className='authorization-note';
+    desc.textContent='Motivo: '+(r.justificativa||'Não informado');card.append(desc);
+    const nomes={nome_completo:'Nome',nascimento:'Nascimento',telefone:'Telefone',nacionalidade_iso2:'Nacionalidade',idiomas:'Idiomas',patente:'Patente',categoria:'Categoria'};
+    const fmt=value=>value==null?'Não informado':Array.isArray(value)?value.join(', '):String(value);
+    if(r.dados_propostos&&(r.tipo==='edicao'||r.tipo==='patente')){
+      const changes=document.createElement('div');changes.className='authorization-changes';
+      for(const [field,next] of Object.entries(r.dados_propostos)){
+        const item=document.createElement('div');item.className='authorization-change';
+        const label=document.createElement('b');label.textContent=nomes[field]||field;
+        const before=document.createElement('span');before.className='authorization-old';before.textContent='Atual: '+fmt(jovem?.[field]);
+        const after=document.createElement('span');after.className='authorization-new';after.textContent='Solicitado: '+fmt(next);
+        item.append(label,before,after);changes.append(item);
+      }
+      card.append(changes);
+    }
+    const meta=document.createElement('p');meta.className='authorization-note';
+    meta.textContent='Ficha: '+r.jovem_id;card.append(meta);
     if(!identificado){
       const warn=document.createElement('p');warn.style.color='#b42318';
       warn.textContent='Não foi possível confirmar o jovem e a igreja. Aprovação bloqueada até corrigir a identificação.';
@@ -499,7 +526,7 @@ async function loadYouthRequests(){
         if(error)message('requests-message',error.message,true);else {await loadYouthRequests();await loadYouth();}};
       const deny=document.createElement('button');deny.type='button';deny.className='secondary';deny.textContent='Recusar';
       deny.onclick=async()=>{if(!confirm('Rejeitar esta solicitação? A ficha não será alterada.'))return;const {error}=await supabase.rpc('fju_decidir_solicitacao',{p_solicitacao_id:r.id,p_aprovar:false});if(error)message('requests-message',error.message,true);else void loadYouthRequests();};
-      card.append(approve,deny);
+      const actions=document.createElement('div');actions.className='authorization-actions';actions.append(approve,deny);card.append(actions);
     }
     list.append(card);
   }
