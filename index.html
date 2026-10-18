@@ -75,12 +75,13 @@ body.printing>#print-area{display:block!important}
 <h3>Relatórios semanais por igreja</h3>
 <p class="muted">Indicadores calculados a partir dos relatórios semanais registrados pelos polos.</p>
 <div class="grid"><div><label for="national-report-date">Domingo do relatório</label><input id="national-report-date" type="date"></div><div class="actions" style="align-self:end"><button type="button" id="national-report-refresh">Atualizar painel</button><button type="button" id="print-national-report" class="secondary">Imprimir relatório nacional A4</button></div></div>
-<div id="national-report-summary" class="grid"></div>
+<h3 class="report-section-title">Relatórios das igrejas</h3>
+<div class="grid"><div><label for="national-status-filter">Situação do envio</label><select id="national-status-filter"><option value="enviado" selected>Somente enviados</option><option value="todos">Todos os polos</option><option value="pendente">Somente pendentes</option><option value="prazo">Enviados no prazo</option><option value="atrasado">Enviados com atraso</option><option value="indefinido">Enviados sem horário registrado</option></select></div><div><label for="national-polo-filter">Igreja / polo</label><select id="national-polo-filter"><option value="">Todas as igrejas</option></select></div></div>
+<p id="national-filter-count" class="muted"></p><div id="national-report-list" class="report-list">Carregando acompanhamento...</div>
+<details id="national-report-analytics"><summary style="cursor:pointer;font-weight:600;padding:14px 0">Ver resumo nacional e gráficos</summary><div id="national-report-summary" class="grid"></div>
 <h3 class="report-section-title">Tendência das últimas semanas</h3><div id="national-trend-chart" class="report-card">Carregando gráfico...</div>
 <h3 class="report-section-title">Comparação entre polos</h3><p class="muted">Total único informado no relatório da semana selecionada.</p><div id="national-polo-chart" class="report-card">Carregando comparação...</div>
-<h3 class="report-section-title">Acompanhamento dos polos</h3>
-<div class="grid"><div><label for="national-status-filter">Situação do envio</label><select id="national-status-filter"><option value="todos">Todos os polos</option><option value="enviado">Somente enviados</option><option value="pendente">Somente pendentes</option><option value="prazo">Enviados no prazo</option><option value="atrasado">Enviados com atraso</option><option value="indefinido">Enviados sem horário registrado</option></select></div><div><label for="national-polo-filter">Igreja / polo</label><select id="national-polo-filter"><option value="">Todas as igrejas</option></select></div></div>
-<p id="national-filter-count" class="muted"></p><div id="national-report-list" class="report-list">Carregando acompanhamento...</div>
+</details>
 </div></section>
 <section id="jovens" class="panel hidden">
 <h2>Fichas dos jovens — teste funcional</h2>
@@ -106,7 +107,7 @@ body.printing>#print-area{display:block!important}
 <h2>Relatórios</h2>
 <div class="tabs" style="margin-bottom:16px"><button type="button" class="active" data-report-tab="semanal">Relatório semanal</button><button type="button" data-report-tab="especial">Evento especial</button></div>
 <div id="report-weekly">
-<div id="national-weekly-controls" class="hidden"><p class="muted">Consulte abaixo os relatórios de cada igreja. O preenchimento nacional é opcional.</p><button type="button" id="national-weekly-toggle" class="secondary" aria-expanded="false">Preencher relatório excepcionalmente</button></div>
+<div id="national-weekly-controls" class="hidden"><p class="muted">Os relatórios são enviados pelos coordenadores. Use o botão abaixo somente quando precisar preencher excepcionalmente.</p><button type="button" id="national-weekly-toggle" class="secondary" aria-expanded="false">Preencher relatório excepcionalmente</button></div>
 <div id="weekly-entry-wrap">
 <p class="muted">Preencha os números referentes à semana e salve o relatório. Lembrete de domingo às 17h30 e prazo às 22h ainda não automatizados.</p>
 <form id="weekly-report-form">
