@@ -105,6 +105,7 @@ body.printing>#print-area{display:block!important}
 <section id="autorizacoes" class="panel hidden"><h2>Autorizações de fichas</h2><p class="muted">Solicitações de alteração ou exclusão aguardando aprovação nacional. Nenhuma ficha é modificada ao enviar um pedido.</p><button type="button" id="requests-refresh" class="secondary">Atualizar solicitações</button><p id="requests-message" class="message" role="status"></p><div class="authorization-filters" id="requests-filters"><button type="button" data-request-filter="pendente" class="active">Pendentes</button><button type="button" data-request-filter="aprovada">Aprovadas</button><button type="button" data-request-filter="rejeitada">Rejeitadas</button><button type="button" data-request-filter="todas">Todas</button></div><div id="requests-list" class="report-list"></div></section><section id="relatorios" class="panel hidden">
 <h2>Relatórios</h2>
 <div class="tabs" style="margin-bottom:16px"><button type="button" class="active" data-report-tab="semanal">Relatório semanal</button><button type="button" data-report-tab="especial">Evento especial</button></div>
+<div id="national-weekly-readonly" class="hidden"><p class="muted">O Administrador Nacional acompanha os relatórios enviados pelos 23 polos na Visão geral. O preenchimento é exclusivo dos coordenadores.</p><button type="button" id="national-go-overview">Abrir acompanhamento nacional</button></div>
 <div id="report-weekly">
 <p class="muted">Preencha os números referentes à semana e salve o relatório. Lembrete de domingo às 17h30 e prazo às 22h ainda não automatizados.</p>
 <form id="weekly-report-form">
@@ -346,6 +347,11 @@ async function loadProfile(user){
   el('role-detail').textContent=data.papel==='nacional'?'Perfil: Administrador Nacional — visão de todos os polos autorizados.':`Perfil: Coordenador Local — FJU ${poloNome}.`;
   el('dashboard-note').textContent=`${data.papel==='nacional'?'Visão nacional':'Visão do polo FJU '+poloNome}. Contagens fornecidas pelo Supabase com as políticas RLS da conta autenticada. Relatórios pendentes ainda não calculados.`;
   currentProfile=data;
+  const nationalReports=data.papel==='nacional';
+  el('report-weekly').classList.toggle('hidden',nationalReports);
+  el('national-weekly-readonly').classList.toggle('hidden',!nationalReports);
+  document.querySelector('[data-report-tab="semanal"]').textContent=nationalReports?'Acompanhamento semanal':'Relatório semanal';
+  document.querySelector('[data-tab="relatorios"]').textContent=nationalReports?'Acompanhamento':'Relatório semanal';
   if(data.papel==='nacional')void loadNationalReportOverview();else el('national-report-panel').classList.add('hidden');
   show('app');
   void initializeYouth();
@@ -672,7 +678,7 @@ async function setupWeeklyReportPolo(){
 }
 document.querySelector('[data-tab="relatorios"]')?.addEventListener('click',()=>void setupWeeklyReportPolo());
 el('weekly-report-form').addEventListener('submit',async e=>{
-  e.preventDefault();if(!currentProfile)return;
+  e.preventDefault();if(!currentProfile||currentProfile.papel==='nacional')return;
   const date=el('weekly-report-date').value;
   const poloId=currentProfile.papel==='nacional'?el('weekly-polo').value:currentProfile.polo_id;
   if(!poloId){message('weekly-report-message','Selecione a igreja antes de salvar.',true);return;}
@@ -687,9 +693,11 @@ el('weekly-report-form').addEventListener('submit',async e=>{
   if(error){message('weekly-report-message','Não foi possível salvar: '+error.message,true);return;}
   message('weekly-report-message','Relatório semanal salvo com sucesso.');
 });
+el('national-go-overview').addEventListener('click',()=>document.querySelector('[data-tab="inicio"]').click());
 document.querySelectorAll('[data-report-tab]').forEach(btn=>btn.addEventListener('click',()=>{
   document.querySelectorAll('[data-report-tab]').forEach(b=>b.classList.toggle('active',b===btn));
-  el('report-weekly').classList.toggle('hidden',btn.dataset.reportTab!=='semanal');
+  el('report-weekly').classList.toggle('hidden',btn.dataset.reportTab!=='semanal'||currentProfile?.papel==='nacional');
+  el('national-weekly-readonly').classList.toggle('hidden',btn.dataset.reportTab!=='semanal'||currentProfile?.papel!=='nacional');
   el('report-special').classList.toggle('hidden',btn.dataset.reportTab!=='especial');
   if(btn.dataset.reportTab==='especial'){void setupSpecialEventPolo();void loadSpecialEvents();}
 }));
