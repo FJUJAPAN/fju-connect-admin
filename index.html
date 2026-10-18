@@ -842,8 +842,12 @@ document.querySelector('[data-tab="relatorios"]')?.addEventListener('click',()=>
  const label=iso=>new Date(iso+'T12:00:00Z').toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric',timeZone:'UTC'});
  function refreshButton(){
    const end=new Date(field.value+'T12:00:00Z'),start=new Date(end);start.setUTCDate(start.getUTCDate()-6);
-   const fmt=d=>d.toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
-   btn.textContent='Semana de '+fmt(start)+' a '+fmt(end)+' ▾';
+   const day=d=>d.getUTCDate();
+   const monthName=d=>d.toLocaleDateString('pt-BR',{month:'long',timeZone:'UTC'});
+   const sameMonth=start.getUTCMonth()===end.getUTCMonth()&&start.getUTCFullYear()===end.getUTCFullYear();
+   btn.textContent=sameMonth
+     ?'Semana de '+day(start)+' a '+day(end)+' de '+monthName(end)+' ▾'
+     :'Semana de '+day(start)+' de '+monthName(start)+' a '+day(end)+' de '+monthName(end)+' ▾';
  }
  function draw(){
    const [year,m]=month.split('-').map(Number),first=new Date(Date.UTC(year,m-1,1)),days=new Date(Date.UTC(year,m,0)).getUTCDate();
