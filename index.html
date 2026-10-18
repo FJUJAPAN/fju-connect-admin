@@ -8,6 +8,12 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FJU Connect JAPAN · Admin</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#253b75">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="FJU Connect">
+<link rel="apple-touch-icon" href="./app-icon.svg">
 <style>
 :root{font-family:system-ui,-apple-system,sans-serif;color:#172033;background:#f4f6fa}*{box-sizing:border-box}body{margin:0}header{background:#19264b;color:white;padding:22px 18px}header h1{margin:0;font-size:23px}header p{margin:6px 0 0;color:#cbd6f0}.wrap{max-width:1000px;margin:auto;padding:18px}.notice{background:#fff5db;border-left:4px solid #e6a100;padding:14px;border-radius:8px;margin-bottom:16px}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}button{border:0;border-radius:9px;padding:11px 15px;background:#253b75;color:white;font-weight:600;cursor:pointer}.tabs button{background:#e2e8f3;color:#1c2b4e}.tabs button.active{background:#253b75;color:white}.panel{background:white;border-radius:14px;padding:20px;box-shadow:0 3px 15px #14213d10;margin-bottom:18px}h2{margin-top:0;font-size:21px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.stat{padding:16px;background:#eef2fa;border-radius:12px}.stat b{display:block;font-size:25px;margin-top:8px}label{display:block;font-weight:600;font-size:13px;margin:12px 0 5px}input,select,textarea{width:100%;border:1px solid #b9c4d7;border-radius:8px;padding:11px;font:inherit}textarea{min-height:80px}.hidden{display:none}.muted{color:#61708b;font-size:14px}.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.secondary{background:#e2e8f3;color:#1c2b4e}.message{margin:12px 0;white-space:pre-wrap}.error{color:#b42318}.success{color:#176b44}footer{text-align:center;padding:20px;color:#71809a;font-size:12px}.auth{max-width:440px;margin:30px auto}.topline{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
 .report-list{display:grid;gap:14px;margin-top:14px}
@@ -864,4 +870,5 @@ supabase.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){recove
 if(location.search.includes('error=')){message('auth-message','O link de autenticação falhou ou expirou. Solicite outro.',true)}
 await refresh();
 </script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('PWA:',err)));}</script>
 </body></html>
