@@ -168,15 +168,27 @@ function reportDeadlineStatus(r,week){
   if(!r)return 'pendente';
   const raw=r.criado_em||r.created_at||r.data_envio||r.enviado_em;
   if(!raw)return 'indefinido';
-  const t=new Date(raw);if(Number.isNaN(t.getTime()))return 'indefinido';
+  const t=new Date(raw);
+  if(Number.isNaN(t.getTime()))return 'indefinido';
   const local=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(t);
+  // Nunca aproveita o horário de outra semana para marcar esta como enviada no prazo.
+  // Um registro de uma semana anterior ou futura precisa ser revisado.
+  if(local<week+' 00:00')return 'indefinido';
   return local<=week+' 22:00'?'prazo':'atrasado';
 }
+function normalizeReportSunday(value){
+  if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(value||''))return previousSundayISO();
+  const d=new Date(value+'T12:00:00Z');
+  if(Number.isNaN(d.getTime()))return previousSundayISO();
+  d.setUTCDate(d.getUTCDate()-d.getUTCDay());
+  return d.toISOString().slice(0,10);
+}
+
 async function loadNationalReportOverview(){
   if(currentProfile?.papel!=='nacional')return;
   el('national-report-panel').classList.remove('hidden');
   const dateInput=el('national-report-date');
-  if(!dateInput.value)dateInput.value=previousSundayISO();
+  dateInput.value=normalizeReportSunday(dateInput.value);
   const list=el('national-report-list');list.textContent='Consultando polos e relatórios...';
   const [{data:polos,error:poloError},{data:reports,error:reportError}]=await Promise.all([
     supabase.from('fju_polos').select('id,nome').order('nome'),
@@ -247,7 +259,7 @@ async function loadNationalReportOverview(){
     const row=document.createElement('article');row.className='report-card';row.dataset.polo=String(polo.id);row.dataset.status=reportDeadlineStatus(r,dateInput.value);
     const head=document.createElement('div');head.className='report-card-head';
     const title=document.createElement('div');title.className='report-card-title';title.textContent=polo.nome;
-    const badge=document.createElement('span');badge.className='report-badge';badge.textContent=!r?'Pendente':row.dataset.status==='atrasado'?'Enviado com atraso':'OK';if(row.dataset.status==='atrasado'){badge.style.background='#fff3c4';badge.style.color='#805600';}else if(!r){badge.style.background='#fee2e2';badge.style.color='#b91c1c';}else{badge.style.background='#dcfce7';badge.style.color='#166534';}
+    const badge=document.createElement('span');badge.className='report-badge';badge.textContent=!r?'Pendente':row.dataset.status==='atrasado'?'Enviado com atraso':row.dataset.status==='indefinido'?'Verificar data do envio':'OK';if(row.dataset.status==='atrasado'){badge.style.background='#fff3c4';badge.style.color='#805600';}else if(!r){badge.style.background='#fee2e2';badge.style.color='#b91c1c';}else if(row.dataset.status==='indefinido'){badge.style.background='#e5e7eb';badge.style.color='#374151';}else{badge.style.background='#dcfce7';badge.style.color='#166534';}
     head.append(title,badge);row.append(head);
     const details=document.createElement('div');details.hidden=true;details.style.paddingTop='12px';
     head.style.cursor='pointer';head.setAttribute('role','button');head.tabIndex=0;head.setAttribute('aria-expanded','false');
