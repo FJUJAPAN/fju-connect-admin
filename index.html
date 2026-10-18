@@ -74,7 +74,7 @@ body.printing>#print-area{display:block!important}
 <section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Polos</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><div class="stat">Relatórios recebidos<b id="report-count">—</b></div><div class="stat">Relatórios pendentes<b id="pending-count">—</b></div></div><p id="dashboard-note" class="muted">Indicadores consultados conforme as permissões da conta autenticada.</p><div id="national-report-panel" class="hidden">
 <h3>Relatórios semanais por igreja</h3>
 <p class="muted">Indicadores calculados a partir dos relatórios semanais registrados pelos polos.</p>
-<div class="grid"><div><label for="national-week-button">Semana do relatório</label><div style="position:relative"><button type="button" id="national-week-button" class="secondary" style="width:100%;text-align:left;min-height:46px">📅 Selecionar semana</button><input id="national-report-date" type="date" aria-label="Escolher um dia da semana" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer"></div></div><div class="actions" style="align-self:end"><button type="button" id="national-report-refresh">Atualizar painel</button><button type="button" id="print-national-report" class="secondary">Imprimir relatório nacional A4</button></div></div>
+<div class="grid"><div><label for="national-week-button">Semana do relatório</label><div style="position:relative"><button type="button" id="national-week-button" class="secondary" aria-expanded="false" aria-controls="national-calendar" style="width:100%;text-align:left;min-height:46px">📅 Selecionar semana</button><input id="national-report-date" type="hidden"><div id="national-calendar" class="hidden" style="position:absolute;z-index:30;top:100%;left:0;width:min(340px,90vw);padding:14px;margin-top:5px;background:var(--card,#fff);color:var(--text,#111);border:1px solid #9ca3af;border-radius:12px;box-shadow:0 8px 24px #0003"></div></div></div><div class="actions" style="align-self:end"><button type="button" id="national-report-refresh">Atualizar painel</button><button type="button" id="print-national-report" class="secondary">Imprimir relatório nacional A4</button></div></div>
 <h3 class="report-section-title">Relatórios das igrejas</h3>
 <div class="grid"><div><label for="national-status-filter">Situação do envio</label><select id="national-status-filter"><option value="enviado">Somente enviados</option><option value="todos" selected>Todos os polos</option><option value="pendente">Somente pendentes</option><option value="prazo">Enviados no prazo</option><option value="atrasado">Enviados com atraso</option><option value="indefinido">Enviados sem horário registrado</option></select></div><div><label for="national-polo-filter">Igreja / polo</label><select id="national-polo-filter"><option value="">Todas as igrejas</option></select></div></div>
 <p id="national-filter-count" class="muted"></p><div id="national-report-list" class="report-list">Carregando acompanhamento...</div>
@@ -170,6 +170,40 @@ function updateNationalWeekRange(sundayISO){
   const fmt=d=>String(d.getUTCDate()).padStart(2,'0')+'/'+String(d.getUTCMonth()+1).padStart(2,'0')+'/'+d.getUTCFullYear();
   el('national-week-button').textContent='📅  '+fmt(monday)+' (seg) — '+fmt(sunday)+' (dom)  ▾';
 }
+function renderNationalCalendar(){
+  const cal=el('national-calendar'),selected=el('national-report-date').value||previousSundayISO();
+  const viewed=cal.dataset.month||selected.slice(0,7);
+  const [year,month]=viewed.split('-').map(Number);
+  const first=new Date(Date.UTC(year,month-1,1,12)),days=new Date(Date.UTC(year,month,0,12)).getUTCDate();
+  cal.replaceChildren();
+  const bar=document.createElement('div');bar.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:12px';
+  const shift=(n)=>{const d=new Date(Date.UTC(year,month-1+n,1,12));cal.dataset.month=d.toISOString().slice(0,7);renderNationalCalendar();};
+  const prev=document.createElement('button');prev.type='button';prev.textContent='‹';prev.setAttribute('aria-label','Mês anterior');prev.addEventListener('click',()=>shift(-1));
+  const title=document.createElement('strong');title.textContent=first.toLocaleDateString('pt-BR',{month:'long',year:'numeric',timeZone:'UTC'});
+  const next=document.createElement('button');next.type='button';next.textContent='›';next.setAttribute('aria-label','Próximo mês');next.addEventListener('click',()=>shift(1));
+  bar.append(prev,title,next);cal.append(bar);
+  const grid=document.createElement('div');grid.style.cssText='display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;text-align:center';
+  for(const day of ['SEG','TER','QUA','QUI','SEX','SÁB','DOM']){const h=document.createElement('span');h.textContent=day;h.style.cssText='font-size:11px;font-weight:700;padding:7px 0';grid.append(h);}
+  const offset=(first.getUTCDay()+6)%7;
+  for(let i=0;i<offset;i++)grid.append(document.createElement('span'));
+  const start=new Date(selected+'T12:00:00Z');start.setUTCDate(start.getUTCDate()-6);
+  for(let day=1;day<=days;day++){
+    const d=new Date(Date.UTC(year,month-1,day,12)),iso=d.toISOString().slice(0,10);
+    const btn=document.createElement('button');btn.type='button';btn.textContent=String(day);
+    btn.style.cssText='padding:9px 0;min-width:0;border-radius:7px;font-size:13px';
+    if(iso>=start.toISOString().slice(0,10)&&iso<=selected){btn.style.background='#dbeafe';btn.style.color='#1e40af';}
+    if(iso===selected){btn.style.background='#2563eb';btn.style.color='#fff';}
+    btn.addEventListener('click',()=>{el('national-report-date').value=normalizeReportSunday(iso);cal.classList.add('hidden');el('national-week-button').setAttribute('aria-expanded','false');void loadNationalReportOverview();});
+    grid.append(btn);
+  }
+  cal.append(grid);
+}
+el('national-week-button').addEventListener('click',()=>{
+  const cal=el('national-calendar'),opening=cal.classList.contains('hidden');
+  cal.classList.toggle('hidden',!opening);
+  el('national-week-button').setAttribute('aria-expanded',String(opening));
+  if(opening){cal.dataset.month=el('national-report-date').value.slice(0,7)||previousSundayISO().slice(0,7);renderNationalCalendar();}
+});
 function reportDeadlineStatus(r,week){
   if(!r)return 'pendente';
   const raw=r.criado_em||r.created_at||r.data_envio||r.enviado_em;
