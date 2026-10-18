@@ -63,6 +63,11 @@ begin
  if not found or req.status<>'pendente' then raise exception 'Solicitação não encontrada ou já decidida'; end if;
  if p_aprovar then
   if req.tipo='inclusao' then
+   if req.dados_propostos->>'polo_id' is distinct from req.polo_id
+      or length(trim(coalesce(req.dados_propostos->>'nome_evento','')))=0
+      or (req.dados_propostos->>'total_jovens')::integer < 0 then
+    raise exception 'Dados do evento inválidos ou polo divergente';
+   end if;
    insert into public.fju_eventos_especiais(polo_id,nome_evento,data_evento,total_jovens,criado_por)
    select e.polo_id,e.nome_evento,e.data_evento,e.total_jovens,req.solicitante_id
    from jsonb_populate_record(null::public.fju_eventos_especiais,req.dados_propostos) e;
