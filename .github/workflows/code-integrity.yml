@@ -1,0 +1,29 @@
+name: FJU JAPAN - Code Integrity
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify tracked files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Generate SHA-256 manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          git ls-files -z | LC_ALL=C sort -z | xargs -0 -r sha256sum > SHA256SUMS.txt
+          sha256sum --check SHA256SUMS.txt
+      - name: Upload integrity manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: fju-japan-sha256-${{ github.sha }}
+          path: SHA256SUMS.txt
+          retention-days: 90
