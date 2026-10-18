@@ -209,15 +209,15 @@ el('national-week-button').addEventListener('click',()=>{
 });
 function reportDeadlineStatus(r,week){
   if(!r)return 'pendente';
-  const raw=r.criado_em||r.created_at||r.data_envio||r.enviado_em;
+  // created_at é o carimbo oficial de criação do registro no Supabase.
+  const raw=r.created_at;
   if(!raw)return 'indefinido';
   const t=new Date(raw);
   if(Number.isNaN(t.getTime()))return 'indefinido';
   const local=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(t);
-  // Nunca aproveita o horário de outra semana para marcar esta como enviada no prazo.
-  // Um registro de uma semana anterior ou futura precisa ser revisado.
-  if(local<week+' 00:00')return 'indefinido';
-  return local<=week+' 22:00'?'prazo':'atrasado';
+  // Envios anteriores ao domingo ou posteriores às 22h do domingo são classificados como atrasados.
+  // Assim registros de semanas antigas não ficam com status indefinido.
+  return local>=week+' 00:00'&&local<=week+' 22:00'?'prazo':'atrasado';
 }
 function normalizeReportSunday(value){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(value||''))return previousSundayISO();
