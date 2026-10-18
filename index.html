@@ -157,6 +157,21 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 #special-event-list .actions{margin-top:8px;gap:8px}
 #special-event-list .actions button{font-size:12px;padding:8px 12px}
 #event-requests-list{display:grid;gap:8px;font-size:13px}.event-request-card{border:1px solid #dce4f1;border-radius:10px;padding:11px}.event-request-card .actions{margin-top:8px;gap:8px}.event-request-card button{padding:7px 11px;font-size:12px}
+
+/* Recolher seções extensas de eventos sem esconder ações ou informações */
+#report-special .special-event-fold{margin-top:12px;background:#fff;border:1px solid #dce4f1;border-radius:12px;overflow:hidden}
+#report-special .special-event-fold>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:50px;list-style:none;cursor:pointer;padding:11px 14px;font-size:14px;font-weight:700;color:#223761}
+#report-special .special-event-fold>summary::-webkit-details-marker{display:none}
+#report-special .special-event-fold>summary:focus-visible{outline:2px solid #325bd1;outline-offset:-3px;border-radius:12px}
+#report-special .special-event-fold-label{display:inline-flex;align-items:center;gap:8px;min-width:0}
+#report-special .special-event-fold-icon{font-size:14px;color:#64748b;display:inline-block;transition:transform .15s ease}
+#report-special .special-event-fold[open] .special-event-fold-icon{transform:rotate(90deg)}
+#report-special .special-event-fold-count{flex-shrink:0;background:#eef2f9;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700;color:#495e82}
+#report-special .special-event-fold-count.has-pending{background:#fff3d9;color:#8b5716}
+#report-special .special-event-fold-content{padding:0 12px 12px}
+#report-special .special-event-fold-content>.stat{margin:0}
+#report-special .special-event-fold-content .report-card:last-child{margin-bottom:0}
+
 </style>
 </head>
 <body>
@@ -236,7 +251,14 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <p><button type="submit" id="special-event-submit">Salvar evento especial</button> <button type="button" id="special-event-cancel" class="secondary" hidden>Cancelar edição</button></p>
 <p id="special-event-message" class="message" role="status" aria-live="polite"></p>
 </form>
-<div id="event-requests-panel"><h3 class="special-event-list-title">Solicitações de eventos</h3><div id="event-requests-list">Carregando...</div></div><h3 class="special-event-list-title">Eventos registrados</h3><div id="special-event-list" class="stat">Carregando eventos...</div>
+<details id="event-requests-panel" class="special-event-fold">
+<summary><span class="special-event-fold-label"><span class="special-event-fold-icon" aria-hidden="true">▸</span>Solicitações de eventos</span><span id="event-requests-count" class="special-event-fold-count">—</span></summary>
+<div class="special-event-fold-content"><div id="event-requests-list">Carregando...</div></div>
+</details>
+<details id="special-event-registered-panel" class="special-event-fold">
+<summary><span class="special-event-fold-label"><span class="special-event-fold-icon" aria-hidden="true">▸</span>Eventos registrados</span><span id="special-event-count" class="special-event-fold-count">—</span></summary>
+<div class="special-event-fold-content"><div id="special-event-list" class="stat">Carregando eventos...</div></div>
+</details>
 </div></section>
 <section id="config" class="panel hidden"><div id="notification-settings" class="panel" style="margin-bottom:14px"><h3 style="margin:0 0 8px">🔔 Notificações de relatórios</h3><p id="notification-status" class="muted" role="status" aria-live="polite">Verificando disponibilidade...</p><button type="button" id="enable-notifications">Ativar notificações neste aparelho</button> <button type="button" class="secondary" id="register-device" hidden>Registrar este aparelho</button> <button type="button" class="secondary" id="unlink-device" hidden>Desvincular este aparelho</button> <button type="button" class="secondary" id="test-push" hidden>Enviar notificação de teste</button><p class="muted" style="font-size:12px">Esta etapa autoriza notificações no aparelho. Os lembretes automáticos serão ativados após a configuração do serviço de envio.</p></div>
 <h2>Configuração</h2><p id="role-detail"></p><p class="muted">As regras de acesso efetivas são aplicadas no banco pelo RLS. A interface não substitui essas políticas.</p></section></div>
@@ -944,6 +966,7 @@ async function loadSpecialEvents(){
   if(error||poloError){list.textContent='Não foi possível carregar eventos: '+(error?.message||poloError?.message);return;}
   const names=new Map((polos||[]).map(p=>[p.id,p.nome]));
   list.replaceChildren();list.className='report-list';
+  el('special-event-count').textContent=String((events||[]).length);
   await loadEventRequests(events||[],names);
   if(!events?.length){list.textContent='Nenhum evento especial registrado ainda.';return;}
   for(const ev of events){
@@ -990,7 +1013,10 @@ async function loadSpecialEvents(){
 async function loadEventRequests(events=[],poloNames=new Map()){
  const list=el('event-requests-list');if(!list||!currentProfile)return;
  const {data,error}=await supabase.from('fju_solicitacoes_eventos').select('id,tipo,evento_id,polo_id,dados_propostos,status,criado_em').order('criado_em',{ascending:false}).limit(100);
- list.replaceChildren();if(error){list.textContent='Não foi possível carregar solicitações: '+error.message;return;}
+ list.replaceChildren();if(error){list.textContent='Não foi possível carregar solicitações: '+error.message;el('event-requests-count').textContent='Erro';return;}
+ const pending=(data||[]).filter(req=>req.status==='pendente').length;
+ el('event-requests-count').textContent=pending?pending+' pendente'+(pending===1?'':'s'):String((data||[]).length);
+ el('event-requests-count').classList.toggle('has-pending',pending>0);
  if(!data?.length){list.textContent='Nenhuma solicitação registrada.';return;}
  const eventsById=new Map(events.map(event=>[String(event.id),event]));
  const fmt=iso=>iso?new Date(iso+'T12:00:00Z').toLocaleDateString('pt-BR',{timeZone:'UTC'}):'Data não informada';
