@@ -190,7 +190,7 @@ function renderNationalCalendar(){
   for(let day=1;day<=days;day++){
     const d=new Date(Date.UTC(year,month-1,day,12)),iso=d.toISOString().slice(0,10);
     const btn=document.createElement('button');btn.type='button';btn.textContent=String(day);
-    btn.style.cssText='padding:9px 0;min-width:0;border-radius:7px;font-size:13px';
+    btn.style.cssText='padding:9px 0;min-width:0;border-radius:7px;font-size:13px;background:#fff;color:#1f2937;border:1px solid #e5e7eb;box-shadow:none';
     if(iso>=start.toISOString().slice(0,10)&&iso<=selected){btn.style.background='#dbeafe';btn.style.color='#1e40af';}
     if(iso===selected){btn.style.background='#2563eb';btn.style.color='#fff';}
     btn.addEventListener('click',()=>{el('national-report-date').value=normalizeReportSunday(iso);cal.classList.add('hidden');el('national-week-button').setAttribute('aria-expanded','false');void loadNationalReportOverview();});
