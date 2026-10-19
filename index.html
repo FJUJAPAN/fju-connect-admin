@@ -10,6 +10,7 @@
 <title>FJU Connect JAPAN · Admin</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="stylesheet" href="./cards-coordenadores.css">
+<link rel="stylesheet" href="./fichas-jovens.css">
 <meta name="theme-color" content="#253b75">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -264,8 +265,13 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 </div>
 </section>
 <section id="jovens" class="panel hidden">
-<h2>Fichas dos jovens — teste funcional</h2>
-<p class="muted">Use somente dados fictícios até a validação completa das permissões. Fotos de teste podem ser enviadas ao armazenamento privado após salvar a ficha. Ainda não use fotos reais até testar o isolamento entre polos.</p>
+<div class="youth-page-header">
+<div><h2>Fichas dos jovens</h2><p class="youth-page-subtitle">Consulte as fichas do polo e envie solicitações de alteração. O cadastro fica fechado para deixar a página mais organizada.</p></div>
+<button type="button" id="youth-add-toggle" aria-expanded="false" aria-controls="youth-entry-panel"><span class="youth-add-icon" aria-hidden="true">+</span> Adicionar jovem</button>
+</div>
+<div id="youth-entry-panel" class="hidden">
+<div class="youth-entry-heading"><h3 id="youth-form-title">Nova ficha</h3><button type="button" id="youth-form-close" class="secondary">Fechar</button></div>
+<p class="youth-page-subtitle">Preencha os dados do jovem. Alterações de fichas existentes feitas pelo coordenador dependem de aprovação nacional.</p>
 <form id="youth-form">
 <input id="youth-id" type="hidden">
 <div class="grid youth-info-grid">
@@ -286,10 +292,14 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <div><label for="youth-rank">Patente do jovem</label><select id="youth-rank" required><option value="">Selecione</option><option>Inconstante</option><option>Firme</option><option>CPO</option><option>Colaborador</option><option>Obreiro</option><option>Coordenador</option></select></div>
 <div><label for="youth-photo">Foto do jovem (galeria ou câmera)</label><input id="youth-photo" type="file" accept="image/jpeg,image/png,image/webp"><img id="youth-photo-preview" alt="Prévia da foto escolhida" class="hidden" style="width:90px;height:90px;object-fit:cover;border-radius:12px;margin-top:8px"><p class="muted">A foto será comprimida automaticamente para até 100 KB e enviada ao bucket privado ao salvar a ficha. Use apenas imagens fictícias nesta fase de teste.</p></div>
 </div>
-<p class="actions"><button type="submit">Salvar ficha de teste</button><button type="button" id="youth-clear" class="secondary">Limpar formulário</button><button type="button" id="youth-refresh" class="secondary">Atualizar lista</button></p>
-</form><p id="youth-message" class="message" role="status"></p>
-<label for="youth-list-polo">Visualizar fichas da igreja</label><select id="youth-list-polo"><option value="">Selecione uma igreja</option></select><label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite parte do nome">
-<div id="youth-list" style="margin-top:12px"></div><div id="youth-detail" class="panel hidden" style="margin-top:16px;border:1px solid #dce3ef"></div>
+<p class="actions"><button type="submit" id="youth-submit">Salvar ficha</button><button type="button" id="youth-clear" class="secondary">Limpar formulário</button></p>
+</form>
+</div>
+<p id="youth-message" class="message" role="status" aria-live="polite"></p>
+<div class="youth-saved-heading"><h3>Fichas cadastradas</h3><span id="youth-visible-count" class="youth-saved-count">Carregando...</span></div>
+<div id="youth-list-polo-wrap" class="youth-polo-filter"><label for="youth-list-polo">Visualizar fichas da igreja</label><select id="youth-list-polo"><option value="">Selecione uma igreja</option></select></div>
+<div class="youth-list-controls"><div><label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite o nome do jovem" type="search" autocomplete="off"></div><button type="button" id="youth-refresh" class="secondary">Atualizar</button></div>
+<div id="youth-list" aria-label="Fichas salvas"></div><div id="youth-detail" class="panel hidden" style="margin-top:16px;border:1px solid #dce3ef"></div>
 </section>
 <section id="autorizacoes" class="panel hidden"><h2>Autorizações de fichas</h2><p class="muted">Solicitações de alteração ou exclusão aguardando aprovação nacional. Nenhuma ficha é modificada ao enviar um pedido.</p><button type="button" id="requests-refresh" class="secondary">Atualizar solicitações</button><p id="requests-message" class="message" role="status"></p><div class="authorization-filters" id="requests-filters"><button type="button" data-request-filter="pendente" class="active">Pendentes</button><button type="button" data-request-filter="aprovada">Aprovadas</button><button type="button" data-request-filter="rejeitada">Rejeitadas</button><button type="button" data-request-filter="todas">Todas</button></div><div id="requests-list" class="report-list"></div></section><section id="relatorios" class="panel hidden">
 <h2>Relatórios</h2>
