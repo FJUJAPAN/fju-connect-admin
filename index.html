@@ -267,7 +267,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <section id="jovens" class="panel hidden">
 <div class="youth-page-header">
 <div><h2>Fichas dos jovens</h2><p class="youth-page-subtitle">Consulte as fichas do polo e envie solicitações de alteração. O cadastro fica fechado para deixar a página mais organizada.</p></div>
-<button type="button" id="youth-add-toggle" aria-expanded="false" aria-controls="youth-entry-panel"><span class="youth-add-icon" aria-hidden="true">+</span> Adicionar jovem</button>
+<button type="button" id="youth-add-toggle" aria-expanded="false" aria-controls="youth-entry-panel"><span class="youth-add-icon" aria-hidden="true">+</span><span id="youth-add-toggle-label">Adicionar jovem</span></button>
 </div>
 <div id="youth-entry-panel" class="hidden">
 <div class="youth-entry-heading"><h3 id="youth-form-title">Nova ficha</h3><button type="button" id="youth-form-close" class="secondary">Fechar</button></div>
@@ -719,6 +719,26 @@ function setYouthBirth(value){
   el('youth-birth-day').value=parts[2];
   syncYouthBirth();
 }
+function setYouthFormOpen(open,editing=false,scroll=false){
+  const panel=el('youth-entry-panel'),toggle=el('youth-add-toggle');
+  panel.classList.toggle('hidden',!open);
+  toggle.setAttribute('aria-expanded',String(open));
+  el('youth-add-toggle-label').textContent=open?'Fechar cadastro':'Adicionar jovem';
+  toggle.querySelector('.youth-add-icon').textContent=open?'×':'+';
+  el('youth-form-title').textContent=editing
+    ?(currentProfile?.papel==='coordenador'?'Solicitar alteração':'Editar ficha')
+    :'Nova ficha';
+  el('youth-submit').textContent=editing
+    ?(currentProfile?.papel==='coordenador'?'Enviar para aprovação':'Salvar alterações')
+    :'Salvar ficha';
+  if(open&&scroll)panel.scrollIntoView({behavior:'smooth',block:'start'});
+}
+el('youth-add-toggle').addEventListener('click',()=>{
+  const open=el('youth-entry-panel').classList.contains('hidden');
+  resetYouth();
+  setYouthFormOpen(open,false,open);
+});
+el('youth-form-close').addEventListener('click',()=>{resetYouth();setYouthFormOpen(false);});
 function resetYouth(){el('youth-photo').disabled=false;if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}el('youth-form').reset();setYouthBirth('');refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
 async function initializeYouth(){
   const {data,error}=await supabase.from('fju_polos').select('id,nome').order('nome');
@@ -730,7 +750,8 @@ async function initializeYouth(){
   if(currentProfile.papel==='nacional'){const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Selecione uma igreja';listPolo.append(placeholder);}
   for(const polo of allowed){const option=document.createElement('option');option.value=String(polo.id);option.textContent=polo.nome;listPolo.append(option);}
   if(currentProfile.papel==='coordenador')listPolo.value=String(currentProfile.polo_id);
-  resetYouth();await loadYouth();
+  el('youth-list-polo-wrap').classList.toggle('hidden',currentProfile.papel==='coordenador');
+  resetYouth();setYouthFormOpen(false);await loadYouth();
 }
 async function loadYouthPhoto(id){
   const preview=el('youth-photo-preview');preview.classList.add('hidden');preview.removeAttribute('src');
@@ -972,7 +993,7 @@ function editYouth(id){
   setYouthBirth(r.nascimento||'');
   el('youth-rank').value=r.categoria==='inconstante'?'Inconstante':({'firme':'Firme','cpo':'CPO','colaborador':'Colaborador','obreiro':'Obreiro','coordenador':'Coordenador'}[r.patente]||r.patente||'');
   document.querySelectorAll('input[name="youth-language"]').forEach(x=>x.checked=(r.idiomas||[]).includes(x.value));refreshYouthLanguages();
-  el('youth-photo').value='';el('youth-photo').disabled=currentProfile?.papel==='coordenador';void loadYouthPhoto(r.id);youthMessage(currentProfile?.papel==='coordenador'?'Edite os campos e envie para aprovação. A ficha original não será alterada.':'Editando ficha: '+r.nome_completo);el('youth-form').scrollIntoView({behavior:'smooth'});
+  el('youth-photo').value='';el('youth-photo').disabled=currentProfile?.papel==='coordenador';void loadYouthPhoto(r.id);youthMessage(currentProfile?.papel==='coordenador'?'Edite os campos e envie para aprovação. A ficha original não será alterada.':'Editando ficha: '+r.nome_completo);setYouthFormOpen(true,true,true);
 }
 el('youth-form').addEventListener('submit',async e=>{
   e.preventDefault();if(!currentProfile)return;
@@ -999,7 +1020,7 @@ el('youth-form').addEventListener('submit',async e=>{
     const {data:{user}}=await supabase.auth.getUser();
     const {error}=await supabase.from('fju_solicitacoes').insert({jovem_id:id,polo_id:original.polo_id,tipo:(Object.keys(changes).every(k=>['patente','categoria'].includes(k))?'patente':'edicao'),justificativa:'Campos: '+Object.keys(changes).join(', '),dados_propostos:changes,solicitante_id:user?.id});
     if(error){youthMessage('Não foi possível enviar a solicitação: '+error.message,true);return;}
-    resetYouth();youthMessage('Solicitação enviada. A ficha original não foi alterada.');return;
+    resetYouth();setYouthFormOpen(false);youthMessage('Solicitação enviada. A ficha original não foi alterada.');return;
   }
   const result=id?await supabase.from('fju_jovens').update(payload).eq('id',id).select('id').single():await supabase.from('fju_jovens').insert(payload).select('id').single();
   const {error}=result;
@@ -1016,7 +1037,7 @@ el('youth-form').addEventListener('submit',async e=>{
     const uploaded=await supabase.storage.from('fju-fotos').upload(path,compactada,{contentType:'image/jpeg',upsert:true});
     if(uploaded.error){youthMessage('Ficha salva, mas não foi possível enviar a foto: '+uploaded.error.message,true);await loadYouth();return;}
   }
-  resetYouth();await loadYouth();youthMessage(file?'Ficha e foto de teste salvas com sucesso.':'Ficha de teste salva com sucesso.');void loadDashboard(currentProfile,profileRequest);
+  resetYouth();setYouthFormOpen(false);await loadYouth();youthMessage(file?'Ficha e foto de teste salvas com sucesso.':'Ficha de teste salva com sucesso.');void loadDashboard(currentProfile,profileRequest);
 });
 el('youth-photo').addEventListener('change',e=>{const file=e.target.files?.[0];const preview=el('youth-photo-preview');if(!file){preview.classList.add('hidden');return;}if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){youthMessage('Escolha uma imagem JPG, PNG ou WebP de até 5 MB.',true);e.target.value='';return;}if(photoUrl)URL.revokeObjectURL(photoUrl);photoUrl=URL.createObjectURL(file);preview.src=photoUrl;preview.classList.remove('hidden');});
 el('youth-clear').onclick=resetYouth;
