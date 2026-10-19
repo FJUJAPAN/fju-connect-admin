@@ -965,6 +965,17 @@ async function viewYouth(id){
     const cell=document.createElement('div');cell.className='stat';const labelEl=document.createElement('strong');labelEl.textContent=label;const valueEl=document.createElement('p');valueEl.textContent=value||'—';cell.append(labelEl,valueEl);details.append(cell);
   }
   panel.append(details);
+  const accessCard=document.createElement('div');accessCard.className='stat';accessCard.style.marginTop='12px';
+  const accessTitle=document.createElement('strong');accessTitle.textContent='🔐 Acesso ao FJU Connect';
+  const accessStatus=document.createElement('p');accessStatus.textContent='Consultando autorização…';
+  accessCard.append(accessTitle,accessStatus);panel.append(accessCard);
+  // O status é somente leitura. A liberação real depende de convite validado no servidor.
+  void (async()=>{try{
+    const {data,error}=await supabase.from('fju_vinculos_conta_jovem').select('ativo').eq('jovem_id',id).maybeSingle();
+    if(!accessCard.isConnected)return;
+    if(error){accessStatus.textContent='Status restrito. Liberação ainda não disponível.';return;}
+    accessStatus.textContent=data?.ativo?'Acesso ativo':'Acesso não liberado';
+  }catch{if(accessCard.isConnected)accessStatus.textContent='Status indisponível';}})();
   const historyTitle=document.createElement('h3');historyTitle.textContent='Histórico de evolução';panel.append(historyTitle);
   const historyList=document.createElement('div');historyList.className='stat';historyList.textContent='Carregando histórico...';panel.append(historyList);
   try{
