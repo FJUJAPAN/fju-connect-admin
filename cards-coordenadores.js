@@ -182,10 +182,10 @@ export function setupCoordinatorCards({supabase,compressPhoto,navigateToTab}){
     saveButton.disabled=true;
     tell('Salvando seu perfil...');
     try{
-      const {error:dbError}=await supabase.from(table).upsert(
-        {usuario_id:uid,nome_exibicao:nome},{onConflict:'usuario_id'}
-      );
-      if(dbError)throw new Error(dbError.message);
+      const result=ownRecord
+        ?await supabase.from(table).update({nome_exibicao:nome}).eq('usuario_id',uid)
+        :await supabase.from(table).insert({usuario_id:uid,nome_exibicao:nome});
+      if(result.error)throw new Error(result.error.message);
       let uploaded=false;
       if(file){
         const compact=await compressPhoto(file);
