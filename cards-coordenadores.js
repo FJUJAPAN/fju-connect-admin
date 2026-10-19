@@ -142,7 +142,8 @@ export function setupCoordinatorCards({supabase,compressPhoto,navigateToTab}){
     const requestToken=token;
     const local=profile.papel==='coordenador';
     active={uid:user.id,role:profile.papel,polo:poloName||''};
-    navButton.textContent=local?'Meu perfil':'Coordenadores';
+    navButton.querySelector('.fju-nav-label-desktop').textContent=local?'Meu perfil':'Coordenadores';
+    navButton.querySelector('.fju-nav-label-mobile').textContent=local?'Perfil':'Líderes';
     home.classList.toggle('hidden',!local);
     ownArea.classList.toggle('hidden',!local);
     nationalArea.classList.toggle('hidden',local);
