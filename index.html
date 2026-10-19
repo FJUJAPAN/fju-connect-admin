@@ -266,7 +266,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 </section>
 <section id="jovens" class="panel hidden">
 <div class="youth-page-header">
-<div><h2>Fichas dos jovens</h2><p class="youth-page-subtitle">Consulte as fichas do polo e envie solicitações de alteração. O cadastro fica fechado para deixar a página mais organizada.</p></div>
+<div><h2>Fichas dos jovens</h2><p id="youth-page-subtitle" class="youth-page-subtitle">Consulte as fichas da sua igreja. Abra o formulário somente quando precisar cadastrar ou solicitar uma alteração.</p></div>
 <button type="button" id="youth-add-toggle" aria-expanded="false" aria-controls="youth-entry-panel"><span class="youth-add-icon" aria-hidden="true">+</span><span id="youth-add-toggle-label">Adicionar jovem</span></button>
 </div>
 <div id="youth-entry-panel" class="hidden">
@@ -742,6 +742,9 @@ el('youth-form-close').addEventListener('click',()=>{resetYouth();setYouthFormOp
 function resetYouth(){el('youth-photo').disabled=false;if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}el('youth-form').reset();setYouthBirth('');refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
 async function initializeYouth(){
   resetYouthSession();
+  el('youth-page-subtitle').textContent=currentProfile?.papel==='coordenador'
+    ?'Veja os jovens da sua igreja, cadastre novas fichas e solicite alterações à liderança nacional.'
+    :'Consulte as fichas por igreja e abra o formulário somente quando precisar cadastrar ou editar um jovem.';
   const {data,error}=await supabase.from('fju_polos').select('id,nome').order('nome');
   if(error){youthMessage('Não foi possível carregar polos: '+error.message,true);return;}
   const allowed=currentProfile.papel==='coordenador'?(data||[]).filter(x=>x.id===currentProfile.polo_id):(data||[]);
@@ -891,7 +894,7 @@ function renderYouth(){
     const rank=document.createElement('span');rank.className='youth-rank';
     rank.textContent=youthCardRank(r);rank.dataset.rank=rank.textContent;
     const metadata=document.createElement('div');metadata.className='youth-card-metadata';
-    const country=el('youth-country').querySelector('option[value="'+(r.nacionalidade_iso2||'')+'"]');
+    const country=[...el('youth-country').options].find(option=>option.value===(r.nacionalidade_iso2||''));
     const countryName=document.createElement('span');
     countryName.textContent=country?.textContent||r.nacionalidade_iso2||'Nacionalidade não informada';
     metadata.append(countryName);
@@ -1162,7 +1165,11 @@ el('youth-form').addEventListener('submit',async e=>{
 el('youth-photo').addEventListener('change',e=>{const file=e.target.files?.[0];const preview=el('youth-photo-preview');if(!file){preview.classList.add('hidden');return;}if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){youthMessage('Escolha uma imagem JPG, PNG ou WebP de até 5 MB.',true);e.target.value='';return;}if(photoUrl)URL.revokeObjectURL(photoUrl);photoUrl=URL.createObjectURL(file);preview.src=photoUrl;preview.classList.remove('hidden');});
 el('youth-clear').onclick=resetYouth;
 el('youth-refresh').onclick=loadYouth;
-el('youth-search').addEventListener('input',renderYouth);
+let youthSearchTimer=null;
+el('youth-search').addEventListener('input',()=>{
+  clearTimeout(youthSearchTimer);
+  youthSearchTimer=setTimeout(renderYouth,160);
+});
 el('youth-list-polo').addEventListener('change',()=>{el('youth-detail').classList.add('hidden');void loadYouth();});
 
 // O acompanhamento nacional pertence à aba Relatório semanal, não à Visão geral.
