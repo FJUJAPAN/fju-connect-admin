@@ -180,18 +180,29 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
   input,select,textarea,#special-event-form input,#special-event-form select,#weekly-report-form select{font-size:16px}
 }
 
-/* Birth date on iOS has a wide intrinsic control; never allow it to
-   stretch into the adjacent phone field in coordinator youth records. */
-#youth-form .youth-info-grid>div{min-width:0}
-#youth-form #youth-birth,#youth-form #youth-phone{
-  display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
+/* Nascimento e telefone lado a lado; o seletor nativo de data do iOS
+   permanece clicável, mas seu tamanho intrínseco não expande a coluna. */
+#youth-form .youth-info-grid>div{min-width:0;max-width:100%}
+#youth-form #youth-phone{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+#youth-form .youth-date-control{
+ position:relative;display:flex;align-items:center;width:100%;max-width:100%;min-width:0;
+ height:44px;overflow:hidden;border:1px solid #d7deea;border-radius:10px;background:#fff
 }
-#youth-form #youth-birth{overflow:hidden}
+#youth-form .youth-date-control:focus-within{outline:2px solid #7195d9;outline-offset:1px}
+#youth-form #youth-birth-display{
+ display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+ padding:0 10px;font-size:14px;line-height:1.25;color:#172033;pointer-events:none
+}
+#youth-form #youth-birth{
+ position:absolute;inset:0;display:block;width:100%;height:100%;min-width:0;max-width:100%;
+ padding:0;margin:0;border:0;border-radius:0;box-sizing:border-box;
+ opacity:0;cursor:pointer;font-size:16px;-webkit-appearance:none;appearance:none
+}
 @media screen and (max-width:767px){
-  #youth-form .youth-info-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-  #youth-form .youth-info-grid>div:nth-child(3),
-  #youth-form .youth-info-grid>div:nth-child(4){grid-column:1/-1}
-  #youth-form #youth-birth,#youth-form #youth-phone{font-size:16px;min-height:44px}
+ #youth-form .youth-info-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ #youth-form .youth-info-grid>div:nth-child(3),
+ #youth-form .youth-info-grid>div:nth-child(4){grid-column:auto}
+ #youth-form #youth-phone{font-size:16px;min-height:44px}
 }
 </style>
 </head>
@@ -211,7 +222,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <div class="grid youth-info-grid">
 <div><label for="youth-polo">Polo</label><select id="youth-polo" required></select></div>
 <div><label for="youth-name">Nome completo</label><input id="youth-name" required maxlength="180"></div>
-<div><label for="youth-birth">Nascimento</label><input id="youth-birth" type="date"></div>
+<div class="youth-birth-cell"><label for="youth-birth">Nascimento</label><div class="youth-date-control"><span id="youth-birth-display" aria-hidden="true">Selecionar data</span><input id="youth-birth" type="date" aria-label="Nascimento"></div></div>
 <div><label for="youth-phone">Telefone</label><input id="youth-phone" maxlength="50"></div>
 <div><label for="youth-country">Nacionalidade</label><select id="youth-country"><option value="">Selecione</option><option value="BR">🇧🇷 Brasil</option><option value="JP">🇯🇵 Japão</option><option value="PH">🇵🇭 Filipinas</option><option value="PE">🇵🇪 Peru</option><option value="BO">🇧🇴 Bolívia</option><option value="PY">🇵🇾 Paraguai</option><option value="AR">🇦🇷 Argentina</option><option value="CO">🇨🇴 Colômbia</option><option value="VE">🇻🇪 Venezuela</option><option value="US">🇺🇸 Estados Unidos</option><option value="CN">🇨🇳 China</option><option value="KR">🇰🇷 Coreia do Sul</option><option value="VN">🇻🇳 Vietnã</option><option value="ID">🇮🇩 Indonésia</option><option value="NP">🇳🇵 Nepal</option><option value="IN">🇮🇳 Índia</option><option value="LK">🇱🇰 Sri Lanka</option><option value="MM">🇲🇲 Mianmar</option><option value="TH">🇹🇭 Tailândia</option><option value="PK">🇵🇰 Paquistão</option><option value="BD">🇧🇩 Bangladesh</option><option value="GB">🇬🇧 Reino Unido</option><option value="FR">🇫🇷 França</option><option value="DE">🇩🇪 Alemanha</option><option value="PT">🇵🇹 Portugal</option><option value="ES">🇪🇸 Espanha</option><option value="MX">🇲🇽 México</option><option value="NG">🇳🇬 Nigéria</option><option value="GH">🇬🇭 Gana</option><option value="OTHER">Outra nacionalidade</option></select></div>
 <div><label>Idiomas que fala (selecione um ou mais)</label><details id="youth-languages-picker"><summary id="youth-languages-summary">Selecionar idiomas</summary><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;padding:12px 4px"><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Português"> Português</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Japonês"> Japonês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Inglês"> Inglês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Espanhol"> Espanhol</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Tagalog"> Tagalog</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Hindi"> Hindi</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Nepali"> Nepali</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Indonésio"> Indonésio</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Birmanês"> Birmanês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Cingalês"> Cingalês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Coreano"> Coreano</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Chinês"> Chinês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Vietnamita"> Vietnamita</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Tailandês"> Tailandês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Outros"> Outros</label></div></details></div>
@@ -576,7 +587,15 @@ function youthMessage(text,error=false){message('youth-message',text,error)}
 function selectedYouthLanguages(){return [...document.querySelectorAll('input[name="youth-language"]:checked')].map(x=>x.value)}
 function refreshYouthLanguages(){const a=selectedYouthLanguages();el('youth-languages-summary').textContent=a.length?a.join(', '):'Selecionar idiomas'}
 document.querySelectorAll('input[name="youth-language"]').forEach(x=>x.addEventListener('change',refreshYouthLanguages));
-function resetYouth(){el('youth-photo').disabled=false;if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}el('youth-form').reset();refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
+function updateYouthBirthDisplay(){
+ const date=el('youth-birth').value;
+ el('youth-birth-display').textContent=/^\d{4}-\d{2}-\d{2}$/.test(date)
+   ?date.slice(8,10)+'/'+date.slice(5,7)+'/'+date.slice(0,4):'Selecionar data';
+}
+el('youth-birth').addEventListener('input',updateYouthBirthDisplay);
+el('youth-birth').addEventListener('change',updateYouthBirthDisplay);
+updateYouthBirthDisplay();
+function resetYouth(){el('youth-photo').disabled=false;if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}el('youth-form').reset();updateYouthBirthDisplay();refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
 async function initializeYouth(){
   const {data,error}=await supabase.from('fju_polos').select('id,nome').order('nome');
   if(error){youthMessage('Não foi possível carregar polos: '+error.message,true);return;}
@@ -826,6 +845,7 @@ function editYouth(id){
   const r=youthRows.find(x=>x.id===id);if(!r)return;
   el('youth-id').value=r.id;el('youth-polo').value=r.polo_id;
   for(const [field,key] of [['youth-name','nome_completo'],['youth-birth','nascimento'],['youth-phone','telefone'],['youth-country','nacionalidade_iso2'],['youth-rank','patente']])el(field).value=r[key]||'';
+  updateYouthBirthDisplay();
   el('youth-rank').value=r.categoria==='inconstante'?'Inconstante':({'firme':'Firme','cpo':'CPO','colaborador':'Colaborador','obreiro':'Obreiro','coordenador':'Coordenador'}[r.patente]||r.patente||'');
   document.querySelectorAll('input[name="youth-language"]').forEach(x=>x.checked=(r.idiomas||[]).includes(x.value));refreshYouthLanguages();
   el('youth-photo').value='';el('youth-photo').disabled=currentProfile?.papel==='coordenador';void loadYouthPhoto(r.id);youthMessage(currentProfile?.papel==='coordenador'?'Edite os campos e envie para aprovação. A ficha original não será alterada.':'Editando ficha: '+r.nome_completo);el('youth-form').scrollIntoView({behavior:'smooth'});
