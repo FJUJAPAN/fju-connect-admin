@@ -299,7 +299,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <div class="youth-saved-heading"><h3>Fichas cadastradas</h3><span id="youth-visible-count" class="youth-saved-count">Carregando...</span></div>
 <div id="youth-list-polo-wrap" class="youth-polo-filter"><label for="youth-list-polo">Visualizar fichas da igreja</label><select id="youth-list-polo"><option value="">Selecione uma igreja</option></select></div>
 <div class="youth-list-controls"><div><label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite o nome do jovem" type="search" autocomplete="off"></div><button type="button" id="youth-refresh" class="secondary">Atualizar</button></div>
-<div id="youth-list" aria-label="Fichas salvas"></div><div id="youth-detail" class="panel hidden" style="margin-top:16px;border:1px solid #dce3ef"></div>
+<div id="youth-detail" class="panel hidden" style="margin:0 0 14px;border:1px solid #dce3ef"></div><div id="youth-list" aria-label="Fichas salvas"></div>
 </section>
 <section id="autorizacoes" class="panel hidden"><h2>Autorizações de fichas</h2><p class="muted">Solicitações de alteração ou exclusão aguardando aprovação nacional. Nenhuma ficha é modificada ao enviar um pedido.</p><button type="button" id="requests-refresh" class="secondary">Atualizar solicitações</button><p id="requests-message" class="message" role="status"></p><div class="authorization-filters" id="requests-filters"><button type="button" data-request-filter="pendente" class="active">Pendentes</button><button type="button" data-request-filter="aprovada">Aprovadas</button><button type="button" data-request-filter="rejeitada">Rejeitadas</button><button type="button" data-request-filter="todas">Todas</button></div><div id="requests-list" class="report-list"></div></section><section id="relatorios" class="panel hidden">
 <h2>Relatórios</h2>
@@ -919,12 +919,19 @@ async function viewYouth(id){
   const r=youthRows.find(x=>x.id===id);if(!r)return;
   const panel=el('youth-detail');panel.replaceChildren();panel.classList.remove('hidden');
   if(detailPhotoUrl){URL.revokeObjectURL(detailPhotoUrl);detailPhotoUrl=null;}
-  const heading=document.createElement('h3');heading.textContent='Ficha individual';panel.append(heading);
-  const top=document.createElement('div');top.style.cssText='display:flex;align-items:center;gap:16px;flex-wrap:wrap';
-  const photo=document.createElement('img');photo.alt='Foto do jovem';photo.style.cssText='width:112px;height:112px;object-fit:cover;border-radius:14px;background:#e2e8f3';
-  const info=document.createElement('div');const name=document.createElement('h2');name.textContent=r.nome_completo;info.append(name);
-  const rank=document.createElement('p');rank.textContent='Patente: '+(r.categoria==='inconstante'?'Inconstante':r.patente||'—');info.append(rank);
-  top.append(photo,info);panel.append(top);
+  const titleRow=document.createElement('div');titleRow.className='youth-detail-title-row';
+  const heading=document.createElement('h3');heading.textContent='Ficha individual';
+  const topClose=document.createElement('button');topClose.type='button';topClose.className='secondary youth-detail-close';topClose.textContent='Fechar';
+  topClose.onclick=()=>{panel.classList.add('hidden');if(detailPhotoUrl){URL.revokeObjectURL(detailPhotoUrl);detailPhotoUrl=null;}};
+  titleRow.append(heading,topClose);panel.append(titleRow);
+  const top=document.createElement('div');top.className='youth-detail-top';
+  const avatar=document.createElement('div');avatar.className='youth-detail-avatar';
+  const initials=document.createElement('span');initials.textContent=youthCardInitials(r.nome_completo);
+  avatar.append(initials);
+  const info=document.createElement('div');info.className='youth-detail-info';
+  const name=document.createElement('h2');name.textContent=r.nome_completo;info.append(name);
+  const rank=document.createElement('span');rank.className='youth-detail-rank';rank.textContent=youthCardRank(r);info.append(rank);
+  top.append(avatar,info);panel.append(top);
   const details=document.createElement('div');details.className='grid';
   const flag=(r.nacionalidade_iso2&&/^[A-Z]{2}$/.test(r.nacionalidade_iso2))?String.fromCodePoint(...[...r.nacionalidade_iso2].map(c=>127397+c.charCodeAt(0))):'🌐';
   const country=el('youth-country').querySelector('option[value="'+(r.nacionalidade_iso2||'')+'"]');
@@ -947,7 +954,7 @@ async function viewYouth(id){
     }
   }catch(err){historyList.textContent='Histórico indisponível: '+err.message;}
 
-  const close=document.createElement('button');close.type='button';close.className='secondary';close.textContent='Fechar ficha';close.onclick=()=>{panel.classList.add('hidden');if(detailPhotoUrl){URL.revokeObjectURL(detailPhotoUrl);detailPhotoUrl=null;}};panel.append(close);
+
   panel.scrollIntoView({behavior:'smooth'});
   try{
     const {data:files,error}=await supabase.storage.from('fju-fotos').list(id,{limit:20});
@@ -956,8 +963,10 @@ async function viewYouth(id){
     if(!file)return;
     const result=await supabase.storage.from('fju-fotos').download(id+'/'+file.name);
     if(result.error)throw result.error;
-    if(!panel.classList.contains('hidden')&&panel.contains(photo)){
-      detailPhotoUrl=URL.createObjectURL(result.data);photo.src=detailPhotoUrl;
+    if(!panel.classList.contains('hidden')&&panel.contains(avatar)){
+      detailPhotoUrl=URL.createObjectURL(result.data);
+      const img=document.createElement('img');img.alt='Foto do jovem';img.src=detailPhotoUrl;
+      avatar.replaceChildren(img);
     }
   }catch(e){const note=document.createElement('p');note.className='muted';note.textContent='Foto indisponível: '+e.message;panel.append(note);}
 }
