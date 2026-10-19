@@ -9,6 +9,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>FJU Connect JAPAN · Admin</title>
 <link rel="manifest" href="./manifest.webmanifest">
+<link rel="stylesheet" href="./cards-coordenadores.css">
 <meta name="theme-color" content="#253b75">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -214,8 +215,13 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <section id="auth" class="panel auth"><h2>Entrar</h2><form id="login-form"><label for="email">E-mail</label><input id="email" type="email" autocomplete="username" required><label for="password">Senha</label><input id="password" type="password" autocomplete="current-password" required><p><button type="submit">Entrar</button></p></form><button class="secondary" id="forgot">Enviar recuperação de senha</button><p id="auth-message" class="message" role="status" aria-live="polite"></p></section>
 <section id="recovery" class="panel auth hidden"><h2>Definir nova senha</h2><form id="recovery-form"><label for="new-password">Nova senha (mínimo de 8 caracteres)</label><input id="new-password" type="password" minlength="8" autocomplete="new-password" required><label for="confirm-password">Confirmar nova senha</label><input id="confirm-password" type="password" minlength="8" autocomplete="new-password" required><p><button type="submit">Salvar nova senha</button></p></form><p id="recovery-message" class="message" role="status" aria-live="polite"></p></section>
 <div id="app" class="hidden"><div class="topline"><p id="identity" class="muted"></p><button id="logout" class="secondary">Sair</button></div><div class="notice"><strong>Ambiente em validação.</strong> Login, fichas, autorizações, relatórios e impressão disponíveis para testes. Antes de cadastrar dados reais, confirme as permissões de acesso por igreja e a proteção das fotos.</div>
-<button type="button" id="menu-toggle" class="secondary" aria-expanded="false" aria-controls="main-nav">☰ Menu</button><nav id="main-nav" class="tabs"><button class="active" data-tab="inicio">Visão geral</button><button data-tab="jovens">Fichas</button><button data-tab="relatorios">Relatório semanal</button><button data-tab="autorizacoes">Autorizações</button><button data-tab="config">Configuração</button></nav>
-<section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Igreja</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><button type="button" id="weekly-status-card" class="stat weekly-status-card" aria-label="Abrir relatório semanal"><span>Relatório desta semana</span><b id="pending-count">Verificando…</b><small>Toque para abrir o relatório →</small></button></div><p id="dashboard-note" class="muted">Indicadores consultados conforme as permissões da conta autenticada.</p></section>
+<button type="button" id="menu-toggle" class="secondary" aria-expanded="false" aria-controls="main-nav">☰ Menu</button><nav id="main-nav" class="tabs"><button class="active" data-tab="inicio">Visão geral</button><button data-tab="jovens">Fichas</button><button data-tab="relatorios">Relatório semanal</button><button data-tab="autorizacoes">Autorizações</button><button id="leader-nav" data-tab="lideranca">Meu perfil</button><button data-tab="config">Configuração</button></nav>
+<section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Igreja</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><button type="button" id="weekly-status-card" class="stat weekly-status-card" aria-label="Abrir relatório semanal"><span>Relatório desta semana</span><b id="pending-count">Verificando…</b><small>Toque para abrir o relatório →</small></button></div><p id="dashboard-note" class="muted">Indicadores consultados conforme as permissões da conta autenticada.</p>
+<div id="leader-home" class="leader-home-block hidden">
+<div class="leader-home-header"><h3>Seu perfil de liderança</h3><button type="button" id="leader-home-edit" class="secondary">Editar meu perfil</button></div>
+<div id="leader-home-card"></div>
+</div>
+</section>
 <section id="jovens" class="panel hidden">
 <h2>Fichas dos jovens — teste funcional</h2>
 <p class="muted">Use somente dados fictícios até a validação completa das permissões. Fotos de teste podem ser enviadas ao armazenamento privado após salvar a ficha. Ainda não use fotos reais até testar o isolamento entre polos.</p>
@@ -310,15 +316,39 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <div class="special-event-fold-content"><div id="special-event-list" class="stat">Carregando eventos...</div></div>
 </details>
 </div></section>
+<section id="lideranca" class="panel hidden">
+<h2>FJU JAPAN · Liderança</h2>
+<p class="leader-section-intro">Um espaço para reconhecer quem cuida dos jovens em cada igreja. Fotos e perfis ficam disponíveis somente para pessoas autorizadas no painel.</p>
+<div id="leader-own-area" class="leader-self-layout hidden">
+<div id="leader-own-card"></div>
+<form id="leader-editor" class="leader-editor">
+<h3>Personalizar meu perfil</h3>
+<p>Seu polo e a função de coordenador são definidos pela liderança. Aqui você pode escolher o nome exibido e sua foto.</p>
+<label for="leader-name">Nome do coordenador</label>
+<input id="leader-name" type="text" maxlength="100" autocomplete="name" placeholder="Seu nome completo" required>
+<label for="leader-photo">Sua foto de perfil</label>
+<input id="leader-photo" type="file" accept="image/jpeg,image/png,image/webp">
+<p>JPG, PNG ou WebP de até 5 MB. A foto é otimizada antes do envio e fica em armazenamento privado.</p>
+<button id="leader-save" type="submit">Salvar meu perfil</button>
+<p id="leader-message" class="message" role="status" aria-live="polite"></p>
+</form>
+</div>
+<div id="leader-national-area" class="hidden">
+<p class="leader-directory-message" id="leader-directory-message">Carregando coordenadores...</p>
+<div id="leader-directory" class="leader-directory"></div>
+</div>
+</section>
 <section id="config" class="panel hidden"><div id="notification-settings" class="panel" style="margin-bottom:14px"><h3 style="margin:0 0 8px">🔔 Notificações de relatórios</h3><p id="notification-status" class="muted" role="status" aria-live="polite">Verificando disponibilidade...</p><button type="button" id="enable-notifications">Ativar notificações neste aparelho</button> <button type="button" class="secondary" id="register-device" hidden>Registrar este aparelho</button> <button type="button" class="secondary" id="unlink-device" hidden>Desvincular este aparelho</button> <button type="button" class="secondary" id="test-push" hidden>Enviar notificação de teste</button><p class="muted" style="font-size:12px">Esta etapa autoriza notificações no aparelho. Os lembretes automáticos serão ativados após a configuração do serviço de envio.</p></div>
 <h2>Configuração</h2><p id="role-detail"></p><p class="muted">As regras de acesso efetivas são aplicadas no banco pelo RLS. A interface não substitui essas políticas.</p></section></div>
 </main><div id="print-area" class="hidden"></div><footer>FJU Connect JAPAN · Teste de autenticação</footer>
 <script type="module">
 import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+import {setupCoordinatorCards} from './cards-coordenadores.js';
 const SUPABASE_URL='https://hmacroktklgwkofxsygv.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_mdkfafhpqtthwzU8Hf7u9A_rErx3MFJ';
 const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const el=id=>document.getElementById(id);
+const coordinatorCards=setupCoordinatorCards({supabase,compressPhoto:compactarFoto100KB,navigateToTab:()=>document.querySelector('#main-nav [data-tab="lideranca"]')?.click()});
 const quantityOptions=document.createDocumentFragment();
 for(let n=0;n<=1000;n++){const option=document.createElement('option');option.value=String(n);option.textContent=String(n);quantityOptions.append(option);}
 for(const select of document.querySelectorAll('select.weekly-quantity')){select.append(quantityOptions.cloneNode(true));select.value='0';}
@@ -597,6 +627,7 @@ async function loadProfile(user){
   configureWeeklyReportAccess();
   if(data.papel==='nacional')void loadNationalReportOverview();else el('national-report-panel').classList.add('hidden');
   show('app');
+  void coordinatorCards.load(user,data,poloNome);
   void initializeYouth();
   void loadDashboard(data,requestId);
 }
@@ -1292,11 +1323,11 @@ async function refresh(){if(recoveryMode){show('recovery');return}const {data:{u
 el('login-form').addEventListener('submit',async e=>{e.preventDefault();message('auth-message','Entrando...');const {error}=await supabase.auth.signInWithPassword({email:el('email').value.trim(),password:el('password').value});if(error){message('auth-message','Não foi possível entrar: '+error.message,true);return}await refresh()});
 el('forgot').addEventListener('click',async()=>{const email=el('email').value.trim();if(!email){message('auth-message','Digite seu e-mail acima para receber a recuperação.',true);return}const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});message('auth-message',error?'Não foi possível solicitar a recuperação: '+error.message:'Se a conta estiver cadastrada, enviaremos instruções ao e-mail.',!!error)});
 el('recovery-form').addEventListener('submit',async e=>{e.preventDefault();const pass=el('new-password').value;if(pass.length<8||pass!==el('confirm-password').value){message('recovery-message','As senhas precisam ser iguais e ter pelo menos 8 caracteres.',true);return}const {error}=await supabase.auth.updateUser({password:pass});if(error){message('recovery-message',error.message,true);return}recoveryMode=false;history.replaceState({},'',location.pathname);message('auth-message','Senha atualizada. Você já pode entrar.');await supabase.auth.signOut();show('auth')});
-el('logout').addEventListener('click',async()=>{++profileRequest;await supabase.auth.signOut();show('auth')});
-document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.tab==='autorizacoes')void loadYouthRequests();document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.getElementById('main-nav')?.classList.remove('menu-open');document.getElementById('menu-toggle')?.setAttribute('aria-expanded','false');document.querySelectorAll('#app section.panel').forEach(s=>s.classList.toggle('hidden',s.id!==b.dataset.tab))}));
+el('logout').addEventListener('click',async()=>{++profileRequest;coordinatorCards.clear();await supabase.auth.signOut();show('auth')});
+document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.tab==='autorizacoes')void loadYouthRequests();if(b.dataset.tab==='lideranca')void coordinatorCards.refresh();document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.getElementById('main-nav')?.classList.remove('menu-open');document.getElementById('menu-toggle')?.setAttribute('aria-expanded','false');document.querySelectorAll('#app section.panel').forEach(s=>s.classList.toggle('hidden',s.id!==b.dataset.tab))}));
 document.getElementById('weekly-status-card')?.addEventListener('click',()=>document.querySelector('#main-nav [data-tab="relatorios"]')?.click());
 document.getElementById('menu-toggle')?.addEventListener('click',()=>{const nav=document.getElementById('main-nav');const open=nav.classList.toggle('menu-open');document.getElementById('menu-toggle').setAttribute('aria-expanded',String(open));});
-supabase.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){recoveryMode=true;show('recovery')}else if(event==='SIGNED_OUT'){recoveryMode=false;show('auth')}});
+supabase.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){recoveryMode=true;show('recovery')}else if(event==='SIGNED_OUT'){recoveryMode=false;coordinatorCards.clear();show('auth')}});
 if(location.search.includes('error=')){message('auth-message','O link de autenticação falhou ou expirou. Solicite outro.',true)}
 await refresh();
 </script>
