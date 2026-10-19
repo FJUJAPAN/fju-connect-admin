@@ -1,0 +1,96 @@
+/* FJU Connect JAPAN — fichas claras e compactas no painel administrativo. */
+#jovens .youth-page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+#jovens .youth-page-header h2{margin:0;color:#17264b;font-size:21px}
+#jovens .youth-page-subtitle{font-size:12.5px;color:#667896;line-height:1.55;max-width:560px;margin:7px 0 0}
+#youth-add-toggle{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;gap:8px;min-height:44px;padding:11px 18px;border-radius:12px;background:#253b75;color:white;font-size:13px}
+#youth-add-toggle:focus-visible,#youth-form-close:focus-visible{outline:3px solid #93bbfa;outline-offset:2px}
+#jovens .youth-add-icon{font-size:21px;font-weight:400;line-height:0.7}
+#youth-entry-panel{padding:17px;background:linear-gradient(150deg,#f5f8fe,#fbfcff);border:1px solid #dbe4f1;border-radius:17px;margin-bottom:16px}
+#youth-entry-panel.hidden{display:none}
+#jovens .youth-entry-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
+#jovens .youth-entry-heading h3{margin:0;color:#22365f;font-size:17px}
+#youth-form-close{font-size:12px;padding:8px 13px}
+#jovens #youth-form label{font-size:12px}
+#jovens #youth-form .actions{margin:17px 0 2px}
+#jovens #youth-form .actions button{min-height:42px;font-size:13px}
+#jovens #youth-form input:not([type=checkbox]):not([type=hidden]),
+#jovens #youth-form select{max-width:100%;min-width:0}
+#jovens #youth-message{font-size:12.5px;line-height:1.5;margin:12px 0;overflow-wrap:anywhere}
+#jovens .youth-saved-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:21px 0 11px}
+#jovens .youth-saved-heading h3{margin:0;color:#192b52;font-size:17px}
+#jovens .youth-saved-count{display:inline-flex;align-items:center;min-height:27px;padding:5px 10px;border-radius:30px;background:#edf3fc;color:#294a83;font-size:11px;font-weight:800;white-space:nowrap}
+#jovens .youth-list-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;margin-bottom:14px}
+#jovens .youth-list-controls>div{min-width:0}
+#jovens .youth-list-controls label{margin:0 0 6px;font-size:12px;color:#4b5871}
+#jovens .youth-list-controls input,#jovens .youth-list-controls select{min-height:44px;width:100%;max-width:100%;font-size:16px}
+#youth-refresh{min-height:44px;padding:11px 13px;align-self:end;white-space:nowrap;font-size:12px}
+#jovens .youth-polo-filter{margin:0 0 12px}
+#jovens .youth-polo-filter.hidden{display:none}
+#youth-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,315px),1fr));gap:12px;margin-top:10px}
+#youth-list .youth-card{
+ position:relative;display:flex;flex-direction:column;gap:12px;min-width:0;
+ padding:15px;background:linear-gradient(155deg,#fff 0%,#f9fbff 100%);
+ border:1px solid #dce5f3;border-left:3px solid #738fc8;border-radius:16px;
+ box-shadow:0 4px 14px rgba(22,42,84,.045)
+}
+#youth-list .youth-card-main{display:flex;align-items:center;gap:12px;min-width:0}
+#youth-list .youth-avatar{
+ display:flex;align-items:center;justify-content:center;flex:0 0 62px;
+ width:62px;height:62px;overflow:hidden;border:2px solid #dce5f3;border-radius:16px;
+ background:linear-gradient(145deg,#e1ebfc,#cbdcf8);color:#31558f;
+ font-weight:800;font-size:21px;text-align:center;letter-spacing:.5px
+}
+#youth-list .youth-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+#youth-list .youth-card-info{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0;flex:1}
+#youth-list .youth-card-name{margin:0;font-size:15px;font-weight:750;line-height:1.26;overflow-wrap:anywhere;color:#1b2b50}
+#youth-list .youth-card-metadata{display:flex;align-items:center;gap:7px;flex-wrap:wrap;color:#677794;font-size:11.5px;line-height:1.3}
+#youth-list .youth-rank{display:inline-flex;align-items:center;max-width:100%;padding:4px 9px;border-radius:100px;font-size:10px;font-weight:750;letter-spacing:.05px;background:#eef2f8;color:#4a5b77}
+#youth-list .youth-rank[data-rank=Firme]{background:#e5f0ff;color:#2058a6}
+#youth-list .youth-rank[data-rank=CPO]{background:#f0eafd;color:#6b46b2}
+#youth-list .youth-rank[data-rank=Colaborador]{background:#e3f6ee;color:#217455}
+#youth-list .youth-rank[data-rank=Obreiro]{background:#fff0d6;color:#8a5a13}
+#youth-list .youth-rank[data-rank=Coordenador]{background:#e8e6ff;color:#493997}
+#youth-list .youth-card-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding-top:10px;border-top:1px solid #e8edf6}
+#youth-list .youth-card-actions button{font-size:12px;padding:9px 14px;min-height:39px}
+#youth-list .youth-card-actions .youth-view-button{background:#253b75;color:#fff}
+#youth-list .youth-card-actions .youth-edit-button{background:#e9eef7;color:#29436e}
+#youth-list .youth-card-more{min-width:0;flex:1}
+#youth-list .youth-card-more summary{
+ display:flex;justify-content:flex-end;align-items:center;min-height:40px;
+ padding:7px 4px;list-style:none;cursor:pointer;font-size:12px;font-weight:700;color:#576c95
+}
+#youth-list .youth-card-more summary::-webkit-details-marker{display:none}
+#youth-list .youth-card-more summary:focus-visible{outline:2px solid #315caa;outline-offset:1px}
+#youth-list .youth-card-more[open] summary{color:#244b95}
+#youth-list .youth-card-extra-actions{display:flex;flex-wrap:wrap;gap:7px;padding:10px 0 0}
+#youth-list .youth-card-extra-actions button{font-size:11.5px;padding:9px 11px;min-height:38px}
+#youth-list .youth-card-extra-actions .youth-request-delete{color:#8a3434;background:#f8eded}
+#youth-list .youth-empty{grid-column:1/-1;padding:24px 16px;border:1px dashed #cbd8ea;border-radius:15px;text-align:center;color:#63738e;background:#f8faff;font-size:13px}
+#jovens #youth-detail{border-radius:17px;padding:17px;margin-top:17px}
+#jovens #youth-detail h2{font-size:20px;margin-bottom:8px}
+#jovens #youth-detail h3{font-size:16px}
+#jovens #youth-detail .stat{overflow-wrap:anywhere;background:#f5f8fe}
+@media(max-width:700px){
+ #jovens .youth-page-header{flex-direction:column;align-items:stretch;gap:12px}
+ #youth-add-toggle{width:100%}
+ #jovens .youth-list-controls{grid-template-columns:minmax(0,1fr) auto}
+ #youth-list{grid-template-columns:minmax(0,1fr)}
+ #youth-list .youth-card{padding:13px 14px;border-radius:14px}
+ #jovens .youth-saved-heading{margin-top:16px}
+ #youth-entry-panel{padding:14px}
+}
+
+#jovens .youth-detail-title-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px}
+#jovens .youth-detail-title-row h3{margin:0;color:#192a50;font-size:15px}
+#jovens .youth-detail-close{min-height:36px;font-size:12px;padding:8px 13px}
+#jovens .youth-detail-top{display:flex;align-items:center;gap:17px;min-width:0;padding:15px;margin-bottom:13px;border-radius:14px;background:linear-gradient(120deg,#213c77,#1a2c51);color:#fff}
+#jovens .youth-detail-avatar{flex:0 0 92px;width:92px;height:92px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:2px solid #afc4ed;border-radius:19px;background:linear-gradient(135deg,#506a9e,#283f70);color:#fff;font-size:27px;font-weight:750;letter-spacing:.5px}
+#jovens .youth-detail-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+#jovens .youth-detail-info{min-width:0;flex:1}
+#jovens .youth-detail-info h2{font-size:18px;line-height:1.2;overflow-wrap:anywhere;color:#fff;margin:0 0 12px}
+#jovens .youth-detail-rank{display:inline-flex;padding:5px 11px;border:1px solid rgba(243,216,159,.45);border-radius:99px;background:rgba(255,255,255,.1);color:#f7dfb0;font-size:11px;font-weight:800}
+@media(max-width:480px){
+ #jovens .youth-detail-top{gap:12px;padding:12px}
+ #jovens .youth-detail-avatar{flex-basis:76px;width:76px;height:76px}
+ #jovens .youth-detail-info h2{font-size:16px}
+}

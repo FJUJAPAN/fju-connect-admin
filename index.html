@@ -10,6 +10,7 @@
 <title>FJU Connect JAPAN · Admin</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="stylesheet" href="./cards-coordenadores.css">
+<link rel="stylesheet" href="./fichas-jovens.css">
 <meta name="theme-color" content="#253b75">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -264,8 +265,13 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 </div>
 </section>
 <section id="jovens" class="panel hidden">
-<h2>Fichas dos jovens — teste funcional</h2>
-<p class="muted">Use somente dados fictícios até a validação completa das permissões. Fotos de teste podem ser enviadas ao armazenamento privado após salvar a ficha. Ainda não use fotos reais até testar o isolamento entre polos.</p>
+<div class="youth-page-header">
+<div><h2>Fichas dos jovens</h2><p id="youth-page-subtitle" class="youth-page-subtitle">Consulte as fichas da sua igreja. Abra o formulário somente quando precisar cadastrar ou solicitar uma alteração.</p></div>
+<button type="button" id="youth-add-toggle" aria-expanded="false" aria-controls="youth-entry-panel"><span class="youth-add-icon" aria-hidden="true">+</span><span id="youth-add-toggle-label">Adicionar jovem</span></button>
+</div>
+<div id="youth-entry-panel" class="hidden">
+<div class="youth-entry-heading"><h3 id="youth-form-title">Nova ficha</h3><button type="button" id="youth-form-close" class="secondary">Fechar</button></div>
+<p class="youth-page-subtitle">Preencha os dados do jovem. Alterações de fichas existentes feitas pelo coordenador dependem de aprovação nacional.</p>
 <form id="youth-form">
 <input id="youth-id" type="hidden">
 <div class="grid youth-info-grid">
@@ -286,10 +292,14 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <div><label for="youth-rank">Patente do jovem</label><select id="youth-rank" required><option value="">Selecione</option><option>Inconstante</option><option>Firme</option><option>CPO</option><option>Colaborador</option><option>Obreiro</option><option>Coordenador</option></select></div>
 <div><label for="youth-photo">Foto do jovem (galeria ou câmera)</label><input id="youth-photo" type="file" accept="image/jpeg,image/png,image/webp"><img id="youth-photo-preview" alt="Prévia da foto escolhida" class="hidden" style="width:90px;height:90px;object-fit:cover;border-radius:12px;margin-top:8px"><p class="muted">A foto será comprimida automaticamente para até 100 KB e enviada ao bucket privado ao salvar a ficha. Use apenas imagens fictícias nesta fase de teste.</p></div>
 </div>
-<p class="actions"><button type="submit">Salvar ficha de teste</button><button type="button" id="youth-clear" class="secondary">Limpar formulário</button><button type="button" id="youth-refresh" class="secondary">Atualizar lista</button></p>
-</form><p id="youth-message" class="message" role="status"></p>
-<label for="youth-list-polo">Visualizar fichas da igreja</label><select id="youth-list-polo"><option value="">Selecione uma igreja</option></select><label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite parte do nome">
-<div id="youth-list" style="margin-top:12px"></div><div id="youth-detail" class="panel hidden" style="margin-top:16px;border:1px solid #dce3ef"></div>
+<p class="actions"><button type="submit" id="youth-submit">Salvar ficha</button><button type="button" id="youth-clear" class="secondary">Limpar formulário</button></p>
+</form>
+</div>
+<p id="youth-message" class="message" role="status" aria-live="polite"></p>
+<div class="youth-saved-heading"><h3>Fichas cadastradas</h3><span id="youth-visible-count" class="youth-saved-count">Carregando...</span></div>
+<div id="youth-list-polo-wrap" class="youth-polo-filter"><label for="youth-list-polo">Visualizar fichas da igreja</label><select id="youth-list-polo"><option value="">Selecione uma igreja</option></select></div>
+<div class="youth-list-controls"><div><label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite o nome do jovem" type="search" autocomplete="off"></div><button type="button" id="youth-refresh" class="secondary">Atualizar</button></div>
+<div id="youth-detail" class="panel hidden" style="margin:0 0 14px;border:1px solid #dce3ef"></div><div id="youth-list" aria-label="Fichas salvas"></div>
 </section>
 <section id="autorizacoes" class="panel hidden"><h2>Autorizações de fichas</h2><p class="muted">Solicitações de alteração ou exclusão aguardando aprovação nacional. Nenhuma ficha é modificada ao enviar um pedido.</p><button type="button" id="requests-refresh" class="secondary">Atualizar solicitações</button><p id="requests-message" class="message" role="status"></p><div class="authorization-filters" id="requests-filters"><button type="button" data-request-filter="pendente" class="active">Pendentes</button><button type="button" data-request-filter="aprovada">Aprovadas</button><button type="button" data-request-filter="rejeitada">Rejeitadas</button><button type="button" data-request-filter="todas">Todas</button></div><div id="requests-list" class="report-list"></div></section><section id="relatorios" class="panel hidden">
 <h2>Relatórios</h2>
@@ -709,8 +719,32 @@ function setYouthBirth(value){
   el('youth-birth-day').value=parts[2];
   syncYouthBirth();
 }
+function setYouthFormOpen(open,editing=false,scroll=false){
+  const panel=el('youth-entry-panel'),toggle=el('youth-add-toggle');
+  panel.classList.toggle('hidden',!open);
+  toggle.setAttribute('aria-expanded',String(open));
+  el('youth-add-toggle-label').textContent=open?'Fechar cadastro':'Adicionar jovem';
+  toggle.querySelector('.youth-add-icon').textContent=open?'×':'+';
+  el('youth-form-title').textContent=editing
+    ?(currentProfile?.papel==='coordenador'?'Solicitar alteração':'Editar ficha')
+    :'Nova ficha';
+  el('youth-submit').textContent=editing
+    ?(currentProfile?.papel==='coordenador'?'Enviar para aprovação':'Salvar alterações')
+    :'Salvar ficha';
+  if(open&&scroll)panel.scrollIntoView({behavior:'smooth',block:'start'});
+}
+el('youth-add-toggle').addEventListener('click',()=>{
+  const open=el('youth-entry-panel').classList.contains('hidden');
+  resetYouth();
+  setYouthFormOpen(open,false,open);
+});
+el('youth-form-close').addEventListener('click',()=>{resetYouth();setYouthFormOpen(false);});
 function resetYouth(){el('youth-photo').disabled=false;if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}el('youth-form').reset();setYouthBirth('');refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
 async function initializeYouth(){
+  resetYouthSession();
+  el('youth-page-subtitle').textContent=currentProfile?.papel==='coordenador'
+    ?'Veja os jovens da sua igreja, cadastre novas fichas e solicite alterações à liderança nacional.'
+    :'Consulte as fichas por igreja e abra o formulário somente quando precisar cadastrar ou editar um jovem.';
   const {data,error}=await supabase.from('fju_polos').select('id,nome').order('nome');
   if(error){youthMessage('Não foi possível carregar polos: '+error.message,true);return;}
   const allowed=currentProfile.papel==='coordenador'?(data||[]).filter(x=>x.id===currentProfile.polo_id):(data||[]);
@@ -720,7 +754,8 @@ async function initializeYouth(){
   if(currentProfile.papel==='nacional'){const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Selecione uma igreja';listPolo.append(placeholder);}
   for(const polo of allowed){const option=document.createElement('option');option.value=String(polo.id);option.textContent=polo.nome;listPolo.append(option);}
   if(currentProfile.papel==='coordenador')listPolo.value=String(currentProfile.polo_id);
-  resetYouth();await loadYouth();
+  el('youth-list-polo-wrap').classList.toggle('hidden',currentProfile.papel==='coordenador');
+  resetYouth();setYouthFormOpen(false);await loadYouth();
 }
 async function loadYouthPhoto(id){
   const preview=el('youth-photo-preview');preview.classList.add('hidden');preview.removeAttribute('src');
@@ -755,9 +790,11 @@ async function compactarFoto100KB(file){
     throw Error('Não foi possível reduzir a foto para 100 KB.');
   }finally{bitmap.close();}
 }
+let youthLoadVersion=0;
 async function loadYouth(){
   if(!currentProfile)return;
-  youthMessage('Consultando fichas de teste...');
+  const loadVersion=++youthLoadVersion;
+  youthMessage('Consultando fichas...');
   const polo=currentProfile.papel==='coordenador'?currentProfile.polo_id:el('youth-list-polo').value;
   if(!polo){youthRows=[];renderYouth();youthMessage('Selecione uma igreja para visualizar as fichas.');return;}
   const all=[],batchSize=500;
@@ -767,41 +804,156 @@ async function loadYouth(){
       .is('excluido_em',null).eq('polo_id',polo)
       .order('nome_completo').order('id')
       .range(start,start+batchSize-1);
+    if(loadVersion!==youthLoadVersion)return;
     if(error){youthMessage('Erro na consulta: '+error.message,true);return;}
     all.push(...(data||[]));
     if(!data||data.length<batchSize)break;
   }
+  if(loadVersion!==youthLoadVersion)return;
   youthRows=all;renderYouth();youthMessage(`${youthRows.length} ficha(s) carregada(s) da igreja selecionada.`);
 }
+/* Fotos das fichas são carregadas somente quando o card entra na área visível.
+   Não são usadas URLs públicas: o acesso passa pelo bucket privado e políticas RLS. */
+let youthCardPhotoObserver=null;
+let youthCardPhotoUrls=[];
+let youthCardRenderVersion=0;
+function clearYouthCardPhotos(){
+  youthCardRenderVersion++;
+  youthCardPhotoObserver?.disconnect();
+  youthCardPhotoObserver=null;
+  for(const url of youthCardPhotoUrls)URL.revokeObjectURL(url);
+  youthCardPhotoUrls=[];
+}
+async function loadYouthCardThumbnail(id,avatar,version){
+  try{
+    const {data:files,error}=await supabase.storage.from('fju-fotos').list(id,{limit:20});
+    if(error||version!==youthCardRenderVersion)return;
+    const photo=(files||[]).find(file=>/^perfil\.(jpg|png|webp)$/.test(file.name));
+    if(!photo)return;
+    const {data,error:photoError}=await supabase.storage.from('fju-fotos').download(id+'/'+photo.name);
+    if(photoError||!data||version!==youthCardRenderVersion||!avatar.isConnected)return;
+    const url=URL.createObjectURL(data);
+    youthCardPhotoUrls.push(url);
+    const img=document.createElement('img');
+    img.src=url;img.alt='Foto do jovem';img.decoding='async';
+    avatar.replaceChildren(img);
+  }catch(err){
+    // A ausência de foto ou a falta de permissão não impede abrir a ficha.
+    console.warn('Miniatura indisponível',err);
+  }
+}
+function youthCardRank(r){
+  if(r.categoria==='inconstante')return 'Inconstante';
+  const rank=(r.patente||'').toLocaleLowerCase();
+  return ({firme:'Firme',cpo:'CPO',colaborador:'Colaborador',obreiro:'Obreiro',coordenador:'Coordenador'})[rank]||r.patente||'Firme';
+}
+function youthCardInitials(name){
+  const parts=(name||'J').trim().split(/\s+/).filter(Boolean);
+  return ((parts[0]?.[0]||'J')+(parts.length>1?parts[parts.length-1][0]:'')).toLocaleUpperCase();
+}
 function renderYouth(){
+  clearYouthCardPhotos();
+  const version=youthCardRenderVersion;
   const term=el('youth-search').value.trim().toLocaleLowerCase();
   const list=el('youth-list');list.replaceChildren();
+  const count=el('youth-visible-count');
   const polo=el('youth-list-polo').value;
-  if(!polo){list.textContent='Selecione uma igreja para visualizar as fichas.';return;}
+  if(!polo){
+    count.textContent='Selecione uma igreja';
+    const empty=document.createElement('div');empty.className='youth-empty';
+    empty.textContent='Selecione uma igreja para visualizar as fichas cadastradas.';
+    list.append(empty);return;
+  }
   const rows=youthRows.filter(r=>String(r.polo_id)===polo&&(r.nome_completo||'').toLocaleLowerCase().includes(term));
-  if(!rows.length){list.textContent='Nenhuma ficha encontrada.';return;}
-  for(const r of rows){
-    const div=document.createElement('div');div.className='stat';div.style.marginBottom='8px';
-    const name=document.createElement('strong');name.textContent=r.nome_completo||'(sem nome)';
-    const detail=document.createElement('p');detail.className='muted';detail.textContent=`${r.patente||r.categoria||'Sem patente'} · ${r.nacionalidade_iso2||'—'}`;
-    const edit=document.createElement('button');edit.type='button';edit.className='secondary';edit.textContent='Editar';edit.onclick=()=>editYouth(r.id);
-    const view=document.createElement('button');view.type='button';view.className='secondary';view.textContent='Ver ficha';view.style.marginRight='8px';view.onclick=()=>viewYouth(r.id);
-    div.append(name,detail,view);if(currentProfile?.papel==='nacional')div.append(edit);
-    else {const request=document.createElement('button');request.type='button';request.className='secondary';request.textContent='Solicitar edição';request.onclick=()=>editYouth(r.id);const del=document.createElement('button');del.type='button';del.className='secondary';del.textContent='Solicitar exclusão';del.onclick=()=>requestYouthChange(r);div.append(del);div.append(request);}
-    list.append(div);
+  count.textContent=rows.length+' '+(rows.length===1?'ficha':'fichas');
+  if(!rows.length){
+    const empty=document.createElement('div');empty.className='youth-empty';
+    empty.textContent=term?'Nenhuma ficha corresponde à busca.':'Nenhuma ficha cadastrada nesta igreja.';
+    list.append(empty);return;
+  }
+  if('IntersectionObserver' in window){
+    youthCardPhotoObserver=new IntersectionObserver(entries=>{
+      for(const entry of entries){
+        if(!entry.isIntersecting)continue;
+        youthCardPhotoObserver?.unobserve(entry.target);
+        const id=entry.target.dataset.jovemId;
+        if(id)void loadYouthCardThumbnail(id,entry.target,version);
+      }
+    },{rootMargin:'160px 0px',threshold:0.01});
+  }
+  for(const [index,r] of rows.entries()){
+    const card=document.createElement('article');card.className='youth-card';
+    const main=document.createElement('div');main.className='youth-card-main';
+    const avatar=document.createElement('div');avatar.className='youth-avatar';
+    avatar.dataset.jovemId=String(r.id);
+    const initials=document.createElement('span');initials.textContent=youthCardInitials(r.nome_completo);
+    avatar.append(initials);
+    const info=document.createElement('div');info.className='youth-card-info';
+    const name=document.createElement('h3');name.className='youth-card-name';
+    name.textContent=r.nome_completo||'Jovem sem nome';
+    const rank=document.createElement('span');rank.className='youth-rank';
+    rank.textContent=youthCardRank(r);rank.dataset.rank=rank.textContent;
+    const metadata=document.createElement('div');metadata.className='youth-card-metadata';
+    const country=[...el('youth-country').options].find(option=>option.value===(r.nacionalidade_iso2||''));
+    const countryName=document.createElement('span');
+    countryName.textContent=country?.textContent||r.nacionalidade_iso2||'Nacionalidade não informada';
+    metadata.append(countryName);
+    info.append(name,rank,metadata);
+    main.append(avatar,info);
+    const actions=document.createElement('div');actions.className='youth-card-actions';
+    const view=document.createElement('button');view.type='button';view.className='youth-view-button';
+    view.textContent='Ver ficha';view.onclick=()=>viewYouth(r.id);actions.append(view);
+    if(currentProfile?.papel==='nacional'){
+      const edit=document.createElement('button');edit.type='button';edit.className='secondary youth-edit-button';
+      edit.textContent='Editar';edit.onclick=()=>editYouth(r.id);actions.append(edit);
+    }else{
+      const more=document.createElement('details');more.className='youth-card-more';
+      const summary=document.createElement('summary');summary.textContent='Mais ações ▾';
+      const extra=document.createElement('div');extra.className='youth-card-extra-actions';
+      const request=document.createElement('button');request.type='button';request.className='secondary';
+      request.textContent='Solicitar edição';request.onclick=()=>editYouth(r.id);
+      const remove=document.createElement('button');remove.type='button';
+      remove.className='secondary youth-request-delete';remove.textContent='Solicitar exclusão';
+      remove.onclick=()=>requestYouthChange(r);
+      extra.append(request,remove);more.append(summary,extra);actions.append(more);
+    }
+    card.append(main,actions);list.append(card);
+    if(youthCardPhotoObserver)youthCardPhotoObserver.observe(avatar);
+    else if(index<10)void loadYouthCardThumbnail(r.id,avatar,version);
   }
 }
 let detailPhotoUrl=null;
+function resetYouthSession(){
+  ++youthLoadVersion;
+  clearYouthCardPhotos();
+  youthRows=[];
+  resetYouth();
+  setYouthFormOpen(false);
+  el('youth-message').textContent='';
+  el('youth-list').replaceChildren();
+  el('youth-visible-count').textContent='—';
+  el('youth-search').value='';
+  const detail=el('youth-detail');
+  detail.classList.add('hidden');detail.replaceChildren();
+  if(detailPhotoUrl){URL.revokeObjectURL(detailPhotoUrl);detailPhotoUrl=null;}
+}
 async function viewYouth(id){
   const r=youthRows.find(x=>x.id===id);if(!r)return;
   const panel=el('youth-detail');panel.replaceChildren();panel.classList.remove('hidden');
   if(detailPhotoUrl){URL.revokeObjectURL(detailPhotoUrl);detailPhotoUrl=null;}
-  const heading=document.createElement('h3');heading.textContent='Ficha individual';panel.append(heading);
-  const top=document.createElement('div');top.style.cssText='display:flex;align-items:center;gap:16px;flex-wrap:wrap';
-  const photo=document.createElement('img');photo.alt='Foto do jovem';photo.style.cssText='width:112px;height:112px;object-fit:cover;border-radius:14px;background:#e2e8f3';
-  const info=document.createElement('div');const name=document.createElement('h2');name.textContent=r.nome_completo;info.append(name);
-  const rank=document.createElement('p');rank.textContent='Patente: '+(r.categoria==='inconstante'?'Inconstante':r.patente||'—');info.append(rank);
-  top.append(photo,info);panel.append(top);
+  const titleRow=document.createElement('div');titleRow.className='youth-detail-title-row';
+  const heading=document.createElement('h3');heading.textContent='Ficha individual';
+  const topClose=document.createElement('button');topClose.type='button';topClose.className='secondary youth-detail-close';topClose.textContent='Fechar';
+  topClose.onclick=()=>{panel.classList.add('hidden');if(detailPhotoUrl){URL.revokeObjectURL(detailPhotoUrl);detailPhotoUrl=null;}};
+  titleRow.append(heading,topClose);panel.append(titleRow);
+  const top=document.createElement('div');top.className='youth-detail-top';
+  const avatar=document.createElement('div');avatar.className='youth-detail-avatar';
+  const initials=document.createElement('span');initials.textContent=youthCardInitials(r.nome_completo);
+  avatar.append(initials);
+  const info=document.createElement('div');info.className='youth-detail-info';
+  const name=document.createElement('h2');name.textContent=r.nome_completo;info.append(name);
+  const rank=document.createElement('span');rank.className='youth-detail-rank';rank.textContent=youthCardRank(r);info.append(rank);
+  top.append(avatar,info);panel.append(top);
   const details=document.createElement('div');details.className='grid';
   const flag=(r.nacionalidade_iso2&&/^[A-Z]{2}$/.test(r.nacionalidade_iso2))?String.fromCodePoint(...[...r.nacionalidade_iso2].map(c=>127397+c.charCodeAt(0))):'🌐';
   const country=el('youth-country').querySelector('option[value="'+(r.nacionalidade_iso2||'')+'"]');
@@ -824,7 +976,7 @@ async function viewYouth(id){
     }
   }catch(err){historyList.textContent='Histórico indisponível: '+err.message;}
 
-  const close=document.createElement('button');close.type='button';close.className='secondary';close.textContent='Fechar ficha';close.onclick=()=>{panel.classList.add('hidden');if(detailPhotoUrl){URL.revokeObjectURL(detailPhotoUrl);detailPhotoUrl=null;}};panel.append(close);
+
   panel.scrollIntoView({behavior:'smooth'});
   try{
     const {data:files,error}=await supabase.storage.from('fju-fotos').list(id,{limit:20});
@@ -833,10 +985,12 @@ async function viewYouth(id){
     if(!file)return;
     const result=await supabase.storage.from('fju-fotos').download(id+'/'+file.name);
     if(result.error)throw result.error;
-    if(!panel.classList.contains('hidden')&&panel.contains(photo)){
-      detailPhotoUrl=URL.createObjectURL(result.data);photo.src=detailPhotoUrl;
+    if(!panel.classList.contains('hidden')&&panel.contains(avatar)){
+      detailPhotoUrl=URL.createObjectURL(result.data);
+      const img=document.createElement('img');img.alt='Foto do jovem';img.src=detailPhotoUrl;
+      avatar.replaceChildren(img);
     }
-  }catch(e){const note=document.createElement('p');note.className='muted';note.textContent='Foto indisponível: '+e.message;panel.append(note);}
+  }catch(e){if(panel.classList.contains('hidden')||!panel.contains(avatar))return;const note=document.createElement('p');note.className='muted';note.textContent='Foto indisponível: '+e.message;panel.append(note);}
 }
 async function requestYouthChange(r){
   if(currentProfile?.papel!=='coordenador')return;
@@ -962,7 +1116,7 @@ function editYouth(id){
   setYouthBirth(r.nascimento||'');
   el('youth-rank').value=r.categoria==='inconstante'?'Inconstante':({'firme':'Firme','cpo':'CPO','colaborador':'Colaborador','obreiro':'Obreiro','coordenador':'Coordenador'}[r.patente]||r.patente||'');
   document.querySelectorAll('input[name="youth-language"]').forEach(x=>x.checked=(r.idiomas||[]).includes(x.value));refreshYouthLanguages();
-  el('youth-photo').value='';el('youth-photo').disabled=currentProfile?.papel==='coordenador';void loadYouthPhoto(r.id);youthMessage(currentProfile?.papel==='coordenador'?'Edite os campos e envie para aprovação. A ficha original não será alterada.':'Editando ficha: '+r.nome_completo);el('youth-form').scrollIntoView({behavior:'smooth'});
+  el('youth-photo').value='';el('youth-photo').disabled=currentProfile?.papel==='coordenador';void loadYouthPhoto(r.id);youthMessage(currentProfile?.papel==='coordenador'?'Edite os campos e envie para aprovação. A ficha original não será alterada.':'Editando ficha: '+r.nome_completo);setYouthFormOpen(true,true,true);
 }
 el('youth-form').addEventListener('submit',async e=>{
   e.preventDefault();if(!currentProfile)return;
@@ -989,7 +1143,7 @@ el('youth-form').addEventListener('submit',async e=>{
     const {data:{user}}=await supabase.auth.getUser();
     const {error}=await supabase.from('fju_solicitacoes').insert({jovem_id:id,polo_id:original.polo_id,tipo:(Object.keys(changes).every(k=>['patente','categoria'].includes(k))?'patente':'edicao'),justificativa:'Campos: '+Object.keys(changes).join(', '),dados_propostos:changes,solicitante_id:user?.id});
     if(error){youthMessage('Não foi possível enviar a solicitação: '+error.message,true);return;}
-    resetYouth();youthMessage('Solicitação enviada. A ficha original não foi alterada.');return;
+    resetYouth();setYouthFormOpen(false);youthMessage('Solicitação enviada. A ficha original não foi alterada.');return;
   }
   const result=id?await supabase.from('fju_jovens').update(payload).eq('id',id).select('id').single():await supabase.from('fju_jovens').insert(payload).select('id').single();
   const {error}=result;
@@ -1006,12 +1160,16 @@ el('youth-form').addEventListener('submit',async e=>{
     const uploaded=await supabase.storage.from('fju-fotos').upload(path,compactada,{contentType:'image/jpeg',upsert:true});
     if(uploaded.error){youthMessage('Ficha salva, mas não foi possível enviar a foto: '+uploaded.error.message,true);await loadYouth();return;}
   }
-  resetYouth();await loadYouth();youthMessage(file?'Ficha e foto de teste salvas com sucesso.':'Ficha de teste salva com sucesso.');void loadDashboard(currentProfile,profileRequest);
+  resetYouth();setYouthFormOpen(false);await loadYouth();youthMessage(file?'Ficha e foto de teste salvas com sucesso.':'Ficha de teste salva com sucesso.');void loadDashboard(currentProfile,profileRequest);
 });
 el('youth-photo').addEventListener('change',e=>{const file=e.target.files?.[0];const preview=el('youth-photo-preview');if(!file){preview.classList.add('hidden');return;}if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){youthMessage('Escolha uma imagem JPG, PNG ou WebP de até 5 MB.',true);e.target.value='';return;}if(photoUrl)URL.revokeObjectURL(photoUrl);photoUrl=URL.createObjectURL(file);preview.src=photoUrl;preview.classList.remove('hidden');});
 el('youth-clear').onclick=resetYouth;
 el('youth-refresh').onclick=loadYouth;
-el('youth-search').addEventListener('input',renderYouth);
+let youthSearchTimer=null;
+el('youth-search').addEventListener('input',()=>{
+  clearTimeout(youthSearchTimer);
+  youthSearchTimer=setTimeout(renderYouth,160);
+});
 el('youth-list-polo').addEventListener('change',()=>{el('youth-detail').classList.add('hidden');void loadYouth();});
 
 // O acompanhamento nacional pertence à aba Relatório semanal, não à Visão geral.
@@ -1364,7 +1522,7 @@ async function refresh(){if(recoveryMode){show('recovery');return}const {data:{u
 el('login-form').addEventListener('submit',async e=>{e.preventDefault();message('auth-message','Entrando...');const {error}=await supabase.auth.signInWithPassword({email:el('email').value.trim(),password:el('password').value});if(error){message('auth-message','Não foi possível entrar: '+error.message,true);return}await refresh()});
 el('forgot').addEventListener('click',async()=>{const email=el('email').value.trim();if(!email){message('auth-message','Digite seu e-mail acima para receber a recuperação.',true);return}const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});message('auth-message',error?'Não foi possível solicitar a recuperação: '+error.message:'Se a conta estiver cadastrada, enviaremos instruções ao e-mail.',!!error)});
 el('recovery-form').addEventListener('submit',async e=>{e.preventDefault();const pass=el('new-password').value;if(pass.length<8||pass!==el('confirm-password').value){message('recovery-message','As senhas precisam ser iguais e ter pelo menos 8 caracteres.',true);return}const {error}=await supabase.auth.updateUser({password:pass});if(error){message('recovery-message',error.message,true);return}recoveryMode=false;history.replaceState({},'',location.pathname);message('auth-message','Senha atualizada. Você já pode entrar.');await supabase.auth.signOut();show('auth')});
-el('logout').addEventListener('click',async()=>{++profileRequest;coordinatorCards.clear();await supabase.auth.signOut();show('auth')});
+el('logout').addEventListener('click',async()=>{++profileRequest;resetYouthSession();coordinatorCards.clear();await supabase.auth.signOut();show('auth')});
 function activateMainTab(button){
   const sectionId=button.dataset.tab;
   if(sectionId==='autorizacoes')void loadYouthRequests();
@@ -1387,7 +1545,7 @@ function activateMainTab(button){
 }
 document.querySelectorAll('#main-nav [data-tab]').forEach(button=>button.addEventListener('click',()=>activateMainTab(button)));
 document.getElementById('weekly-status-card')?.addEventListener('click',()=>document.querySelector('#main-nav [data-tab="relatorios"]')?.click());
-supabase.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){recoveryMode=true;show('recovery')}else if(event==='SIGNED_OUT'){recoveryMode=false;coordinatorCards.clear();show('auth')}});
+supabase.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){recoveryMode=true;show('recovery')}else if(event==='SIGNED_OUT'){recoveryMode=false;resetYouthSession();coordinatorCards.clear();show('auth')}});
 if(location.search.includes('error=')){message('auth-message','O link de autenticação falhou ou expirou. Solicite outro.',true)}
 await refresh();
 </script>
