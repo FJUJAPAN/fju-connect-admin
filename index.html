@@ -94,15 +94,7 @@ input,select,textarea{border:1px solid #d7deea;border-radius:10px;padding:11px 1
 @media(max-width:600px){.wrap{padding-top:16px}.tabs{margin-left:-2px;margin-right:-2px}.tabs button{padding:10px 13px;font-size:14px}.panel{border-radius:15px;padding:17px}.notice{font-size:13px}header{padding:20px 17px}}
 
 
-/* Mobile navigation: visible affordance instead of sideways scrolling */
-#menu-toggle{display:none;margin:0 0 12px;background:#253b75;color:white}
-@media(max-width:700px){
-#menu-toggle{display:block;width:100%;text-align:left;padding:13px 16px}
-#main-nav.tabs{display:none;flex-direction:column;overflow:visible;flex-wrap:nowrap;background:#fff;padding:8px;border:1px solid #e2e8f0}
-#main-nav.tabs.menu-open{display:flex}
-#main-nav.tabs button{width:100%;text-align:left;padding:13px 16px;white-space:normal}
-#main-nav.tabs button.active{background:#eaf0fb}
-}
+/* No menu hambúrguer: mobile navigation is fixed at the bottom. */
 
 /* Compact professional typography and weekly action card */
 header h1{font-size:clamp(19px,2.5vw,25px)}header p{font-size:13px}
@@ -113,7 +105,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 .weekly-status-card{width:100%;text-align:left;cursor:pointer;color:#465675;border:1px solid #dce4f1}
 .weekly-status-card small{display:block;margin-top:8px;font-size:12px;color:#385b98}
 .weekly-status-card:hover{border-color:#829bc8}
-@media(max-width:600px){.grid{gap:10px}.stat{padding:14px}.stat b{font-size:21px}.panel{padding:15px}#menu-toggle{font-size:13px}}
+@media(max-width:600px){.grid{gap:10px}.stat{padding:14px}.stat b{font-size:21px}.panel{padding:15px}}
 .weekly-calendar-wrap{position:relative}.weekly-calendar{margin-top:7px;padding:12px;background:#fff;border:1px solid #dce4f1;border-radius:12px;box-shadow:0 12px 28px #182a471b;max-width:420px}.weekly-calendar-header{display:flex;align-items:center;justify-content:space-between;gap:10px}.weekly-calendar-header button{font-size:21px;padding:6px 14px}.weekly-calendar-days{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:12px 0}.weekly-calendar-days button{padding:11px;border:1px solid #dce4f1;background:#f5f7fc;border-radius:8px;color:#23395d}.weekly-calendar-days button.selected{background:#243e77;color:#fff}.weekly-calendar small{font-size:12px;color:#64748b}#weekly-date-button{width:100%;text-align:left}
 /* Compact report: full-width date, two columns on phones */
 #weekly-report-form .weekly-report-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px;align-items:start}
@@ -207,6 +199,55 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 #youth-form .youth-birth-parts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) minmax(0,1.2fr);gap:8px;width:100%;min-width:0}
 #youth-form .youth-birth-parts select{width:100%;min-width:0;max-width:100%;box-sizing:border-box;font-size:16px;padding:9px 7px;min-height:44px}
 #youth-form .youth-birth-field{min-width:0}
+
+/* Nav FJU Connect: bottom app navigation on mobile, classic tabs on desktop. */
+.fju-nav-icon{display:none;flex-shrink:0}
+.fju-nav-label-mobile{display:none}
+#main-nav.tabs button:focus-visible{outline:2px solid #5296ff;outline-offset:2px}
+@media screen and (max-width:700px){
+  #app{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
+  #main-nav.tabs{
+    position:fixed;left:0;right:0;bottom:0;z-index:1000;
+    display:flex;flex-direction:row;flex-wrap:nowrap;align-items:stretch;gap:0;
+    width:100%;max-width:100%;margin:0;
+    padding:7px 9px calc(8px + env(safe-area-inset-bottom,0px));
+    overflow-x:auto;overflow-y:hidden;
+    background:#fdfefe;color:#8c9dbb;
+    border:0;border-top:1px solid #dae4f3;
+    border-radius:18px 18px 0 0;
+    box-shadow:0 -10px 30px rgba(21,43,81,.09);
+    scrollbar-width:none;-webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;touch-action:pan-x;
+    scroll-snap-type:x proximity;
+  }
+  #main-nav.tabs::-webkit-scrollbar{display:none}
+  #main-nav.tabs button{
+    position:relative;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;
+    flex:0 0 78px;min-width:78px;max-width:78px;
+    width:78px;min-height:61px;padding:6px 3px 5px;
+    margin:0;border:0;border-radius:12px;
+    background:transparent;color:#8a9cb8;
+    box-shadow:none;gap:4px;white-space:nowrap;
+    scroll-snap-align:center;
+    transition:color .15s ease,background-color .15s ease;
+  }
+  #main-nav.tabs button.active{background:#edf4ff;color:#226fdd}
+  #main-nav.tabs button.active:before{
+    content:"";position:absolute;top:1px;left:25px;right:25px;height:2px;
+    border-radius:5px;background:#2475e5
+  }
+  #main-nav.tabs .fju-nav-icon{display:block;width:23px;height:23px}
+  #main-nav.tabs .fju-nav-label-desktop{display:none}
+  #main-nav.tabs .fju-nav-label-mobile{display:block;max-width:100%;font-size:10.5px;line-height:1.2;font-weight:700;letter-spacing:-.12px}
+  #main-nav.tabs button:focus-visible{outline:2px solid #2475e5;outline-offset:-2px}
+  #main-nav.tabs button:active{background:#eaf1fc}
+  #app section.panel{scroll-margin-top:calc(12px + env(safe-area-inset-top,0px))}
+  #app footer{padding-bottom:0}
+}
+@media(prefers-reduced-motion:reduce){
+  #main-nav.tabs button{transition:none}
+}
 </style>
 </head>
 <body>
@@ -215,7 +256,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <section id="auth" class="panel auth"><h2>Entrar</h2><form id="login-form"><label for="email">E-mail</label><input id="email" type="email" autocomplete="username" required><label for="password">Senha</label><input id="password" type="password" autocomplete="current-password" required><p><button type="submit">Entrar</button></p></form><button class="secondary" id="forgot">Enviar recuperação de senha</button><p id="auth-message" class="message" role="status" aria-live="polite"></p></section>
 <section id="recovery" class="panel auth hidden"><h2>Definir nova senha</h2><form id="recovery-form"><label for="new-password">Nova senha (mínimo de 8 caracteres)</label><input id="new-password" type="password" minlength="8" autocomplete="new-password" required><label for="confirm-password">Confirmar nova senha</label><input id="confirm-password" type="password" minlength="8" autocomplete="new-password" required><p><button type="submit">Salvar nova senha</button></p></form><p id="recovery-message" class="message" role="status" aria-live="polite"></p></section>
 <div id="app" class="hidden"><div class="topline"><p id="identity" class="muted"></p><button id="logout" class="secondary">Sair</button></div><div class="notice"><strong>Ambiente em validação.</strong> Login, fichas, autorizações, relatórios e impressão disponíveis para testes. Antes de cadastrar dados reais, confirme as permissões de acesso por igreja e a proteção das fotos.</div>
-<button type="button" id="menu-toggle" class="secondary" aria-expanded="false" aria-controls="main-nav">☰ Menu</button><nav id="main-nav" class="tabs"><button class="active" data-tab="inicio">Visão geral</button><button data-tab="jovens">Fichas</button><button data-tab="relatorios">Relatório semanal</button><button data-tab="autorizacoes">Autorizações</button><button id="leader-nav" data-tab="lideranca">Meu perfil</button><button data-tab="config">Configuração</button></nav>
+<nav id="main-nav" class="tabs" aria-label="Navegação do FJU Connect"><button type="button" data-tab="inicio" aria-controls="inicio" aria-current="page" class="active"><svg class="fju-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21v-8h6v8"/></svg><span class="fju-nav-label-desktop">Visão geral</span><span class="fju-nav-label-mobile">Início</span></button><button type="button" data-tab="jovens" aria-controls="jovens"><svg class="fju-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="fju-nav-label-desktop">Fichas</span><span class="fju-nav-label-mobile">Fichas</span></button><button type="button" data-tab="relatorios" aria-controls="relatorios"><svg class="fju-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5V3h6v1.5M9 10h6M9 14h6M9 18h4"/></svg><span class="fju-nav-label-desktop">Relatório semanal</span><span class="fju-nav-label-mobile">Relatórios</span></button><button type="button" data-tab="autorizacoes" aria-controls="autorizacoes"><svg class="fju-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg><span class="fju-nav-label-desktop">Autorizações</span><span class="fju-nav-label-mobile">Pedidos</span></button><button type="button" id="leader-nav" data-tab="lideranca" aria-controls="lideranca"><svg class="fju-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span class="fju-nav-label-desktop">Meu perfil</span><span class="fju-nav-label-mobile">Perfil</span></button><button type="button" data-tab="config" aria-controls="config"><svg class="fju-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="m19.4 15 .2.2 1.1 1.5-1.7 2.9-1.8-.5a8 8 0 0 1-2.4 1.4l-.5 1.9h-3.4l-.5-1.9a8 8 0 0 1-2.4-1.4l-1.8.5-1.7-2.9 1.1-1.5a8 8 0 0 1 0-2.8l-1.1-1.5L6.2 8l1.8.5a8 8 0 0 1 2.4-1.4l.5-1.9h3.4l.5 1.9a8 8 0 0 1 2.4 1.4L19 8l1.7 2.9-1.1 1.5a8 8 0 0 1-.2 2.6z"/></svg><span class="fju-nav-label-desktop">Configuração</span><span class="fju-nav-label-mobile">Ajustes</span></button></nav>
 <section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Igreja</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><button type="button" id="weekly-status-card" class="stat weekly-status-card" aria-label="Abrir relatório semanal"><span>Relatório desta semana</span><b id="pending-count">Verificando…</b><small>Toque para abrir o relatório →</small></button></div><p id="dashboard-note" class="muted">Indicadores consultados conforme as permissões da conta autenticada.</p>
 <div id="leader-home" class="leader-home-block hidden">
 <div class="leader-home-header"><h3>Seu perfil de liderança</h3><button type="button" id="leader-home-edit" class="secondary">Editar meu perfil</button></div>
@@ -1324,9 +1365,28 @@ el('login-form').addEventListener('submit',async e=>{e.preventDefault();message(
 el('forgot').addEventListener('click',async()=>{const email=el('email').value.trim();if(!email){message('auth-message','Digite seu e-mail acima para receber a recuperação.',true);return}const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});message('auth-message',error?'Não foi possível solicitar a recuperação: '+error.message:'Se a conta estiver cadastrada, enviaremos instruções ao e-mail.',!!error)});
 el('recovery-form').addEventListener('submit',async e=>{e.preventDefault();const pass=el('new-password').value;if(pass.length<8||pass!==el('confirm-password').value){message('recovery-message','As senhas precisam ser iguais e ter pelo menos 8 caracteres.',true);return}const {error}=await supabase.auth.updateUser({password:pass});if(error){message('recovery-message',error.message,true);return}recoveryMode=false;history.replaceState({},'',location.pathname);message('auth-message','Senha atualizada. Você já pode entrar.');await supabase.auth.signOut();show('auth')});
 el('logout').addEventListener('click',async()=>{++profileRequest;coordinatorCards.clear();await supabase.auth.signOut();show('auth')});
-document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.tab==='autorizacoes')void loadYouthRequests();if(b.dataset.tab==='lideranca')void coordinatorCards.refresh();document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.getElementById('main-nav')?.classList.remove('menu-open');document.getElementById('menu-toggle')?.setAttribute('aria-expanded','false');document.querySelectorAll('#app section.panel').forEach(s=>s.classList.toggle('hidden',s.id!==b.dataset.tab))}));
+function activateMainTab(button){
+  const sectionId=button.dataset.tab;
+  if(sectionId==='autorizacoes')void loadYouthRequests();
+  if(sectionId==='lideranca')void coordinatorCards.refresh();
+  document.querySelectorAll('#main-nav [data-tab]').forEach(item=>{
+    const active=item===button;
+    item.classList.toggle('active',active);
+    if(active)item.setAttribute('aria-current','page');
+    else item.removeAttribute('aria-current');
+  });
+  document.querySelectorAll('#app section.panel').forEach(panel=>panel.classList.toggle('hidden',panel.id!==sectionId));
+  if(window.matchMedia('(max-width:700px)').matches){
+    const nav=el('main-nav');
+    const navRect=nav.getBoundingClientRect(),buttonRect=button.getBoundingClientRect();
+    const centered=nav.scrollLeft+(buttonRect.left+buttonRect.width/2)-(navRect.left+navRect.width/2);
+    nav.scrollTo({left:centered,behavior:window.matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});
+    const panel=el(sectionId);
+    if(panel&&!panel.classList.contains('hidden'))panel.scrollIntoView({behavior:'auto',block:'start'});
+  }
+}
+document.querySelectorAll('#main-nav [data-tab]').forEach(button=>button.addEventListener('click',()=>activateMainTab(button)));
 document.getElementById('weekly-status-card')?.addEventListener('click',()=>document.querySelector('#main-nav [data-tab="relatorios"]')?.click());
-document.getElementById('menu-toggle')?.addEventListener('click',()=>{const nav=document.getElementById('main-nav');const open=nav.classList.toggle('menu-open');document.getElementById('menu-toggle').setAttribute('aria-expanded',String(open));});
 supabase.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){recoveryMode=true;show('recovery')}else if(event==='SIGNED_OUT'){recoveryMode=false;coordinatorCards.clear();show('auth')}});
 if(location.search.includes('error=')){message('auth-message','O link de autenticação falhou ou expirou. Solicite outro.',true)}
 await refresh();
