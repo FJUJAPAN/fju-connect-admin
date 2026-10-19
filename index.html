@@ -6,7 +6,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>FJU Connect JAPAN · Admin</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#253b75">
@@ -172,6 +172,13 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 #report-special .special-event-fold-content>.stat{margin:0}
 #report-special .special-event-fold-content .report-card:last-child{margin-bottom:0}
 
+
+/* Mobile PWA: keep native-sized layout and allow normal scrolling. */
+@media screen and (max-width:767px){
+  html,body{width:100%;max-width:100%;overflow-x:hidden;overscroll-behavior-x:none;touch-action:pan-x pan-y;-webkit-text-size-adjust:100%}
+  /* Avoid iPhone automatic zoom on focus: form controls must be at least 16px. */
+  input,select,textarea,#special-event-form input,#special-event-form select,#weekly-report-form select{font-size:16px}
+}
 </style>
 </head>
 <body>
@@ -543,6 +550,7 @@ async function loadProfile(user){
   el('dashboard-note').textContent=`${data.papel==='nacional'?'Visão nacional':'Visão do polo FJU '+poloNome}. Contagens fornecidas pelo Supabase com as políticas RLS da conta autenticada. Pendências locais ainda não calculadas.`;
   currentProfile=data;
   currentPoloNome=poloNome;
+  updateNotificationPermissionUI();
   configureWeeklyReportAccess();
   if(data.papel==='nacional')void loadNationalReportOverview();else el('national-report-panel').classList.add('hidden');
   show('app');
@@ -1132,6 +1140,7 @@ async function registerDevice(){
 }
 el('register-device').addEventListener('click',registerDevice);
 el('test-push').addEventListener('click',async()=>{
+  if(currentProfile?.papel!=='nacional')return;
   const button=el('test-push'),status=el('notification-status');
   button.disabled=true;
   status.textContent='Solicitando notificação de teste...';
@@ -1160,7 +1169,7 @@ function updateNotificationPermissionUI(){
     status.textContent='Este navegador não oferece notificações web compatíveis.';button.disabled=true;return;
   }
   const permission=Notification.permission;
-  if(permission==='granted'){status.textContent='Permissão concedida. Registre este aparelho para os futuros lembretes.';button.disabled=true;button.textContent='Permissão ativada';register.hidden=false;unlink.hidden=false;test.hidden=false;}
+  if(permission==='granted'){status.textContent='Permissão concedida. Registre este aparelho para os futuros lembretes.';button.disabled=true;button.textContent='Permissão ativada';register.hidden=false;unlink.hidden=false;test.hidden=currentProfile?.papel!=='nacional';}
   else if(permission==='denied'){status.textContent='Notificações bloqueadas. Ative a permissão nas configurações do navegador ou do aplicativo.';button.disabled=true;}
   else{status.textContent='Notificações ainda não autorizadas neste aparelho.';button.disabled=false;}
 }
