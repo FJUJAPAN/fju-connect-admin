@@ -252,7 +252,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <p id="special-event-message" class="message" role="status" aria-live="polite"></p>
 </form>
 <details id="event-requests-panel" class="special-event-fold">
-<summary><span class="special-event-fold-label"><span class="special-event-fold-icon" aria-hidden="true">▸</span>Solicitações de eventos</span><span id="event-requests-count" class="special-event-fold-count">—</span></summary>
+<summary><span class="special-event-fold-label"><span class="special-event-fold-icon" aria-hidden="true">▸</span>Solicitações pendentes</span><span id="event-requests-count" class="special-event-fold-count">—</span></summary>
 <div class="special-event-fold-content"><div id="event-requests-list">Carregando...</div></div>
 </details>
 <details id="special-event-registered-panel" class="special-event-fold">
@@ -1012,12 +1012,15 @@ async function loadSpecialEvents(){
 }
 async function loadEventRequests(events=[],poloNames=new Map()){
  const list=el('event-requests-list');if(!list||!currentProfile)return;
- const {data,error}=await supabase.from('fju_solicitacoes_eventos').select('id,tipo,evento_id,polo_id,dados_propostos,status,criado_em').order('criado_em',{ascending:false}).limit(100);
- list.replaceChildren();if(error){list.textContent='Não foi possível carregar solicitações: '+error.message;el('event-requests-count').textContent='Erro';return;}
- const pending=(data||[]).filter(req=>req.status==='pendente').length;
- el('event-requests-count').textContent=pending?pending+' pendente'+(pending===1?'':'s'):String((data||[]).length);
+ const panel=el('event-requests-panel');
+ const {data,error}=await supabase.from('fju_solicitacoes_eventos').select('id,tipo,evento_id,polo_id,dados_propostos,status,criado_em').eq('status','pendente').order('criado_em',{ascending:true}).limit(200);
+ list.replaceChildren();
+ if(error){panel.classList.remove('hidden');list.textContent='Não foi possível carregar solicitações: '+error.message;el('event-requests-count').textContent='Erro';return;}
+ const pending=(data||[]).length;
+ panel.classList.toggle('hidden',pending===0);
+ el('event-requests-count').textContent=pending+' pendente'+(pending===1?'':'s');
  el('event-requests-count').classList.toggle('has-pending',pending>0);
- if(!data?.length){list.textContent='Nenhuma solicitação registrada.';return;}
+ if(!pending)return;
  const eventsById=new Map(events.map(event=>[String(event.id),event]));
  const fmt=iso=>iso?new Date(iso+'T12:00:00Z').toLocaleDateString('pt-BR',{timeZone:'UTC'}):'Data não informada';
  for(const req of data){
