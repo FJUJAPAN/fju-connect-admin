@@ -1,0 +1,57 @@
+/* FJU Connect JAPAN | Perfil da liderança - apresentação interna */
+.leader-section-intro{color:#61708b;font-size:13px;line-height:1.55;margin:-5px 0 18px}
+.leader-home-block{margin:20px 0 4px}
+.leader-home-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.leader-home-header h3{margin:0;font-size:16px;color:#17264b}
+.leader-home-header button{font-size:12px;padding:9px 12px}
+.leader-self-layout{display:grid;grid-template-columns:minmax(0,350px) minmax(0,1fr);align-items:start;gap:20px}
+.leader-editor{background:#f7f9fd;border:1px solid #e0e7f3;border-radius:18px;padding:18px}
+.leader-editor h3{margin:0 0 7px;color:#17264b;font-size:17px}
+.leader-editor p{font-size:12px;color:#61708b;line-height:1.5}
+.leader-editor label{margin-top:15px}
+.leader-editor input[type=text],.leader-editor input[type=file]{min-height:44px;font-size:16px}
+.leader-editor input[type=file]{padding:10px;background:#fff;max-width:100%}
+.leader-editor button[type=submit]{width:100%;min-height:45px;margin-top:16px}
+.leader-editor .message{font-size:13px;overflow-wrap:anywhere}
+.leader-directory{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:15px}
+.leader-directory-message{margin:0 0 16px;font-size:13px;color:#61708b}
+.leader-card{
+ position:relative;isolation:isolate;overflow:hidden;width:100%;
+ min-height:338px;padding:22px 20px 20px;display:flex;flex-direction:column;align-items:center;
+ border:1px solid #d3ae70;border-radius:23px;
+ background:linear-gradient(153deg,#203a72 0%,#152a55 44%,#101a35 100%);
+ box-shadow:0 14px 35px rgba(20,39,78,.15),inset 0 1px 0 rgba(255,240,202,.22);
+ color:#fff;text-align:center
+}
+.leader-card:before{content:'';pointer-events:none;position:absolute;z-index:-1;top:-135px;right:-120px;width:320px;height:320px;border:1px solid rgba(234,198,134,.26);border-radius:50%;box-shadow:0 0 0 34px rgba(240,206,151,.025),0 0 0 86px rgba(232,198,128,.017)}
+.leader-card:after{content:'';pointer-events:none;position:absolute;z-index:-1;left:-50%;bottom:-150px;width:200%;height:220px;background:radial-gradient(ellipse,rgba(216,171,92,.17),transparent 65%)}
+.leader-card-eyebrow{font-size:10px;font-weight:800;letter-spacing:2.2px;color:#f5daaa}
+.leader-card-accent{width:52px;height:2px;border-radius:4px;background:linear-gradient(90deg,transparent,#f6d798,transparent);margin:14px 0 16px}
+.leader-card-photo{
+ position:relative;width:114px;height:114px;display:grid;place-items:center;flex:none;
+ border:3px solid #e8c281;border-radius:50%;background:linear-gradient(135deg,#5574ae,#243d70);
+ box-shadow:0 8px 24px rgba(0,0,0,.24),0 0 0 6px rgba(238,205,148,.1);overflow:hidden
+}
+.leader-card-photo img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+.leader-card-photo span{font-weight:800;font-size:35px;letter-spacing:2px;color:#f8dfac}
+.leader-card h3{max-width:100%;overflow-wrap:anywhere;margin:15px 0 6px;font-size:20px;line-height:1.18;color:#fff;font-weight:750}
+.leader-card-role{font-size:11px;letter-spacing:1.7px;font-weight:800;color:#eac582}
+.leader-card-polo{max-width:100%;overflow-wrap:anywhere;font-size:14px;margin-top:9px;color:#f4f6ff}
+.leader-card-footer{display:flex;justify-content:space-between;align-items:center;width:100%;gap:8px;margin-top:auto;padding-top:20px;font-size:10px;letter-spacing:1px;font-weight:700;color:#c1cdea}
+.leader-card-footer-mark{font-weight:800;color:#f3d598}
+.leader-card--pending{border-color:#7088b7;background:linear-gradient(153deg,#31507e,#202d4e)}
+.leader-card--pending .leader-card-eyebrow{color:#dbe5f6}
+.leader-card--compact{min-height:290px;max-width:355px;padding:17px 16px}
+.leader-card--compact .leader-card-photo{height:90px;width:90px}
+.leader-card--compact .leader-card h3{font-size:17px}
+.leader-card--compact h3{font-size:18px}
+.leader-card--compact .leader-card-footer{padding-top:13px}
+.leader-profile-note{margin:12px 0 0;font-size:12px;color:#61708b;line-height:1.5}
+@media(max-width:760px){
+ .leader-self-layout{grid-template-columns:minmax(0,1fr)}
+ .leader-self-layout>.leader-card{justify-self:center;max-width:360px}
+ .leader-home-block .leader-card{max-width:360px}
+ .leader-editor{padding:15px}
+ .leader-directory{grid-template-columns:minmax(0,1fr)}
+ .leader-directory .leader-card{max-width:390px;width:100%;justify-self:center}
+}
