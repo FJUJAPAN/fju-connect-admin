@@ -183,15 +183,14 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 /* Birth date on iOS has a wide intrinsic control; never allow it to
    stretch into the adjacent phone field in coordinator youth records. */
 #youth-form .youth-info-grid>div{min-width:0}
-#youth-form #youth-birth,#youth-form #youth-phone{
+#youth-form #youth-phone{
   display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
 }
-#youth-form #youth-birth{overflow:hidden}
 @media screen and (max-width:767px){
   #youth-form .youth-info-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
   #youth-form .youth-info-grid>div:nth-child(3),
   #youth-form .youth-info-grid>div:nth-child(4){grid-column:1/-1}
-  #youth-form #youth-birth,#youth-form #youth-phone{font-size:16px;min-height:44px}
+  #youth-form #youth-phone{font-size:16px;min-height:44px}
 }
 
 /* Stable birth-date controls in the youth form (iPhone / Android). */
@@ -614,7 +613,7 @@ function syncYouthBirth(){
   hidden.value=y+'-'+m+'-'+d;return true;
 }
 function setYouthBirth(value){
-  const iso=typeof value==='string'&&/^\\d{4}-\\d{2}-\\d{2}$/.test(value)?value:'';
+  const iso=typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value)?value:'';
   const parts=iso?iso.split('-'):['','',''];
   el('youth-birth-year').value=parts[0];
   el('youth-birth-month').value=parts[1];
