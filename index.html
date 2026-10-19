@@ -193,6 +193,11 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
   #youth-form .youth-info-grid>div:nth-child(4){grid-column:1/-1}
   #youth-form #youth-birth,#youth-form #youth-phone{font-size:16px;min-height:44px}
 }
+
+/* Stable birth-date controls in the youth form (iPhone / Android). */
+#youth-form .youth-birth-parts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) minmax(0,1.2fr);gap:8px;width:100%;min-width:0}
+#youth-form .youth-birth-parts select{width:100%;min-width:0;max-width:100%;box-sizing:border-box;font-size:16px;padding:9px 7px;min-height:44px}
+#youth-form .youth-birth-field{min-width:0}
 </style>
 </head>
 <body>
@@ -211,7 +216,15 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <div class="grid youth-info-grid">
 <div><label for="youth-polo">Polo</label><select id="youth-polo" required></select></div>
 <div><label for="youth-name">Nome completo</label><input id="youth-name" required maxlength="180"></div>
-<div><label for="youth-birth">Nascimento</label><input id="youth-birth" type="date"></div>
+<div class="youth-birth-field">
+<label id="youth-birth-label">Nascimento</label>
+<input id="youth-birth" type="hidden">
+<div class="youth-birth-parts" role="group" aria-labelledby="youth-birth-label">
+<select id="youth-birth-day" aria-label="Dia de nascimento"><option value="">Dia</option></select>
+<select id="youth-birth-month" aria-label="Mês de nascimento"><option value="">Mês</option></select>
+<select id="youth-birth-year" aria-label="Ano de nascimento"><option value="">Ano</option></select>
+</div>
+</div>
 <div><label for="youth-phone">Telefone</label><input id="youth-phone" maxlength="50"></div>
 <div><label for="youth-country">Nacionalidade</label><select id="youth-country"><option value="">Selecione</option><option value="BR">🇧🇷 Brasil</option><option value="JP">🇯🇵 Japão</option><option value="PH">🇵🇭 Filipinas</option><option value="PE">🇵🇪 Peru</option><option value="BO">🇧🇴 Bolívia</option><option value="PY">🇵🇾 Paraguai</option><option value="AR">🇦🇷 Argentina</option><option value="CO">🇨🇴 Colômbia</option><option value="VE">🇻🇪 Venezuela</option><option value="US">🇺🇸 Estados Unidos</option><option value="CN">🇨🇳 China</option><option value="KR">🇰🇷 Coreia do Sul</option><option value="VN">🇻🇳 Vietnã</option><option value="ID">🇮🇩 Indonésia</option><option value="NP">🇳🇵 Nepal</option><option value="IN">🇮🇳 Índia</option><option value="LK">🇱🇰 Sri Lanka</option><option value="MM">🇲🇲 Mianmar</option><option value="TH">🇹🇭 Tailândia</option><option value="PK">🇵🇰 Paquistão</option><option value="BD">🇧🇩 Bangladesh</option><option value="GB">🇬🇧 Reino Unido</option><option value="FR">🇫🇷 França</option><option value="DE">🇩🇪 Alemanha</option><option value="PT">🇵🇹 Portugal</option><option value="ES">🇪🇸 Espanha</option><option value="MX">🇲🇽 México</option><option value="NG">🇳🇬 Nigéria</option><option value="GH">🇬🇭 Gana</option><option value="OTHER">Outra nacionalidade</option></select></div>
 <div><label>Idiomas que fala (selecione um ou mais)</label><details id="youth-languages-picker"><summary id="youth-languages-summary">Selecionar idiomas</summary><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;padding:12px 4px"><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Português"> Português</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Japonês"> Japonês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Inglês"> Inglês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Espanhol"> Espanhol</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Tagalog"> Tagalog</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Hindi"> Hindi</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Nepali"> Nepali</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Indonésio"> Indonésio</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Birmanês"> Birmanês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Cingalês"> Cingalês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Coreano"> Coreano</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Chinês"> Chinês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Vietnamita"> Vietnamita</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Tailandês"> Tailandês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Outros"> Outros</label></div></details></div>
@@ -576,7 +589,39 @@ function youthMessage(text,error=false){message('youth-message',text,error)}
 function selectedYouthLanguages(){return [...document.querySelectorAll('input[name="youth-language"]:checked')].map(x=>x.value)}
 function refreshYouthLanguages(){const a=selectedYouthLanguages();el('youth-languages-summary').textContent=a.length?a.join(', '):'Selecionar idiomas'}
 document.querySelectorAll('input[name="youth-language"]').forEach(x=>x.addEventListener('change',refreshYouthLanguages));
-function resetYouth(){el('youth-photo').disabled=false;if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}el('youth-form').reset();refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
+
+/* Seletores de nascimento evitam a largura intrínseca do input date do Safari iOS.
+   A data permanece no formato ISO YYYY-MM-DD no cadastro e nas solicitações. */
+(function initializeYouthBirthSelectors(){
+  const day=el('youth-birth-day'),month=el('youth-birth-month'),year=el('youth-birth-year');
+  const add=(select,value,label)=>{
+    const opt=document.createElement('option');
+    opt.value=String(value);opt.textContent=String(label);select.append(opt);
+  };
+  for(let d=1;d<=31;d++)add(day,String(d).padStart(2,'0'),String(d).padStart(2,'0'));
+  for(let m=1;m<=12;m++)add(month,String(m).padStart(2,'0'),String(m).padStart(2,'0'));
+  const currentYear=Number(new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Tokyo',year:'numeric'}).format(new Date()));
+  for(let y=currentYear;y>=1900;y--)add(year,y,y);
+  for(const select of [day,month,year])select.addEventListener('change',syncYouthBirth);
+})();
+function syncYouthBirth(){
+  const d=el('youth-birth-day').value,m=el('youth-birth-month').value,y=el('youth-birth-year').value;
+  const hidden=el('youth-birth');hidden.value='';
+  if(!d&&!m&&!y)return true;
+  if(!d||!m||!y)return false;
+  const result=new Date(Date.UTC(Number(y),Number(m)-1,Number(d)));
+  if(result.getUTCFullYear()!==Number(y)||result.getUTCMonth()!==Number(m)-1||result.getUTCDate()!==Number(d))return false;
+  hidden.value=y+'-'+m+'-'+d;return true;
+}
+function setYouthBirth(value){
+  const iso=typeof value==='string'&&/^\\d{4}-\\d{2}-\\d{2}$/.test(value)?value:'';
+  const parts=iso?iso.split('-'):['','',''];
+  el('youth-birth-year').value=parts[0];
+  el('youth-birth-month').value=parts[1];
+  el('youth-birth-day').value=parts[2];
+  syncYouthBirth();
+}
+function resetYouth(){el('youth-photo').disabled=false;if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}el('youth-form').reset();setYouthBirth('');refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
 async function initializeYouth(){
   const {data,error}=await supabase.from('fju_polos').select('id,nome').order('nome');
   if(error){youthMessage('Não foi possível carregar polos: '+error.message,true);return;}
@@ -825,7 +870,8 @@ el('requests-refresh').addEventListener('click',()=>void loadYouthRequests());
 function editYouth(id){
   const r=youthRows.find(x=>x.id===id);if(!r)return;
   el('youth-id').value=r.id;el('youth-polo').value=r.polo_id;
-  for(const [field,key] of [['youth-name','nome_completo'],['youth-birth','nascimento'],['youth-phone','telefone'],['youth-country','nacionalidade_iso2'],['youth-rank','patente']])el(field).value=r[key]||'';
+  for(const [field,key] of [['youth-name','nome_completo'],['youth-phone','telefone'],['youth-country','nacionalidade_iso2'],['youth-rank','patente']])el(field).value=r[key]||'';
+  setYouthBirth(r.nascimento||'');
   el('youth-rank').value=r.categoria==='inconstante'?'Inconstante':({'firme':'Firme','cpo':'CPO','colaborador':'Colaborador','obreiro':'Obreiro','coordenador':'Coordenador'}[r.patente]||r.patente||'');
   document.querySelectorAll('input[name="youth-language"]').forEach(x=>x.checked=(r.idiomas||[]).includes(x.value));refreshYouthLanguages();
   el('youth-photo').value='';el('youth-photo').disabled=currentProfile?.papel==='coordenador';void loadYouthPhoto(r.id);youthMessage(currentProfile?.papel==='coordenador'?'Edite os campos e envie para aprovação. A ficha original não será alterada.':'Editando ficha: '+r.nome_completo);el('youth-form').scrollIntoView({behavior:'smooth'});
@@ -834,6 +880,7 @@ el('youth-form').addEventListener('submit',async e=>{
   e.preventDefault();if(!currentProfile)return;
   const polo_id=el('youth-polo').value;
   if(currentProfile.papel==='coordenador'&&polo_id!==currentProfile.polo_id){youthMessage('Polo não autorizado.',true);return;}
+  if(!syncYouthBirth()){youthMessage('Preencha uma data de nascimento válida (dia, mês e ano).',true);return;}
   const payload={
     polo_id,nome_completo:el('youth-name').value.trim(),
     nascimento:el('youth-birth').value||null,
