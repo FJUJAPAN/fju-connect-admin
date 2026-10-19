@@ -741,6 +741,7 @@ el('youth-add-toggle').addEventListener('click',()=>{
 el('youth-form-close').addEventListener('click',()=>{resetYouth();setYouthFormOpen(false);});
 function resetYouth(){el('youth-photo').disabled=false;if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}el('youth-form').reset();setYouthBirth('');refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
 async function initializeYouth(){
+  resetYouthSession();
   const {data,error}=await supabase.from('fju_polos').select('id,nome').order('nome');
   if(error){youthMessage('Não foi possível carregar polos: '+error.message,true);return;}
   const allowed=currentProfile.papel==='coordenador'?(data||[]).filter(x=>x.id===currentProfile.polo_id):(data||[]);
@@ -786,9 +787,11 @@ async function compactarFoto100KB(file){
     throw Error('Não foi possível reduzir a foto para 100 KB.');
   }finally{bitmap.close();}
 }
+let youthLoadVersion=0;
 async function loadYouth(){
   if(!currentProfile)return;
-  youthMessage('Consultando fichas de teste...');
+  const loadVersion=++youthLoadVersion;
+  youthMessage('Consultando fichas...');
   const polo=currentProfile.papel==='coordenador'?currentProfile.polo_id:el('youth-list-polo').value;
   if(!polo){youthRows=[];renderYouth();youthMessage('Selecione uma igreja para visualizar as fichas.');return;}
   const all=[],batchSize=500;
@@ -798,10 +801,12 @@ async function loadYouth(){
       .is('excluido_em',null).eq('polo_id',polo)
       .order('nome_completo').order('id')
       .range(start,start+batchSize-1);
+    if(loadVersion!==youthLoadVersion)return;
     if(error){youthMessage('Erro na consulta: '+error.message,true);return;}
     all.push(...(data||[]));
     if(!data||data.length<batchSize)break;
   }
+  if(loadVersion!==youthLoadVersion)return;
   youthRows=all;renderYouth();youthMessage(`${youthRows.length} ficha(s) carregada(s) da igreja selecionada.`);
 }
 /* Fotos das fichas são carregadas somente quando o card entra na área visível.
@@ -915,6 +920,17 @@ function renderYouth(){
   }
 }
 let detailPhotoUrl=null;
+function resetYouthSession(){
+  ++youthLoadVersion;
+  clearYouthCardPhotos();
+  youthRows=[];
+  el('youth-list').replaceChildren();
+  el('youth-visible-count').textContent='—';
+  el('youth-search').value='';
+  const detail=el('youth-detail');
+  detail.classList.add('hidden');detail.replaceChildren();
+  if(detailPhotoUrl){URL.revokeObjectURL(detailPhotoUrl);detailPhotoUrl=null;}
+}
 async function viewYouth(id){
   const r=youthRows.find(x=>x.id===id);if(!r)return;
   const panel=el('youth-detail');panel.replaceChildren();panel.classList.remove('hidden');
@@ -968,7 +984,7 @@ async function viewYouth(id){
       const img=document.createElement('img');img.alt='Foto do jovem';img.src=detailPhotoUrl;
       avatar.replaceChildren(img);
     }
-  }catch(e){const note=document.createElement('p');note.className='muted';note.textContent='Foto indisponível: '+e.message;panel.append(note);}
+  }catch(e){if(panel.classList.contains('hidden')||!panel.contains(avatar))return;const note=document.createElement('p');note.className='muted';note.textContent='Foto indisponível: '+e.message;panel.append(note);}
 }
 async function requestYouthChange(r){
   if(currentProfile?.papel!=='coordenador')return;
@@ -1496,7 +1512,7 @@ async function refresh(){if(recoveryMode){show('recovery');return}const {data:{u
 el('login-form').addEventListener('submit',async e=>{e.preventDefault();message('auth-message','Entrando...');const {error}=await supabase.auth.signInWithPassword({email:el('email').value.trim(),password:el('password').value});if(error){message('auth-message','Não foi possível entrar: '+error.message,true);return}await refresh()});
 el('forgot').addEventListener('click',async()=>{const email=el('email').value.trim();if(!email){message('auth-message','Digite seu e-mail acima para receber a recuperação.',true);return}const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});message('auth-message',error?'Não foi possível solicitar a recuperação: '+error.message:'Se a conta estiver cadastrada, enviaremos instruções ao e-mail.',!!error)});
 el('recovery-form').addEventListener('submit',async e=>{e.preventDefault();const pass=el('new-password').value;if(pass.length<8||pass!==el('confirm-password').value){message('recovery-message','As senhas precisam ser iguais e ter pelo menos 8 caracteres.',true);return}const {error}=await supabase.auth.updateUser({password:pass});if(error){message('recovery-message',error.message,true);return}recoveryMode=false;history.replaceState({},'',location.pathname);message('auth-message','Senha atualizada. Você já pode entrar.');await supabase.auth.signOut();show('auth')});
-el('logout').addEventListener('click',async()=>{++profileRequest;coordinatorCards.clear();await supabase.auth.signOut();show('auth')});
+el('logout').addEventListener('click',async()=>{++profileRequest;resetYouthSession();coordinatorCards.clear();await supabase.auth.signOut();show('auth')});
 function activateMainTab(button){
   const sectionId=button.dataset.tab;
   if(sectionId==='autorizacoes')void loadYouthRequests();
@@ -1519,7 +1535,7 @@ function activateMainTab(button){
 }
 document.querySelectorAll('#main-nav [data-tab]').forEach(button=>button.addEventListener('click',()=>activateMainTab(button)));
 document.getElementById('weekly-status-card')?.addEventListener('click',()=>document.querySelector('#main-nav [data-tab="relatorios"]')?.click());
-supabase.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){recoveryMode=true;show('recovery')}else if(event==='SIGNED_OUT'){recoveryMode=false;coordinatorCards.clear();show('auth')}});
+supabase.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){recoveryMode=true;show('recovery')}else if(event==='SIGNED_OUT'){recoveryMode=false;resetYouthSession();coordinatorCards.clear();show('auth')}});
 if(location.search.includes('error=')){message('auth-message','O link de autenticação falhou ou expirou. Solicite outro.',true)}
 await refresh();
 </script>
