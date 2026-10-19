@@ -179,6 +179,20 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
   /* Avoid iPhone automatic zoom on focus: form controls must be at least 16px. */
   input,select,textarea,#special-event-form input,#special-event-form select,#weekly-report-form select{font-size:16px}
 }
+
+/* Birth date on iOS has a wide intrinsic control; never allow it to
+   stretch into the adjacent phone field in coordinator youth records. */
+#youth-form .youth-info-grid>div{min-width:0}
+#youth-form #youth-birth,#youth-form #youth-phone{
+  display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
+}
+#youth-form #youth-birth{overflow:hidden}
+@media screen and (max-width:767px){
+  #youth-form .youth-info-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  #youth-form .youth-info-grid>div:nth-child(3),
+  #youth-form .youth-info-grid>div:nth-child(4){grid-column:1/-1}
+  #youth-form #youth-birth,#youth-form #youth-phone{font-size:16px;min-height:44px}
+}
 </style>
 </head>
 <body>
@@ -194,7 +208,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <p class="muted">Use somente dados fictícios até a validação completa das permissões. Fotos de teste podem ser enviadas ao armazenamento privado após salvar a ficha. Ainda não use fotos reais até testar o isolamento entre polos.</p>
 <form id="youth-form">
 <input id="youth-id" type="hidden">
-<div class="grid">
+<div class="grid youth-info-grid">
 <div><label for="youth-polo">Polo</label><select id="youth-polo" required></select></div>
 <div><label for="youth-name">Nome completo</label><input id="youth-name" required maxlength="180"></div>
 <div><label for="youth-birth">Nascimento</label><input id="youth-birth" type="date"></div>
