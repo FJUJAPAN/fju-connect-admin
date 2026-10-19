@@ -804,22 +804,114 @@ async function loadYouth(){
   }
   youthRows=all;renderYouth();youthMessage(`${youthRows.length} ficha(s) carregada(s) da igreja selecionada.`);
 }
+/* Fotos das fichas são carregadas somente quando o card entra na área visível.
+   Não são usadas URLs públicas: o acesso passa pelo bucket privado e políticas RLS. */
+let youthCardPhotoObserver=null;
+let youthCardPhotoUrls=[];
+let youthCardRenderVersion=0;
+function clearYouthCardPhotos(){
+  youthCardRenderVersion++;
+  youthCardPhotoObserver?.disconnect();
+  youthCardPhotoObserver=null;
+  for(const url of youthCardPhotoUrls)URL.revokeObjectURL(url);
+  youthCardPhotoUrls=[];
+}
+async function loadYouthCardThumbnail(id,avatar,version){
+  try{
+    const {data:files,error}=await supabase.storage.from('fju-fotos').list(id,{limit:20});
+    if(error||version!==youthCardRenderVersion)return;
+    const photo=(files||[]).find(file=>/^perfil\.(jpg|png|webp)$/.test(file.name));
+    if(!photo)return;
+    const {data,error:photoError}=await supabase.storage.from('fju-fotos').download(id+'/'+photo.name);
+    if(photoError||!data||version!==youthCardRenderVersion||!avatar.isConnected)return;
+    const url=URL.createObjectURL(data);
+    youthCardPhotoUrls.push(url);
+    const img=document.createElement('img');
+    img.src=url;img.alt='Foto do jovem';img.decoding='async';
+    avatar.replaceChildren(img);
+  }catch(err){
+    // A ausência de foto ou a falta de permissão não impede abrir a ficha.
+    console.warn('Miniatura indisponível',err);
+  }
+}
+function youthCardRank(r){
+  if(r.categoria==='inconstante')return 'Inconstante';
+  const rank=(r.patente||'').toLocaleLowerCase();
+  return ({firme:'Firme',cpo:'CPO',colaborador:'Colaborador',obreiro:'Obreiro',coordenador:'Coordenador'})[rank]||r.patente||'Firme';
+}
+function youthCardInitials(name){
+  const parts=(name||'J').trim().split(/\s+/).filter(Boolean);
+  return ((parts[0]?.[0]||'J')+(parts.length>1?parts[parts.length-1][0]:'')).toLocaleUpperCase();
+}
 function renderYouth(){
+  clearYouthCardPhotos();
+  const version=youthCardRenderVersion;
   const term=el('youth-search').value.trim().toLocaleLowerCase();
   const list=el('youth-list');list.replaceChildren();
+  const count=el('youth-visible-count');
   const polo=el('youth-list-polo').value;
-  if(!polo){list.textContent='Selecione uma igreja para visualizar as fichas.';return;}
+  if(!polo){
+    count.textContent='Selecione uma igreja';
+    const empty=document.createElement('div');empty.className='youth-empty';
+    empty.textContent='Selecione uma igreja para visualizar as fichas cadastradas.';
+    list.append(empty);return;
+  }
   const rows=youthRows.filter(r=>String(r.polo_id)===polo&&(r.nome_completo||'').toLocaleLowerCase().includes(term));
-  if(!rows.length){list.textContent='Nenhuma ficha encontrada.';return;}
-  for(const r of rows){
-    const div=document.createElement('div');div.className='stat';div.style.marginBottom='8px';
-    const name=document.createElement('strong');name.textContent=r.nome_completo||'(sem nome)';
-    const detail=document.createElement('p');detail.className='muted';detail.textContent=`${r.patente||r.categoria||'Sem patente'} · ${r.nacionalidade_iso2||'—'}`;
-    const edit=document.createElement('button');edit.type='button';edit.className='secondary';edit.textContent='Editar';edit.onclick=()=>editYouth(r.id);
-    const view=document.createElement('button');view.type='button';view.className='secondary';view.textContent='Ver ficha';view.style.marginRight='8px';view.onclick=()=>viewYouth(r.id);
-    div.append(name,detail,view);if(currentProfile?.papel==='nacional')div.append(edit);
-    else {const request=document.createElement('button');request.type='button';request.className='secondary';request.textContent='Solicitar edição';request.onclick=()=>editYouth(r.id);const del=document.createElement('button');del.type='button';del.className='secondary';del.textContent='Solicitar exclusão';del.onclick=()=>requestYouthChange(r);div.append(del);div.append(request);}
-    list.append(div);
+  count.textContent=rows.length+' '+(rows.length===1?'ficha':'fichas');
+  if(!rows.length){
+    const empty=document.createElement('div');empty.className='youth-empty';
+    empty.textContent=term?'Nenhuma ficha corresponde à busca.':'Nenhuma ficha cadastrada nesta igreja.';
+    list.append(empty);return;
+  }
+  if('IntersectionObserver' in window){
+    youthCardPhotoObserver=new IntersectionObserver(entries=>{
+      for(const entry of entries){
+        if(!entry.isIntersecting)continue;
+        youthCardPhotoObserver?.unobserve(entry.target);
+        const id=entry.target.dataset.jovemId;
+        if(id)void loadYouthCardThumbnail(id,entry.target,version);
+      }
+    },{rootMargin:'160px 0px',threshold:0.01});
+  }
+  for(const [index,r] of rows.entries()){
+    const card=document.createElement('article');card.className='youth-card';
+    const main=document.createElement('div');main.className='youth-card-main';
+    const avatar=document.createElement('div');avatar.className='youth-avatar';
+    avatar.dataset.jovemId=String(r.id);
+    const initials=document.createElement('span');initials.textContent=youthCardInitials(r.nome_completo);
+    avatar.append(initials);
+    const info=document.createElement('div');info.className='youth-card-info';
+    const name=document.createElement('h3');name.className='youth-card-name';
+    name.textContent=r.nome_completo||'Jovem sem nome';
+    const rank=document.createElement('span');rank.className='youth-rank';
+    rank.textContent=youthCardRank(r);rank.dataset.rank=rank.textContent;
+    const metadata=document.createElement('div');metadata.className='youth-card-metadata';
+    const country=el('youth-country').querySelector('option[value="'+(r.nacionalidade_iso2||'')+'"]');
+    const countryName=document.createElement('span');
+    countryName.textContent=country?.textContent||r.nacionalidade_iso2||'Nacionalidade não informada';
+    metadata.append(countryName);
+    info.append(name,rank,metadata);
+    main.append(avatar,info);
+    const actions=document.createElement('div');actions.className='youth-card-actions';
+    const view=document.createElement('button');view.type='button';view.className='youth-view-button';
+    view.textContent='Ver ficha';view.onclick=()=>viewYouth(r.id);actions.append(view);
+    if(currentProfile?.papel==='nacional'){
+      const edit=document.createElement('button');edit.type='button';edit.className='secondary youth-edit-button';
+      edit.textContent='Editar';edit.onclick=()=>editYouth(r.id);actions.append(edit);
+    }else{
+      const more=document.createElement('details');more.className='youth-card-more';
+      const summary=document.createElement('summary');summary.textContent='Mais ações ▾';
+      const extra=document.createElement('div');extra.className='youth-card-extra-actions';
+      const request=document.createElement('button');request.type='button';request.className='secondary';
+      request.textContent='Solicitar edição';request.onclick=()=>editYouth(r.id);
+      const remove=document.createElement('button');remove.type='button';
+      remove.className='secondary youth-request-delete';remove.textContent='Solicitar exclusão';
+      remove.onclick=()=>requestYouthChange(r);
+      extra.append(request,remove);more.append(summary,extra);actions.append(more);
+    }
+    card.append(main,actions);list.append(card);
+    if(youthCardPhotoObserver)youthCardPhotoObserver.observe(avatar);
+    else if(index<10)void loadYouthCardThumbnail(r.id,avatar,version);
   }
 }
 let detailPhotoUrl=null;
