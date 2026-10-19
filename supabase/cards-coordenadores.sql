@@ -95,7 +95,7 @@ RETURNS TABLE(
 LANGUAGE sql STABLE SECURITY DEFINER
 SET search_path = ''
 AS $$
-  SELECT p.usuario_id,c.nome_exibicao,c.foto_path,pol.nome
+  SELECT p.usuario_id,c.nome_exibicao,c.foto_path,pol.nome::text
   FROM public.fju_perfis p
   LEFT JOIN public.fju_coordenador_cards c ON c.usuario_id=p.usuario_id
   LEFT JOIN public.fju_polos pol ON pol.id=p.polo_id
@@ -112,6 +112,15 @@ GRANT EXECUTE ON FUNCTION public.fju_listar_cards_coordenadores() TO authenticat
 INSERT INTO storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
 VALUES ('fju-coordenadores','fju-coordenadores',false,200000,ARRAY['image/jpeg'])
 ON CONFLICT (id) DO NOTHING;
+
+-- Um bucket existente com este nome nunca pode ser público.
+DO $
+BEGIN
+ IF EXISTS(SELECT 1 FROM storage.buckets WHERE id='fju-coordenadores' AND public) THEN
+   RAISE EXCEPTION 'O bucket fju-coordenadores deve ser privado. Verifique a configuração antes de continuar.';
+ END IF;
+END;
+$;
 
 DROP POLICY IF EXISTS fju_coord_foto_ler ON storage.objects;
 CREATE POLICY fju_coord_foto_ler
