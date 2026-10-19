@@ -183,7 +183,14 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 /* Nascimento e telefone lado a lado; o seletor nativo de data do iOS
    permanece clicável, mas seu tamanho intrínseco não expande a coluna. */
 #youth-form .youth-info-grid>div{min-width:0;max-width:100%}
-#youth-form #youth-phone{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+#youth-form .youth-birth-phone-row{
+ grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+ gap:12px;width:100%;max-width:100%;min-width:0;overflow:hidden
+}
+#youth-form .youth-birth-phone-row>div{min-width:0;width:100%;max-width:100%;overflow:hidden}
+#youth-form #youth-phone{
+ display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;overflow:hidden
+}
 #youth-form .youth-date-control{
  position:relative;display:flex;align-items:center;width:100%;max-width:100%;min-width:0;
  height:44px;overflow:hidden;border:1px solid #d7deea;border-radius:10px;background:#fff
@@ -200,8 +207,8 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 }
 @media screen and (max-width:767px){
  #youth-form .youth-info-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
- #youth-form .youth-info-grid>div:nth-child(3),
- #youth-form .youth-info-grid>div:nth-child(4){grid-column:auto}
+ #youth-form .youth-birth-phone-row{grid-column:1/-1;gap:10px}
+ #youth-form .youth-birth-phone-row>div{min-width:0}
  #youth-form #youth-phone{font-size:16px;min-height:44px}
 }
 </style>
@@ -222,8 +229,10 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <div class="grid youth-info-grid">
 <div><label for="youth-polo">Polo</label><select id="youth-polo" required></select></div>
 <div><label for="youth-name">Nome completo</label><input id="youth-name" required maxlength="180"></div>
+<div class="youth-birth-phone-row">
 <div class="youth-birth-cell"><label for="youth-birth">Nascimento</label><div class="youth-date-control"><span id="youth-birth-display" aria-hidden="true">Selecionar data</span><input id="youth-birth" type="date" aria-label="Nascimento"></div></div>
-<div><label for="youth-phone">Telefone</label><input id="youth-phone" maxlength="50"></div>
+<div class="youth-phone-cell"><label for="youth-phone">Telefone</label><input id="youth-phone" type="tel" maxlength="50" autocomplete="tel"></div>
+</div>
 <div><label for="youth-country">Nacionalidade</label><select id="youth-country"><option value="">Selecione</option><option value="BR">🇧🇷 Brasil</option><option value="JP">🇯🇵 Japão</option><option value="PH">🇵🇭 Filipinas</option><option value="PE">🇵🇪 Peru</option><option value="BO">🇧🇴 Bolívia</option><option value="PY">🇵🇾 Paraguai</option><option value="AR">🇦🇷 Argentina</option><option value="CO">🇨🇴 Colômbia</option><option value="VE">🇻🇪 Venezuela</option><option value="US">🇺🇸 Estados Unidos</option><option value="CN">🇨🇳 China</option><option value="KR">🇰🇷 Coreia do Sul</option><option value="VN">🇻🇳 Vietnã</option><option value="ID">🇮🇩 Indonésia</option><option value="NP">🇳🇵 Nepal</option><option value="IN">🇮🇳 Índia</option><option value="LK">🇱🇰 Sri Lanka</option><option value="MM">🇲🇲 Mianmar</option><option value="TH">🇹🇭 Tailândia</option><option value="PK">🇵🇰 Paquistão</option><option value="BD">🇧🇩 Bangladesh</option><option value="GB">🇬🇧 Reino Unido</option><option value="FR">🇫🇷 França</option><option value="DE">🇩🇪 Alemanha</option><option value="PT">🇵🇹 Portugal</option><option value="ES">🇪🇸 Espanha</option><option value="MX">🇲🇽 México</option><option value="NG">🇳🇬 Nigéria</option><option value="GH">🇬🇭 Gana</option><option value="OTHER">Outra nacionalidade</option></select></div>
 <div><label>Idiomas que fala (selecione um ou mais)</label><details id="youth-languages-picker"><summary id="youth-languages-summary">Selecionar idiomas</summary><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;padding:12px 4px"><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Português"> Português</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Japonês"> Japonês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Inglês"> Inglês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Espanhol"> Espanhol</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Tagalog"> Tagalog</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Hindi"> Hindi</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Nepali"> Nepali</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Indonésio"> Indonésio</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Birmanês"> Birmanês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Cingalês"> Cingalês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Coreano"> Coreano</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Chinês"> Chinês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Vietnamita"> Vietnamita</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Tailandês"> Tailandês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Outros"> Outros</label></div></details></div>
 <div><label for="youth-rank">Patente do jovem</label><select id="youth-rank" required><option value="">Selecione</option><option>Inconstante</option><option>Firme</option><option>CPO</option><option>Colaborador</option><option>Obreiro</option><option>Coordenador</option></select></div>
