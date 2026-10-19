@@ -968,7 +968,23 @@ async function viewYouth(id){
   const accessCard=document.createElement('div');accessCard.className='stat';accessCard.style.marginTop='12px';
   const accessTitle=document.createElement('strong');accessTitle.textContent='🔐 Acesso ao FJU Connect';
   const accessStatus=document.createElement('p');accessStatus.textContent='Consultando autorização…';
-  accessCard.append(accessTitle,accessStatus);panel.append(accessCard);
+  accessCard.append(accessTitle,accessStatus);
+  const requestForm=document.createElement('form');requestForm.style.marginTop='10px';
+  const emailLabel=document.createElement('label');emailLabel.textContent='E-mail do jovem para convite';
+  const emailInput=document.createElement('input');emailInput.type='email';emailInput.required=true;emailInput.autocomplete='email';emailInput.placeholder='jovem@exemplo.com';emailInput.style.width='100%';emailLabel.append(emailInput);
+  const requestButton=document.createElement('button');requestButton.type='submit';requestButton.className='secondary';requestButton.textContent='Solicitar acesso ao FJU Connect';
+  const requestMessage=document.createElement('p');requestMessage.setAttribute('role','status');requestMessage.className='muted';
+  requestForm.append(emailLabel,requestButton,requestMessage);accessCard.append(requestForm);panel.append(accessCard);
+  requestForm.addEventListener('submit',async event=>{
+    event.preventDefault();if(!currentProfile||!['coordenador','nacional'].includes(currentProfile.papel))return;
+    requestButton.disabled=true;requestMessage.textContent='Registrando solicitação…';
+    try{
+      const {data,error}=await supabase.rpc('fju_solicitar_acesso_jovem',{p_jovem_id:id,p_email:emailInput.value.trim()});
+      if(error)throw error;
+      requestMessage.textContent='Solicitação registrada. O convite e a ativação ainda dependem da etapa administrativa.';
+      requestButton.disabled=true;
+    }catch(error){requestMessage.textContent='Não foi possível solicitar: '+(error.message||'Função ainda não instalada no Supabase.');requestButton.disabled=false;}
+  });
   // O status é somente leitura. A liberação real depende de convite validado no servidor.
   void (async()=>{try{
     const {data,error}=await supabase.from('fju_vinculos_conta_jovem').select('ativo').eq('jovem_id',id).maybeSingle();
