@@ -924,6 +924,9 @@ function resetYouthSession(){
   ++youthLoadVersion;
   clearYouthCardPhotos();
   youthRows=[];
+  resetYouth();
+  setYouthFormOpen(false);
+  el('youth-message').textContent='';
   el('youth-list').replaceChildren();
   el('youth-visible-count').textContent='—';
   el('youth-search').value='';
