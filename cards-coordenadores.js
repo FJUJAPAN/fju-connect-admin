@@ -54,14 +54,14 @@ export function setupCoordinatorCards({supabase,compressPhoto,navigateToTab}){
     const words=(name||'FJU').trim().split(/\s+/).filter(Boolean);
     return ((words[0]?.[0]||'F')+(words.length>1?words[words.length-1][0]:'')).toLocaleUpperCase();
   }
-  function createCard({nome,polo,foto,pendente=false,compact=false}){
+  function createCard({nome,polo,foto,pendente=false,compact=false,papel='coordenador'}){
     const card=make('article','leader-card'+(pendente?' leader-card--pending':'')+(compact?' leader-card--compact':''));
     const eyebrow=make('div','leader-card-eyebrow','FJU JAPAN · LIDERANÇA');
     const accent=make('div','leader-card-accent');
     const photo=make('div','leader-card-photo');
     if(foto){
       const img=document.createElement('img');
-      img.src=foto;img.alt='Foto de '+(nome||'coordenador');
+      img.src=foto;img.alt='Foto de '+(nome||'perfil');
       img.loading='lazy';
       photo.append(img);
     }else{
@@ -70,8 +70,9 @@ export function setupCoordinatorCards({supabase,compressPhoto,navigateToTab}){
       photo.append(placeholder);
     }
     const title=make('h3','',nome||'Perfil ainda não preenchido');
-    const role=make('div','leader-card-role','COORDENADOR');
-    const place=make('div','leader-card-polo','FJU '+(polo||'Polo não informado'));
+    const roleText=papel==='nacional'?'ADMINISTRADOR NACIONAL':'COORDENADOR';
+    const role=make('div','leader-card-role',roleText);
+    const place=make('div','leader-card-polo',papel==='nacional'?'FJU JAPAN':'FJU '+(polo||'Polo não informado'));
     const footer=make('div','leader-card-footer');
     footer.append(make('span','','COMPROMISSO • SERVIÇO'),make('span','leader-card-footer-mark','FJU'));
     card.append(eyebrow,accent,photo,title,role,place,footer);
@@ -88,11 +89,11 @@ export function setupCoordinatorCards({supabase,compressPhoto,navigateToTab}){
     return url;
   }
   function renderOwn(){
-    if(!active||active.role!=='coordenador')return;
+    if(!active||!['coordenador','nacional'].includes(active.role))return;
     const nome=nameInput.value.trim()||ownRecord?.nome_exibicao||'Seu perfil de liderança';
     const foto=chosenPhotoUrl||downloadedPhotos.get(active.uid)||null;
-    ownCard.replaceChildren(createCard({nome,polo:active.polo,foto,pendente:!ownRecord?.nome_exibicao}));
-    homeCard.replaceChildren(createCard({nome,polo:active.polo,foto,pendente:!ownRecord?.nome_exibicao,compact:true}));
+    ownCard.replaceChildren(createCard({nome,polo:active.polo,foto,pendente:!ownRecord?.nome_exibicao,papel:active.role}));
+    if(active.role==='coordenador')homeCard.replaceChildren(createCard({nome,polo:active.polo,foto,pendente:!ownRecord?.nome_exibicao,compact:true,papel:active.role}));
   }
   async function loadOwn(requestToken){
     const uid=active.uid;
@@ -140,26 +141,27 @@ export function setupCoordinatorCards({supabase,compressPhoto,navigateToTab}){
   async function load(user,profile,poloName){
     clear();
     const requestToken=token;
-    const local=profile.papel==='coordenador';
+    const isCoordinator=profile.papel==='coordenador';
+    const isNational=profile.papel==='nacional';
+    const canEditOwn=isCoordinator||isNational;
     active={uid:user.id,role:profile.papel,polo:poloName||''};
-    navButton.querySelector('.fju-nav-label-desktop').textContent=local?'Meu perfil':'Coordenadores';
-    navButton.querySelector('.fju-nav-label-mobile').textContent=local?'Perfil':'Líderes';
-    home.classList.toggle('hidden',!local);
-    ownArea.classList.toggle('hidden',!local);
-    nationalArea.classList.toggle('hidden',local);
-    if(local){
+    navButton.querySelector('.fju-nav-label-desktop').textContent=isCoordinator?'Meu perfil':'Liderança';
+    navButton.querySelector('.fju-nav-label-mobile').textContent='Perfil';
+    home.classList.toggle('hidden',!isCoordinator);
+    ownArea.classList.toggle('hidden',!canEditOwn);
+    nationalArea.classList.toggle('hidden',!isNational);
+    if(canEditOwn){
       renderOwn();
       await loadOwn(requestToken);
-    }else{
-      await loadDirectory(requestToken);
     }
+    if(isNational)await loadDirectory(requestToken);
   }
   async function refresh(){
     if(!active)return;
     const requestToken=++token;
     clearUrls();
-    if(active.role==='coordenador')await loadOwn(requestToken);
-    else await loadDirectory(requestToken);
+    if(['coordenador','nacional'].includes(active.role))await loadOwn(requestToken);
+    if(active.role==='nacional')await loadDirectory(requestToken);
   }
   nameInput.addEventListener('input',renderOwn);
   fileInput.addEventListener('change',()=>{
@@ -175,7 +177,7 @@ export function setupCoordinatorCards({supabase,compressPhoto,navigateToTab}){
   });
   editor.addEventListener('submit',async event=>{
     event.preventDefault();
-    if(!active||active.role!=='coordenador')return;
+    if(!active||!['coordenador','nacional'].includes(active.role))return;
     const uid=active.uid, requestToken=token;
     const nome=nameInput.value.trim();
     if(nome.length<2||nome.length>100){tell('Informe seu nome (de 2 a 100 caracteres).',true);return;}
