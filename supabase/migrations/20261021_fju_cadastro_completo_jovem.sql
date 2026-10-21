@@ -176,7 +176,13 @@ FOR SELECT TO authenticated
 USING (
  bucket_id='fju-inscricoes-fotos'
  AND CASE
-  WHEN name ~ '^[0-9a-f-]{36}/perfil[.]jpg$'
+  WHEN name ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/perfil[.]jpg
+  THEN public.fju_pode_ler_foto_inscricao(split_part(name,'/',1)::uuid)
+  ELSE false
+ END
+);
+COMMIT;
+
   THEN public.fju_pode_ler_foto_inscricao(split_part(name,'/',1)::uuid)
   ELSE false
  END
