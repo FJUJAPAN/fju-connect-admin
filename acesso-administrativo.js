@@ -59,13 +59,14 @@ export function setupAdministrativeAccess({supabase,getProfile}){
     const profile=getProfile();
     if(!profile||!['coordenador','nacional'].includes(profile.papel))return;
     const box=element('div',null,'stat');box.style.marginTop='12px';
-    box.append(element('strong','Acesso ao painel administrativo'));
+    box.append(element('strong','Conta vinculada e acesso administrativo'));
     box.append(element('p','O coordenador solicita; somente o Nacional aprova. O acesso será limitado ao mesmo polo desta ficha. A patente, sozinha, não libera o painel.','muted'));
-    if(String(youth.patente||'').toLowerCase()!=='coordenador'){
-      box.append(element('p','Ao solicitar a mudança de patente para Coordenador, o acesso será incluído automaticamente no mesmo pedido ao Nacional.','muted'));panel.append(box);return;
+    const isCoordinator=String(youth.patente||'').toLowerCase()==='coordenador';
+    if(!isCoordinator){
+      box.append(element('p','Ao solicitar a mudança de patente para Coordenador, o acesso será incluído automaticamente no mesmo pedido ao Nacional.','muted'));
     }
     const account=element('p','Identificando conta vinculada…','muted');
-    const button=element('button','Solicitar acesso administrativo');button.type='button';button.disabled=true;
+    const button=element('button','Solicitar acesso administrativo');button.type='button';button.disabled=true;button.hidden=!isCoordinator;
     const feedback=element('p',null,'message');feedback.setAttribute('role','status');
     box.append(account,button,feedback);panel.append(box);
     void (async()=>{
@@ -79,7 +80,7 @@ export function setupAdministrativeAccess({supabase,getProfile}){
       }catch(error){if(getProfile()===profile&&box.isConnected){account.textContent='';feedback.textContent=errorText(error);}}
     })();
     button.addEventListener('click',async()=>{
-      if(getProfile()!==profile||button.disabled)return;
+      if(getProfile()!==profile||button.disabled||!isCoordinator)return;
       button.disabled=true;feedback.textContent='Enviando pedido ao Nacional…';
       try{
         const {error}=await supabase.rpc('fju_solicitar_acesso_admin',{p_jovem_id:youth.id});
