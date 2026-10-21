@@ -302,7 +302,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <div class="youth-list-controls"><div><label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite o nome do jovem" type="search" autocomplete="off"></div><button type="button" id="youth-refresh" class="secondary">Atualizar</button></div>
 <div id="youth-detail" class="panel hidden" style="margin:0 0 14px;border:1px solid #dce3ef"></div><div id="youth-list" aria-label="Fichas salvas"></div>
 </section>
-<section id="inscricoes" class="panel hidden"><h2>Novos cadastros de jovens</h2><p class="muted">Solicitações feitas pelos jovens no site. Cada coordenador vê somente o seu polo. A ficha oficial não é criada automaticamente.</p><div class="actions"><button type="button" id="inscricoes-refresh" class="secondary">Atualizar solicitações</button><strong id="inscricoes-count" aria-live="polite"></strong></div><p id="inscricoes-message" class="message" role="status"></p><div id="inscricoes-list" class="report-list"></div></section><section id="autorizacoes" class="panel hidden"><h2>Autorizações de fichas</h2><p class="muted">Solicitações de alteração ou exclusão aguardando aprovação nacional. Nenhuma ficha é modificada ao enviar um pedido.</p><button type="button" id="requests-refresh" class="secondary">Atualizar solicitações</button><p id="requests-message" class="message" role="status"></p><div class="authorization-filters" id="requests-filters"><button type="button" data-request-filter="pendente" class="active">Pendentes</button><button type="button" data-request-filter="aprovada">Aprovadas</button><button type="button" data-request-filter="rejeitada">Rejeitadas</button><button type="button" data-request-filter="todas">Todas</button></div><div id="requests-list" class="report-list"></div></section><section id="relatorios" class="panel hidden">
+<section id="inscricoes" class="panel hidden"><h2>Novos cadastros de jovens</h2><p class="muted">Solicitações feitas pelos jovens no site. Cada coordenador vê somente o seu polo. A ficha oficial não é criada automaticamente.</p><div class="actions"><button type="button" id="inscricoes-refresh" class="secondary">Atualizar solicitações</button><strong id="inscricoes-count" aria-live="polite"></strong></div><p id="inscricoes-message" class="message" role="status"></p><div id="inscricoes-list" class="report-list"></div></section><section id="autorizacoes" class="panel hidden"><h2>Autorizações de fichas</h2><p class="muted">Solicitações de alteração ou exclusão aguardando aprovação nacional. Nenhuma ficha é modificada ao enviar um pedido.</p><button type="button" id="requests-refresh" class="secondary">Atualizar solicitações</button><p id="requests-message" class="message" role="status"></p><div class="authorization-filters" id="requests-filters"><button type="button" data-request-filter="pendente" class="active">Pendentes</button><button type="button" data-request-filter="aprovada">Aprovadas</button><button type="button" data-request-filter="rejeitada">Rejeitadas</button><button type="button" data-request-filter="todas">Todas</button></div><div id="requests-list" class="report-list"></div><hr><h2>Acesso ao painel administrativo</h2><p class="muted">Pedidos do coordenador para liberar o painel no polo da ficha. Somente o Nacional pode aprovar ou rejeitar.</p><button type="button" id="admin-access-refresh" class="secondary">Atualizar pedidos de acesso</button><p id="admin-access-message" class="message" role="status"></p><div id="admin-access-list" class="report-list"></div></section><section id="relatorios" class="panel hidden">
 <h2>Relatórios</h2>
 <div class="tabs" style="margin-bottom:16px"><button type="button" class="active" data-report-tab="semanal">Relatório semanal</button><button type="button" data-report-tab="especial">Evento especial</button></div>
 <div id="report-weekly"><div id="national-report-panel" class="hidden">
@@ -396,10 +396,12 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <script type="module">
 import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import {setupCoordinatorCards} from './cards-coordenadores.js';
+import {setupAdministrativeAccess} from './acesso-administrativo.js';
 const SUPABASE_URL='https://hmacroktklgwkofxsygv.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_mdkfafhpqtthwzU8Hf7u9A_rErx3MFJ';
 const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const el=id=>document.getElementById(id);
+const administrativeAccess=setupAdministrativeAccess({supabase,getProfile:()=>currentProfile});
 const coordinatorCards=setupCoordinatorCards({supabase,compressPhoto:compactarFoto100KB,navigateToTab:()=>document.querySelector('#main-nav [data-tab="lideranca"]')?.click()});
 const quantityOptions=document.createDocumentFragment();
 for(let n=0;n<=1000;n++){const option=document.createElement('option');option.value=String(n);option.textContent=String(n);quantityOptions.append(option);}
@@ -928,6 +930,7 @@ function renderYouth(){
 }
 let detailPhotoUrl=null;
 function resetYouthSession(){
+  administrativeAccess.clear();
   ++youthLoadVersion;
   clearYouthCardPhotos();
   youthRows=[];
@@ -1009,6 +1012,7 @@ async function viewYouth(id){
     accessStatus.textContent=data?.ativo?'Conta vinculada: acesso ativo':'Nenhuma conta ativa vinculada a esta ficha.';
     requestForm.hidden=!!data?.ativo;
   }catch{if(accessCard.isConnected)accessStatus.textContent='Status indisponível';}})();
+  administrativeAccess.appendRequest(panel,r);
   const historyTitle=document.createElement('h3');historyTitle.textContent='Histórico de evolução';panel.append(historyTitle);
   const historyList=document.createElement('div');historyList.className='stat';historyList.textContent='Carregando histórico...';panel.append(historyList);
   try{
@@ -1638,7 +1642,7 @@ el('inscricoes-refresh').addEventListener('click',()=>void loadYouthSignups());
 function activateMainTab(button){
   const sectionId=button.dataset.tab;
   if(sectionId==='inscricoes')void loadYouthSignups();
-  if(sectionId==='autorizacoes')void loadYouthRequests();
+  if(sectionId==='autorizacoes'){void loadYouthRequests();void administrativeAccess.refresh();}
   if(sectionId==='lideranca')void coordinatorCards.refresh();
   document.querySelectorAll('#main-nav [data-tab]').forEach(item=>{
     const active=item===button;
