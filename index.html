@@ -1055,6 +1055,7 @@ async function requestYouthChange(r){
 }
 let currentRequestFilter='pendente';
 async function loadYouthRequests(){
+  const accessByRequest=await administrativeAccess.requestsByRank();
   const list=el('requests-list');list.replaceChildren();el('requests-message').textContent='Consultando solicitações...';
   let query=supabase.from('fju_solicitacoes').select('id,jovem_id,polo_id,tipo,justificativa,dados_propostos,dados_anteriores,solicitante_id,status,criado_em').order('criado_em',{ascending:false}).limit(100);
   if(currentProfile?.papel==='coordenador')query=query.eq('polo_id',currentProfile.polo_id);
@@ -1116,6 +1117,14 @@ async function loadYouthRequests(){
         }catch(e){console.warn('Foto indisponível na autorização',e);}
       })();
     }
+    const linkedAccess=accessByRequest.get(r.id);
+    const accessUnknown=accessByRequest.unavailable&&String(r.dados_propostos?.patente||'').toLowerCase()==='coordenador';
+    if(accessUnknown){const warning=document.createElement('p');warning.textContent='Não foi possível conferir o acesso vinculado a esta promoção. Atualize os pedidos antes de aprovar.';card.append(warning);}
+    if(linkedAccess){
+      const accessNote=document.createElement('p');accessNote.className='authorization-note';
+      accessNote.textContent='Inclui acesso ao painel de coordenador: '+linkedAccess.email+' · '+linkedAccess.polo_nome+'. Ao aprovar, a patente e o acesso serão liberados juntos.';
+      card.append(accessNote);
+    }
     const status=document.createElement('div');status.className='authorization-status';
     status.classList.add(r.status);
     status.textContent=(r.tipo==='exclusao'?'Exclusão':r.tipo==='patente'?'Patente':'Alteração')+' · '+({pendente:'Pendente',aprovada:'Aprovada',rejeitada:'Recusada'}[r.status]||r.status);
@@ -1148,12 +1157,12 @@ async function loadYouthRequests(){
       card.append(warn);
     }
     if(currentProfile?.papel==='nacional'&&r.status==='pendente'&&identificado){
-      const approve=document.createElement('button');approve.type='button';approve.textContent='Aprovar solicitação';
-      approve.onclick=async()=>{if(!confirm('Aprovar esta solicitação? A ficha será atualizada automaticamente.'))return;
+      const approve=document.createElement('button');approve.type='button';approve.textContent=linkedAccess?'Aprovar patente e acesso':'Aprovar solicitação';approve.disabled=!!accessUnknown;
+      approve.onclick=async()=>{if(!confirm(linkedAccess?'Aprovar a patente Coordenador e liberar o painel para '+linkedAccess.email+' no polo '+linkedAccess.polo_nome+'?':'Aprovar esta solicitação? A ficha será atualizada automaticamente.'))return;
         const {error}=await supabase.rpc('fju_decidir_solicitacao',{p_solicitacao_id:r.id,p_aprovar:true});
-        if(error)message('requests-message',error.message,true);else {await loadYouthRequests();await loadYouth();}};
+        if(error)message('requests-message',error.message,true);else {await loadYouthRequests();await administrativeAccess.refresh();await loadYouth();}};
       const deny=document.createElement('button');deny.type='button';deny.className='secondary';deny.textContent='Recusar';
-      deny.onclick=async()=>{if(!confirm('Rejeitar esta solicitação? A ficha não será alterada.'))return;const {error}=await supabase.rpc('fju_decidir_solicitacao',{p_solicitacao_id:r.id,p_aprovar:false});if(error)message('requests-message',error.message,true);else void loadYouthRequests();};
+      deny.onclick=async()=>{if(!confirm('Rejeitar esta solicitação? A ficha não será alterada.'))return;const {error}=await supabase.rpc('fju_decidir_solicitacao',{p_solicitacao_id:r.id,p_aprovar:false});if(error)message('requests-message',error.message,true);else {void loadYouthRequests();void administrativeAccess.refresh();}};
       const actions=document.createElement('div');actions.className='authorization-actions';actions.append(approve,deny);card.append(actions);
     }
     list.append(card);
@@ -1170,6 +1179,10 @@ function editYouth(id){
   document.querySelectorAll('input[name="youth-language"]').forEach(x=>x.checked=(r.idiomas||[]).includes(x.value));refreshYouthLanguages();
   el('youth-photo').value='';el('youth-photo').disabled=currentProfile?.papel==='coordenador';void loadYouthPhoto(r.id);youthMessage(currentProfile?.papel==='coordenador'?'Edite os campos e envie para aprovação. A ficha original não será alterada.':'Editando ficha: '+r.nome_completo);setYouthFormOpen(true,true,true);
 }
+const coordinationHint=document.createElement('p');coordinationHint.className='muted';coordinationHint.hidden=true;
+coordinationHint.textContent='Ao solicitar a patente Coordenador, o acesso ao painel no polo desta ficha será incluído no mesmo pedido. A conta é identificada automaticamente e somente o Nacional pode aprovar.';
+el('youth-rank').parentElement.append(coordinationHint);
+el('youth-rank').addEventListener('change',()=>{coordinationHint.hidden=el('youth-rank').value!=='Coordenador'||currentProfile?.papel!=='coordenador';});
 el('youth-form').addEventListener('submit',async e=>{
   e.preventDefault();if(!currentProfile)return;
   const polo_id=el('youth-polo').value;
@@ -1192,10 +1205,15 @@ el('youth-form').addEventListener('submit',async e=>{
     const original=youthRows.find(x=>String(x.id)===String(id));if(!original){youthMessage('Ficha original não encontrada.',true);return;}
     const changes={};for(const key of ['nome_completo','nascimento','telefone','nacionalidade_iso2','idiomas','patente','categoria'])if(JSON.stringify(original[key]??null)!==JSON.stringify(payload[key]??null))changes[key]=payload[key];
     if(!Object.keys(changes).length){youthMessage('Nenhuma alteração encontrada.',true);return;}
+    if(changes.patente==='coordenador'){
+      const {data:account,error:accountError}=await supabase.rpc('fju_conta_coordenacao',{p_jovem_id:id});
+      if(accountError){youthMessage('Não foi possível identificar a conta para coordenação: '+accountError.message,true);return;}
+      if(!account?.email){youthMessage('Confira o vínculo da conta desta ficha antes de solicitar a coordenação.',true);return;}
+    }
     const {data:{user}}=await supabase.auth.getUser();
     const {error}=await supabase.from('fju_solicitacoes').insert({jovem_id:id,polo_id:original.polo_id,tipo:(Object.keys(changes).every(k=>['patente','categoria'].includes(k))?'patente':'edicao'),justificativa:'Campos: '+Object.keys(changes).join(', '),dados_propostos:changes,solicitante_id:user?.id});
     if(error){youthMessage('Não foi possível enviar a solicitação: '+error.message,true);return;}
-    resetYouth();setYouthFormOpen(false);youthMessage('Solicitação enviada. A ficha original não foi alterada.');return;
+    resetYouth();setYouthFormOpen(false);youthMessage(changes.patente==='coordenador'?'Pedido de patente Coordenador e acesso administrativo enviado ao Nacional. A conta foi identificada automaticamente.':'Solicitação enviada. A ficha original não foi alterada.');return;
   }
   const result=id?await supabase.from('fju_jovens').update(payload).eq('id',id).select('id').single():await supabase.from('fju_jovens').insert(payload).select('id').single();
   const {error}=result;

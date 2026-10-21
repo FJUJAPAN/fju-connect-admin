@@ -24,6 +24,21 @@ INSERT INTO fju_vinculos_conta_jovem VALUES('${youth}','${target}',true);`);
 const migration=fs.readFileSync(new URL('../supabase/migrations/20261022_acesso_administrativo.sql',import.meta.url),'utf8');
 await db.exec(migration);
 await db.exec(migration); // Instalação pode ser repetida.
+await db.exec(`CREATE TABLE public.fju_solicitacoes(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),jovem_id uuid,polo_id uuid,solicitante_id uuid,tipo text,dados_propostos jsonb,status text DEFAULT 'pendente');
+GRANT INSERT,SELECT ON public.fju_solicitacoes TO authenticated;
+CREATE FUNCTION public.fixture_decide(p_id uuid,p_approve boolean,p_status_first boolean DEFAULT false) RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE r record;
+BEGIN
+ IF NOT EXISTS(SELECT 1 FROM fju_perfis WHERE usuario_id=auth.uid() AND ativo AND papel='nacional') THEN RAISE EXCEPTION 'Nacional obrigatório'; END IF;
+ SELECT * INTO r FROM fju_solicitacoes WHERE id=p_id FOR UPDATE;
+ IF r.status<>'pendente' THEN RAISE EXCEPTION 'Já decidido'; END IF;
+ IF p_status_first THEN UPDATE fju_solicitacoes SET status=CASE WHEN p_approve THEN 'aprovada' ELSE 'rejeitada' END WHERE id=p_id; END IF;
+ IF p_approve THEN UPDATE fju_jovens SET patente=r.dados_propostos->>'patente' WHERE id=r.jovem_id; END IF;
+ IF NOT p_status_first THEN UPDATE fju_solicitacoes SET status=CASE WHEN p_approve THEN 'aprovada' ELSE 'rejeitada' END WHERE id=p_id; END IF;
+END; $$;`);
+const automatic=fs.readFileSync(new URL('../supabase/migrations/20261022_patente_coordenador_acesso.sql',import.meta.url),'utf8');
+await db.exec(automatic);await db.exec(automatic);
+
 const actor=async id=>{await db.exec(`RESET ROLE; SELECT set_config('test.uid','${id}',false); SET ROLE authenticated;`);};
 const request=async(email='test3@example.com')=>(await db.query('SELECT fju_solicitar_acesso_admin($1,$2) AS id',[youth,email])).rows[0].id;
 const decide=async(id,approve=true)=>db.query('SELECT fju_decidir_acesso_admin($1,$2)',[id,approve]);
@@ -58,6 +73,23 @@ await test('pedido já decidido não é aprovado de novo',async()=>{await actor(
 await test('listagem restrita ao polo',async()=>{await actor(coord);await request();await actor(other);assert.deepEqual((await db.query('SELECT fju_listar_pedidos_acesso_admin() r')).rows[0].r,[]);await actor(national);assert.equal((await db.query('SELECT fju_listar_pedidos_acesso_admin() r')).rows[0].r.length,1);});
 await test('escrita direta nos pedidos negada',async()=>{await actor(coord);await assert.rejects(db.exec("UPDATE fju_pedidos_acesso_admin SET status='aprovado'"),/permission denied/);});
 await test('anônimo não chama funções',async()=>{await db.exec('SET ROLE anon');await assert.rejects(db.query('SELECT fju_listar_pedidos_acesso_admin()'),/permission denied/);});
+
+const rankRequest=async()=> (await db.query(`INSERT INTO fju_solicitacoes(jovem_id,polo_id,solicitante_id,tipo,dados_propostos) VALUES($1,$2,$3,'patente','{"patente":"coordenador"}') RETURNING id`,[youth,polo,coord])).rows[0].id;
+await test('conta automática usa vínculo sem e-mail do cliente',async()=>{await actor(coord);const data=(await db.query('SELECT fju_conta_coordenacao($1) r',[youth])).rows[0].r;assert.equal(data.email,'test3@example.com');const id=(await db.query('SELECT fju_solicitar_acesso_admin($1) id',[youth])).rows[0].id;assert(id);});
+await test('conta de outro polo não é exposta',async()=>{await actor(other);await assert.rejects(db.query('SELECT fju_conta_coordenacao($1)',[youth]),/fora do seu polo/);});
+for(const statusFirst of [false,true])await test('aprovação conjunta e atômica; status primeiro='+statusFirst,async()=>{
+ await db.exec(`UPDATE fju_jovens SET patente='obreiro' WHERE id='${youth}'`);await actor(coord);const id=await rankRequest();
+ const list=(await db.query('SELECT fju_listar_pedidos_acesso_admin() r')).rows[0].r;assert.equal(list[0].solicitacao_patente_id,id);assert.equal(list[0].email,'test3@example.com');
+ await actor(national);await db.query('SELECT fixture_decide($1,true,$2)',[id,statusFirst]);await db.exec('SET CONSTRAINTS ALL IMMEDIATE; RESET ROLE');
+ const p=(await db.query('SELECT * FROM fju_perfis WHERE usuario_id=$1',[target])).rows[0];assert.equal(p.polo_id,polo);assert(p.ativo);
+ assert.equal((await db.query('SELECT status FROM fju_pedidos_acesso_admin')).rows[0].status,'aprovado');
+});
+await test('rejeição conjunta mantém patente e não concede acesso',async()=>{await db.exec(`UPDATE fju_jovens SET patente='obreiro' WHERE id='${youth}'`);await actor(coord);const id=await rankRequest();await actor(national);await db.query('SELECT fixture_decide($1,false)',[id]);await db.exec('SET CONSTRAINTS ALL IMMEDIATE; RESET ROLE');assert.equal((await db.query('SELECT patente FROM fju_jovens WHERE id=$1',[youth])).rows[0].patente,'obreiro');assert.equal((await db.query('SELECT status FROM fju_pedidos_acesso_admin')).rows[0].status,'rejeitado');assert.equal((await db.query('SELECT count(*)::int n FROM fju_perfis WHERE usuario_id=$1',[target])).rows[0].n,0);});
+await test('pedido vinculado não pode ser aprovado separadamente',async()=>{await actor(coord);await rankRequest();const id=(await db.query('SELECT fju_listar_pedidos_acesso_admin() r')).rows[0].r[0].id;await actor(national);await assert.rejects(decide(id),/junto com o pedido/);});
+await test('sem conta confirmada não cria pedido parcial',async()=>{await db.exec('UPDATE fju_vinculos_conta_jovem SET ativo=false');await actor(coord);await assert.rejects(rankRequest(),/conta confirmada/);});
+await test('conta alterada bloqueia aprovação conjunta',async()=>{await actor(coord);const id=await rankRequest();await db.exec(`RESET ROLE; UPDATE auth.users SET email='changed@example.com' WHERE id='${target}'`);await actor(national);await db.query('SELECT fixture_decide($1,true)',[id]);await assert.rejects(db.exec('SET CONSTRAINTS ALL IMMEDIATE'),/vínculo da conta mudou/);});
+await test('pedido vinculado não pode ser reescrito',async()=>{await actor(coord);const id=await rankRequest();await db.exec('RESET ROLE');await assert.rejects(db.query(`UPDATE fju_solicitacoes SET dados_propostos='{"patente":"obreiro"}' WHERE id=$1`,[id]),/não pode ser reescrito/);});
+await test('pedido antigo não vinculado não promove conta ao aprovar patente',async()=>{await db.exec(`INSERT INTO fju_solicitacoes(jovem_id,polo_id,solicitante_id,tipo,dados_propostos) VALUES('${youth}','${polo}','${coord}','patente','{"patente":"obreiro"}')`);await actor(national);const id=(await db.query('SELECT id FROM fju_solicitacoes')).rows[0].id;await db.query('SELECT fixture_decide($1,true)',[id]);await db.exec('SET CONSTRAINTS ALL IMMEDIATE; RESET ROLE');assert.equal((await db.query('SELECT count(*)::int n FROM fju_perfis WHERE usuario_id=$1',[target])).rows[0].n,0);});
 await db.close();
 const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
 for(const [,attr,source] of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)){
@@ -69,15 +101,18 @@ const {setupAdministrativeAccess}=await import('data:text/javascript;base64,'+Bu
 const dom=new JSDOM(html);globalThis.document=dom.window.document;globalThis.confirm=()=>true;
 let profile={papel:'coordenador'},calls=[];
 const rows=[{id:'request',nome_completo:'<b>Pessoa</b>',email:'test3@example.com',polo_nome:'Polo A',solicitante_nome:'Coordenador',status:'pendente'}];
-const supabase={auth:{onAuthStateChange(){}},rpc:async(name,args)=>{calls.push({name,args});return {data:name==='fju_listar_pedidos_acesso_admin'?rows:null,error:null};}};
+const supabase={auth:{onAuthStateChange(){}},rpc:async(name,args)=>{calls.push({name,args});return {data:name==='fju_listar_pedidos_acesso_admin'?rows:name==='fju_conta_coordenacao'?{email:'test3@example.com',polo_nome:'Polo A'}:null,error:null};}};
 const ui=setupAdministrativeAccess({supabase,getProfile:()=>profile});
 const panel=document.getElementById('youth-detail');
 ui.appendRequest(panel,{id:youth,patente:'coordenador'});
-const form=panel.querySelector('form');form.querySelector('input').value='test3@example.com';form.dispatchEvent(new dom.window.Event('submit',{cancelable:true}));
-await new Promise(r=>setTimeout(r,0));assert.equal(calls[0].args.p_jovem_id,youth);assert.equal(calls[0].args.p_email,'test3@example.com');assert.match(panel.textContent,/Pedido enviado/);
+await new Promise(r=>setTimeout(r,0));
+assert.equal(panel.querySelectorAll('input').length,0);assert.match(panel.textContent,/test3@example.com/);
+panel.querySelector('button').click();await new Promise(r=>setTimeout(r,0));
+const requestCall=calls.find(c=>c.name==='fju_solicitar_acesso_admin');assert.deepEqual(requestCall.args,{p_jovem_id:youth});assert.match(panel.textContent,/Pedido enviado/);
 await ui.refresh();assert.equal(document.querySelectorAll('#admin-access-list button').length,0);
 profile={papel:'nacional'};await ui.refresh();assert.equal(document.querySelectorAll('#admin-access-list button').length,2);assert.equal(document.querySelectorAll('#admin-access-list b').length,0);
 document.querySelector('#admin-access-list button').click();await new Promise(r=>setTimeout(r,0));assert(calls.some(c=>c.name==='fju_decidir_acesso_admin'&&c.args.p_aprovar===true));
+rows[0].solicitacao_patente_id='rank-request';await ui.refresh();assert.equal(document.querySelectorAll('#admin-access-list button').length,0);assert.match(document.getElementById('admin-access-list').textContent,/mudança de patente/);
 supabase.rpc=async()=>({error:{code:'PGRST202'}});await ui.refresh();assert.match(document.getElementById('admin-access-message').textContent,/instalação/);
 ui.clear();assert.equal(document.getElementById('admin-access-list').childElementCount,0);
 console.log(`${passed} cenários SQL + formulário, permissões visuais, aprovação, escape HTML, atualização ausente e sintaxe: OK`);
