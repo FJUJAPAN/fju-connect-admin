@@ -958,6 +958,18 @@ async function viewYouth(id){
   const name=document.createElement('h2');name.textContent=r.nome_completo;info.append(name);
   const rank=document.createElement('span');rank.className='youth-detail-rank';rank.textContent=youthCardRank(r);info.append(rank);
   top.append(avatar,info);panel.append(top);
+  if(['coordenador','nacional'].includes(currentProfile?.papel)){
+    const editActions=document.createElement('div');editActions.className='actions';
+    const editButton=document.createElement('button');editButton.type='button';
+    editButton.textContent=currentProfile.papel==='coordenador'?'Solicitar edição':'Editar ficha';
+    editButton.onclick=()=>{panel.classList.add('hidden');editYouth(r.id);};
+    editActions.append(editButton);panel.append(editActions);
+    if(currentProfile.papel==='coordenador'){
+      const editNote=document.createElement('p');editNote.className='muted';
+      editNote.textContent='Edite os dados e envie para aprovação do Nacional. A ficha só será alterada após a aprovação.';
+      panel.append(editNote);
+    }
+  }
   const details=document.createElement('div');details.className='grid';
   const flag=(r.nacionalidade_iso2&&/^[A-Z]{2}$/.test(r.nacionalidade_iso2))?String.fromCodePoint(...[...r.nacionalidade_iso2].map(c=>127397+c.charCodeAt(0))):'🌐';
   const country=el('youth-country').querySelector('option[value="'+(r.nacionalidade_iso2||'')+'"]');
@@ -966,22 +978,26 @@ async function viewYouth(id){
   }
   panel.append(details);
   const accessCard=document.createElement('div');accessCard.className='stat';accessCard.style.marginTop='12px';
-  const accessTitle=document.createElement('strong');accessTitle.textContent='🔐 Acesso ao FJU Connect';
+  const accessTitle=document.createElement('strong');accessTitle.textContent='🔐 Conta de login do jovem';
   const accessStatus=document.createElement('p');accessStatus.textContent='Consultando autorização…';
-  accessCard.append(accessTitle,accessStatus);
+  const accessHelp=document.createElement('p');accessHelp.className='muted';
+  accessHelp.textContent='Esta área mostra o vínculo da ficha com a conta usada pelo jovem para entrar no site. Se ele fez o cadastro pelo site, acompanhe a aprovação na aba Inscrições.';
+  accessCard.append(accessTitle,accessHelp,accessStatus);
   const requestForm=document.createElement('form');requestForm.style.marginTop='10px';
-  const emailLabel=document.createElement('label');emailLabel.textContent='E-mail do jovem para convite';
+  const emailLabel=document.createElement('label');emailLabel.textContent='E-mail da conta do jovem';
   const emailInput=document.createElement('input');emailInput.type='email';emailInput.required=true;emailInput.autocomplete='email';emailInput.placeholder='jovem@exemplo.com';emailInput.style.width='100%';emailLabel.append(emailInput);
-  const requestButton=document.createElement('button');requestButton.type='submit';requestButton.className='secondary';requestButton.textContent='Solicitar acesso ao FJU Connect';
+  const requestButton=document.createElement('button');requestButton.type='submit';requestButton.className='secondary';requestButton.textContent='Solicitar vínculo da conta';
   const requestMessage=document.createElement('p');requestMessage.setAttribute('role','status');requestMessage.className='muted';
-  requestForm.append(emailLabel,requestButton,requestMessage);accessCard.append(requestForm);panel.append(accessCard);
+  const requestHelp=document.createElement('p');requestHelp.className='muted';
+  requestHelp.textContent='Para uma ficha já existente, solicite o vínculo pelo e-mail. Esta solicitação precisa de análise administrativa; não envia convite nem libera o acesso automaticamente.';
+  requestForm.append(requestHelp,emailLabel,requestButton,requestMessage);accessCard.append(requestForm);panel.append(accessCard);
   requestForm.addEventListener('submit',async event=>{
     event.preventDefault();if(!currentProfile||!['coordenador','nacional'].includes(currentProfile.papel))return;
     requestButton.disabled=true;requestMessage.textContent='Registrando solicitação…';
     try{
       const {data,error}=await supabase.rpc('fju_solicitar_acesso_jovem',{p_jovem_id:id,p_email:emailInput.value.trim()});
       if(error)throw error;
-      requestMessage.textContent='Solicitação registrada. O convite e a ativação ainda dependem da etapa administrativa.';
+      requestMessage.textContent='Solicitação de vínculo registrada para análise administrativa. Nenhum convite foi enviado e o acesso ainda não foi liberado.';
       requestButton.disabled=true;
     }catch(error){requestMessage.textContent='Não foi possível solicitar: '+(error.message||'Função ainda não instalada no Supabase.');requestButton.disabled=false;}
   });
@@ -990,7 +1006,8 @@ async function viewYouth(id){
     const {data,error}=await supabase.from('fju_vinculos_conta_jovem').select('ativo').eq('jovem_id',id).maybeSingle();
     if(!accessCard.isConnected)return;
     if(error){accessStatus.textContent='Status restrito. Liberação ainda não disponível.';return;}
-    accessStatus.textContent=data?.ativo?'Acesso ativo':'Acesso não liberado';
+    accessStatus.textContent=data?.ativo?'Conta vinculada: acesso ativo':'Nenhuma conta ativa vinculada a esta ficha.';
+    requestForm.hidden=!!data?.ativo;
   }catch{if(accessCard.isConnected)accessStatus.textContent='Status indisponível';}})();
   const historyTitle=document.createElement('h3');historyTitle.textContent='Histórico de evolução';panel.append(historyTitle);
   const historyList=document.createElement('div');historyList.className='stat';historyList.textContent='Carregando histórico...';panel.append(historyList);
