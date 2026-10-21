@@ -1570,8 +1570,22 @@ async function loadYouthSignups(){
   const meta=document.createElement('p');meta.className='muted';
   meta.textContent='Recebido em '+(item.criado_em?new Date(item.criado_em).toLocaleString('pt-BR',{timeZone:'Asia/Tokyo'}):'data indisponível');
   const projects=document.createElement('p');projects.textContent='Projetos solicitados: '+(item.projetos_solicitados?.join(', ')||'Nenhum');
-  const note=document.createElement('p');note.className='muted';note.textContent='A aprovação e a inclusão na ficha serão habilitadas após a validação do vínculo com as fichas oficiais.';
-  card.append(name,meta,projects,note);list.append(card);
+  const actions=document.createElement('div');actions.className='actions';
+  const approve=document.createElement('button');approve.type='button';approve.textContent='Aprovar inscrição';
+  const reject=document.createElement('button');reject.type='button';reject.className='secondary';reject.textContent='Rejeitar';
+  const result=document.createElement('p');result.className='message';result.setAttribute('role','status');
+  async function decide(action){
+   if(!confirm(action==='aprovar'?'Aprovar a inscrição de '+item.nome+'? A ficha oficial será criada em uma etapa separada.':'Rejeitar a inscrição de '+item.nome+'?'))return;
+   approve.disabled=true;reject.disabled=true;result.textContent='Salvando decisão…';
+   const {error}=await supabase.rpc('fju_decidir_inscricao_jovem',{p_inscricao_id:item.id,p_decisao:action});
+   if(error){result.textContent='Não foi possível salvar: '+error.message;approve.disabled=false;reject.disabled=false;return;}
+   await loadYouthSignups();
+  }
+  approve.addEventListener('click',()=>void decide('aprovar'));
+  reject.addEventListener('click',()=>void decide('rejeitar'));
+  actions.append(approve,reject);
+  const note=document.createElement('p');note.className='muted';note.textContent='A aprovação registra a decisão. A inclusão na ficha oficial será feita separadamente, após validação para evitar duplicidades.';
+  card.append(name,meta,projects,actions,result,note);list.append(card);
  }
 }
 el('inscricoes-refresh').addEventListener('click',()=>void loadYouthSignups());
