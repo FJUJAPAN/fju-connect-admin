@@ -113,6 +113,24 @@ await ui.refresh();assert.equal(document.querySelectorAll('#admin-access-list bu
 profile={papel:'nacional'};await ui.refresh();assert.equal(document.querySelectorAll('#admin-access-list button').length,2);assert.equal(document.querySelectorAll('#admin-access-list b').length,0);
 document.querySelector('#admin-access-list button').click();await new Promise(r=>setTimeout(r,0));assert(calls.some(c=>c.name==='fju_decidir_acesso_admin'&&c.args.p_aprovar===true));
 rows[0].solicitacao_patente_id='rank-request';await ui.refresh();assert.equal(document.querySelectorAll('#admin-access-list button').length,0);assert.match(document.getElementById('admin-access-list').textContent,/mudança de patente/);
+// Regressão: renderizar a ficha completa, não somente o módulo de acesso.
+profile={papel:'coordenador'};
+const viewSource=html.slice(html.indexOf('async function viewYouth(id){'),html.indexOf('async function requestYouthChange(r){'));
+const historyQuery={select(){return this;},eq(){return this;},order(){return this;},async limit(){return {data:[]};}};
+const fullSupabase={...supabase,from:()=>historyQuery,storage:{from:()=>({list:async()=>({data:[]})})}};
+panel.scrollIntoView=()=>{};
+const context=vm.createContext({document,URL,detailPhotoUrl:null,currentProfile:profile,
+ youthRows:[{id:youth,nome_completo:'Pessoa teste',patente:'coordenador',idiomas:[]}],
+ el:id=>document.getElementById(id),youthCardInitials:()=> 'PT',youthCardRank:r=>r.patente,
+ administrativeAccess:ui,supabase:fullSupabase});
+await vm.runInContext(viewSource+'\nviewYouth("'+youth+'")',context);
+await new Promise(r=>setTimeout(r,0));
+assert.equal(panel.querySelectorAll('input[type="email"]').length,0);
+assert(!panel.textContent.includes('Solicitar vínculo da conta'));
+assert.match(panel.textContent,/Conta identificada: test3@example.com/);
+assert.equal([...panel.querySelectorAll('strong')].filter(n=>n.textContent==='Conta vinculada e acesso administrativo').length,1);
+panel.replaceChildren();ui.appendRequest(panel,{id:youth,patente:'obreiro'});
+await new Promise(r=>setTimeout(r,0));assert.match(panel.textContent,/test3@example.com/);assert.equal(panel.querySelector('button').hidden,true);
 supabase.rpc=async()=>({error:{code:'PGRST202'}});await ui.refresh();assert.match(document.getElementById('admin-access-message').textContent,/instalação/);
 ui.clear();assert.equal(document.getElementById('admin-access-list').childElementCount,0);
 console.log(`${passed} cenários SQL + formulário, permissões visuais, aprovação, escape HTML, atualização ausente e sintaxe: OK`);

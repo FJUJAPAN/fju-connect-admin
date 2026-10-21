@@ -396,7 +396,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <script type="module">
 import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import {setupCoordinatorCards} from './cards-coordenadores.js';
-import {setupAdministrativeAccess} from './acesso-administrativo.js';
+import {setupAdministrativeAccess} from './acesso-administrativo.js?v=20261022-conta-automatica-2';
 const SUPABASE_URL='https://hmacroktklgwkofxsygv.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_mdkfafhpqtthwzU8Hf7u9A_rErx3MFJ';
 const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
@@ -980,38 +980,6 @@ async function viewYouth(id){
     const cell=document.createElement('div');cell.className='stat';const labelEl=document.createElement('strong');labelEl.textContent=label;const valueEl=document.createElement('p');valueEl.textContent=value||'—';cell.append(labelEl,valueEl);details.append(cell);
   }
   panel.append(details);
-  const accessCard=document.createElement('div');accessCard.className='stat';accessCard.style.marginTop='12px';
-  const accessTitle=document.createElement('strong');accessTitle.textContent='🔐 Conta de login do jovem';
-  const accessStatus=document.createElement('p');accessStatus.textContent='Consultando autorização…';
-  const accessHelp=document.createElement('p');accessHelp.className='muted';
-  accessHelp.textContent='Esta área mostra o vínculo da ficha com a conta usada pelo jovem para entrar no site. Se ele fez o cadastro pelo site, acompanhe a aprovação na aba Inscrições.';
-  accessCard.append(accessTitle,accessHelp,accessStatus);
-  const requestForm=document.createElement('form');requestForm.style.marginTop='10px';
-  const emailLabel=document.createElement('label');emailLabel.textContent='E-mail da conta do jovem';
-  const emailInput=document.createElement('input');emailInput.type='email';emailInput.required=true;emailInput.autocomplete='email';emailInput.placeholder='jovem@exemplo.com';emailInput.style.width='100%';emailLabel.append(emailInput);
-  const requestButton=document.createElement('button');requestButton.type='submit';requestButton.className='secondary';requestButton.textContent='Solicitar vínculo da conta';
-  const requestMessage=document.createElement('p');requestMessage.setAttribute('role','status');requestMessage.className='muted';
-  const requestHelp=document.createElement('p');requestHelp.className='muted';
-  requestHelp.textContent='Para uma ficha já existente, solicite o vínculo pelo e-mail. Esta solicitação precisa de análise administrativa; não envia convite nem libera o acesso automaticamente.';
-  requestForm.append(requestHelp,emailLabel,requestButton,requestMessage);accessCard.append(requestForm);panel.append(accessCard);
-  requestForm.addEventListener('submit',async event=>{
-    event.preventDefault();if(!currentProfile||!['coordenador','nacional'].includes(currentProfile.papel))return;
-    requestButton.disabled=true;requestMessage.textContent='Registrando solicitação…';
-    try{
-      const {data,error}=await supabase.rpc('fju_solicitar_acesso_jovem',{p_jovem_id:id,p_email:emailInput.value.trim()});
-      if(error)throw error;
-      requestMessage.textContent='Solicitação de vínculo registrada para análise administrativa. Nenhum convite foi enviado e o acesso ainda não foi liberado.';
-      requestButton.disabled=true;
-    }catch(error){requestMessage.textContent='Não foi possível solicitar: '+(error.message||'Função ainda não instalada no Supabase.');requestButton.disabled=false;}
-  });
-  // O status é somente leitura. A liberação real depende de convite validado no servidor.
-  void (async()=>{try{
-    const {data,error}=await supabase.from('fju_vinculos_conta_jovem').select('ativo').eq('jovem_id',id).maybeSingle();
-    if(!accessCard.isConnected)return;
-    if(error){accessStatus.textContent='Status restrito. Liberação ainda não disponível.';return;}
-    accessStatus.textContent=data?.ativo?'Conta vinculada: acesso ativo':'Nenhuma conta ativa vinculada a esta ficha.';
-    requestForm.hidden=!!data?.ativo;
-  }catch{if(accessCard.isConnected)accessStatus.textContent='Status indisponível';}})();
   administrativeAccess.appendRequest(panel,r);
   const historyTitle=document.createElement('h3');historyTitle.textContent='Histórico de evolução';panel.append(historyTitle);
   const historyList=document.createElement('div');historyList.className='stat';historyList.textContent='Carregando histórico...';panel.append(historyList);
