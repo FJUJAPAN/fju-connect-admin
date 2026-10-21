@@ -1,27 +1,38 @@
-# FJU JAPAN — acesso administrativo com aprovação nacional
+# FJU JAPAN — patente e acesso administrativo
 
 ## Instalação
 
-Execute o conteúdo de `supabase/migrations/20261022_acesso_administrativo.sql` no SQL Editor do projeto Supabase. A migração é transacional, pode ser repetida e não concede acesso a nenhuma conta durante a instalação.
+Para instalações novas, execute nesta ordem no SQL Editor do Supabase:
 
-Depende das tabelas existentes `fju_perfis`, `fju_jovens`, `fju_polos`, `fju_vinculos_conta_jovem` e `fju_coordenador_cards`. A permissão do painel continua sendo verificada em `fju_perfis`.
+1. `supabase/migrations/20261022_acesso_administrativo.sql`
+2. `supabase/migrations/20261022_patente_coordenador_acesso.sql`
 
-O código do painel mostra uma mensagem de atualização pendente caso as funções ainda não tenham sido instaladas. Fazer merge não executa SQL no Supabase.
+Se a primeira já foi instalada, execute somente a segunda. Ambas são transacionais e podem ser repetidas. A instalação não promove contas nem aprova pedidos antigos. O merge não executa SQL no Supabase.
 
-## Uso
+Depende das tabelas existentes `fju_perfis`, `fju_jovens`, `fju_polos`, `fju_solicitacoes`, `fju_vinculos_conta_jovem` e `fju_coordenador_cards`.
 
-1. O coordenador abre a ficha do seu polo, com patente Coordenador já aprovada.
-2. Em **Acesso ao painel administrativo**, informa o e-mail da conta confirmada e já vinculada à ficha e envia o pedido.
-3. O pedido aparece na aba **Pedidos**, na seção **Acesso ao painel administrativo**, com nome, e-mail, polo e solicitante.
-4. O Nacional aprova ou rejeita. Ao aprovar, a função grava o perfil de coordenador ativo no polo da ficha e registra a decisão na mesma transação.
-5. A pessoa sai da conta e entra novamente para atualizar sua área administrativa.
+## Solicitação pelo coordenador
 
-O formulário não cria contas, não envia e-mails, não troca o vínculo da ficha e não altera patentes. Nenhum e-mail individual está fixado no código. Se a conta não estiver vinculada à ficha, o vínculo deve ser revisado antes de solicitar acesso.
+1. Abra a ficha do seu polo e toque em **Solicitar edição**.
+2. Selecione a patente **Coordenador** e envie.
+3. O servidor identifica o e-mail pela conta confirmada e vinculada à ficha e inclui o acesso administrativo no mesmo pedido.
+4. O Nacional vê a conta e o polo em **Pedidos** e toca em **Aprovar patente e acesso** ou **Recusar**.
+5. A aprovação atualiza a patente e o perfil administrativo na mesma transação. A pessoa sai e entra novamente para atualizar sua área administrativa.
 
-Se o polo, a patente, o vínculo, o e-mail ou a autorização do solicitante mudar enquanto o pedido estiver pendente, a aprovação será bloqueada. Rejeite o pedido antigo e faça um novo após conferir os dados. Contas nacionais não são rebaixadas; coordenadores de outro polo não são transferidos por esse fluxo.
+Não há campo para digitar e-mail. Sem conta confirmada vinculada, o pedido não é criado; confira o cadastro primeiro. O acesso fica limitado ao polo da ficha.
+
+Se a patente já é Coordenador, use o botão **Solicitar acesso administrativo** da ficha: a conta é identificada automaticamente, e o pedido avulso continua dependendo do Nacional. Isso também atende quem recebeu a patente antes desta atualização. Uma alteração direta de patente pelo Nacional não concede acesso automaticamente por este fluxo; nesse caso, use o botão da ficha.
+
+## Aprovação e histórico
+
+Pedidos de patente novos incluem um pedido de acesso identificado por `solicitacao_patente_id`. A seção de acessos mostra o vínculo, mas não oferece uma segunda aprovação. O servidor exige que a decisão seja feita no pedido de patente.
+
+Um gatilho diferido aplica a decisão do acesso ao fim da mesma transação da função existente `fju_decidir_solicitacao`. Funciona tanto se ela atualiza primeiro a patente quanto se atualiza primeiro o status. Qualquer falha reverte a transação. Rejeitar mantém patente e acesso sem alterações.
+
+As verificações anteriores de polo, vínculo, e-mail, perfil e autorização do solicitante são mantidas. Pedidos vinculados não podem ser reescritos. Pedidos anteriores à migração não ganham acesso retroativamente.
 
 ## Verificação
 
-`npm install` e `npm test` executam testes com PostgreSQL embarcado (PGlite), dados fictícios e DOM local. Incluem autorização por polo, aprovação exclusiva nacional, rejeição, duplicidade, pedidos desatualizados, bloqueio de escrita direta e interface.
+`npm install` e `npm test`: 30 cenários SQL em PostgreSQL embarcado (PGlite), com dados fictícios, mais testes da interface em DOM local e sintaxe dos scripts. Incluem as duas ordens possíveis de atualização da função de decisão, rejeição, autorização por polo, e-mail automático e bloqueio de decisões separadas.
 
-Esses testes não acessam o Supabase de produção. Após instalar o SQL, conferir um pedido real com uma sessão de coordenador e outra de Nacional.
+Os testes usam uma função de decisão de teste para simular o contrato do fluxo existente; não executam a função real nem acessam o Supabase de produção. Após instalar o SQL, conferir um pedido real com sessões de coordenador e Nacional.

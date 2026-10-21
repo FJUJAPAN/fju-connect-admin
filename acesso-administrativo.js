@@ -32,7 +32,8 @@ export function setupAdministrativeAccess({supabase,getProfile}){
         const state={pendente:'Aguardando aprovação nacional',aprovado:'Aprovado',rejeitado:'Rejeitado'};
         card.append(element('p',state[row.status]||row.status,'muted'));
         if(row.solicitado_em)card.append(element('p',new Date(row.solicitado_em).toLocaleString('pt-BR',{timeZone:'Asia/Tokyo'}),'muted'));
-        if(row.status==='pendente'&&profile.papel==='nacional'){
+        if(row.solicitacao_patente_id){card.append(element('p','Vinculado à mudança de patente. A decisão é feita no pedido da ficha, acima.','muted'));}
+        if(row.status==='pendente'&&profile.papel==='nacional'&&!row.solicitacao_patente_id){
           const actions=element('div',null,'actions'),feedback=element('p',null,'message');feedback.setAttribute('role','status');
           const approve=element('button','Aprovar acesso'),reject=element('button','Rejeitar','secondary');
           for(const [button,approved] of [[approve,true],[reject,false]]){
@@ -61,26 +62,41 @@ export function setupAdministrativeAccess({supabase,getProfile}){
     box.append(element('strong','Acesso ao painel administrativo'));
     box.append(element('p','O coordenador solicita; somente o Nacional aprova. O acesso será limitado ao mesmo polo desta ficha. A patente, sozinha, não libera o painel.','muted'));
     if(String(youth.patente||'').toLowerCase()!=='coordenador'){
-      box.append(element('p','Primeiro, a patente Coordenador precisa estar aprovada nesta ficha.','muted'));panel.append(box);return;
+      box.append(element('p','Ao solicitar a mudança de patente para Coordenador, o acesso será incluído automaticamente no mesmo pedido ao Nacional.','muted'));panel.append(box);return;
     }
-    const form=element('form'),label=element('label','E-mail da conta vinculada à ficha');
-    const email=element('input');email.type='email';email.required=true;email.autocomplete='off';email.maxLength=254;
-    email.placeholder='E-mail usado para entrar no FJU Connect';email.style.width='100%';label.append(email);
-    const button=element('button','Solicitar acesso administrativo');button.type='submit';
+    const account=element('p','Identificando conta vinculada…','muted');
+    const button=element('button','Solicitar acesso administrativo');button.type='button';button.disabled=true;
     const feedback=element('p',null,'message');feedback.setAttribute('role','status');
-    form.append(label,button,feedback);box.append(form);panel.append(box);
-    form.addEventListener('submit',async event=>{
-      event.preventDefault();if(getProfile()!==profile)return;
-      button.disabled=true;feedback.textContent='Enviando pedido ao Nacional…';
+    box.append(account,button,feedback);panel.append(box);
+    void (async()=>{
       try{
-        const {error}=await supabase.rpc('fju_solicitar_acesso_admin',{p_jovem_id:youth.id,p_email:email.value.trim()});
+        const {data,error}=await supabase.rpc('fju_conta_coordenacao',{p_jovem_id:youth.id});
         if(getProfile()!==profile||!box.isConnected)return;
         if(error)throw error;
-        email.disabled=true;feedback.textContent='Pedido enviado. Acompanhe na aba Pedidos. O acesso só será liberado após a aprovação do Nacional.';
+        if(!data?.email)throw new Error('Conta vinculada não encontrada. Confira o cadastro.');
+        account.textContent='Conta identificada: '+data.email+' · Polo: '+data.polo_nome;
+        button.disabled=false;
+      }catch(error){if(getProfile()===profile&&box.isConnected){account.textContent='';feedback.textContent=errorText(error);}}
+    })();
+    button.addEventListener('click',async()=>{
+      if(getProfile()!==profile||button.disabled)return;
+      button.disabled=true;feedback.textContent='Enviando pedido ao Nacional…';
+      try{
+        const {error}=await supabase.rpc('fju_solicitar_acesso_admin',{p_jovem_id:youth.id});
+        if(getProfile()!==profile||!box.isConnected)return;
+        if(error)throw error;
+        feedback.textContent='Pedido enviado. Acompanhe na aba Pedidos. O acesso só será liberado após a aprovação do Nacional.';
       }catch(error){if(getProfile()===profile&&box.isConnected){feedback.textContent=errorText(error);button.disabled=false;}}
     });
   }
+  async function requestsByRank(){
+    try{
+      const {data,error}=await supabase.rpc('fju_listar_pedidos_acesso_admin');
+      const result=new Map((!error&&Array.isArray(data)?data:[]).filter(row=>row.solicitacao_patente_id).map(row=>[row.solicitacao_patente_id,row]));
+      result.unavailable=!!error;return result;
+    }catch{const result=new Map();result.unavailable=true;return result;}
+  }
   document.getElementById('admin-access-refresh').addEventListener('click',()=>void refresh());
   supabase.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT')clear();});
-  return {refresh,appendRequest,clear};
+  return {refresh,appendRequest,clear,requestsByRank};
 }
