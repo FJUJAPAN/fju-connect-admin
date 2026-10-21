@@ -1570,8 +1570,27 @@ async function loadYouthSignups(){
   const meta=document.createElement('p');meta.className='muted';
   meta.textContent='Recebido em '+(item.criado_em?new Date(item.criado_em).toLocaleString('pt-BR',{timeZone:'Asia/Tokyo'}):'data indisponível');
   const projects=document.createElement('p');projects.textContent='Projetos solicitados: '+(item.projetos_solicitados?.join(', ')||'Nenhum');
-  const note=document.createElement('p');note.className='muted';note.textContent='A aprovação e a inclusão na ficha serão habilitadas após a validação do vínculo com as fichas oficiais.';
-  card.append(name,meta,projects,note);list.append(card);
+  const controls=document.createElement('div');controls.className='actions';
+  const rank=document.createElement('select');rank.setAttribute('aria-label','Patente inicial de '+(item.nome||'jovem'));
+  for(const value of ['Inconstante','Firme','CPO','Colaborador','Obreiro','Coordenador']){const opt=document.createElement('option');opt.value=value;opt.textContent=value;rank.append(opt);}
+  const approve=document.createElement('button');approve.type='button';approve.textContent='Aceitar e criar ficha';
+  const reject=document.createElement('button');reject.type='button';reject.className='secondary';reject.textContent='Rejeitar';
+  const feedback=document.createElement('p');feedback.className='message';feedback.setAttribute('role','status');
+  approve.addEventListener('click',async()=>{
+    if(!confirm('Aceitar '+item.nome+' como '+rank.value+' e criar a ficha oficial?'))return;
+    approve.disabled=true;reject.disabled=true;feedback.textContent='Criando ficha e vinculando conta…';
+    const {error}=await supabase.rpc('fju_decidir_inscricao_jovem',{p_inscricao_id:item.id,p_acao:'aprovar',p_patente:rank.value});
+    if(error){feedback.textContent='Não foi possível aprovar: '+error.message;approve.disabled=false;reject.disabled=false;return;}
+    await loadYouthSignups();
+  });
+  reject.addEventListener('click',async()=>{
+    if(!confirm('Rejeitar a inscrição de '+item.nome+'?'))return;
+    approve.disabled=true;reject.disabled=true;feedback.textContent='Rejeitando…';
+    const {error}=await supabase.rpc('fju_decidir_inscricao_jovem',{p_inscricao_id:item.id,p_acao:'rejeitar',p_patente:null});
+    if(error){feedback.textContent='Não foi possível rejeitar: '+error.message;approve.disabled=false;reject.disabled=false;return;}
+    await loadYouthSignups();
+  });
+  controls.append(rank,approve,reject);card.append(name,meta,projects,controls,feedback);list.append(card);
  }
 }
 el('inscricoes-refresh').addEventListener('click',()=>void loadYouthSignups());
