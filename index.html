@@ -1558,7 +1558,7 @@ async function loadYouthSignups(){
  const status=el('inscricoes-message'),list=el('inscricoes-list'),count=el('inscricoes-count');
  if(!currentProfile){status.textContent='Entre com uma conta autorizada.';return;}
  status.textContent='Consultando solicitações…';list.replaceChildren();count.textContent='';
- const {data,error}=await supabase.rpc('fju_listar_inscricoes_polo');
+ const {data,error}=await supabase.rpc('fju_listar_inscricoes_polo_detalhadas');
  if(error){status.textContent='Não foi possível consultar inscrições: '+error.message;status.classList.add('error');return;}
  status.classList.remove('error');
  const rows=Array.isArray(data)?data:[];
@@ -1570,6 +1570,18 @@ async function loadYouthSignups(){
   const meta=document.createElement('p');meta.className='muted';
   meta.textContent='Recebido em '+(item.criado_em?new Date(item.criado_em).toLocaleString('pt-BR',{timeZone:'Asia/Tokyo'}):'data indisponível');
   const projects=document.createElement('p');projects.textContent='Projetos solicitados: '+(item.projetos_solicitados?.join(', ')||'Nenhum');
+  const details=document.createElement('p');details.className='muted';
+  const birth=item.nascimento?item.nascimento.split('-').reverse().join('/'):'Não informado';
+  details.textContent='Nascimento: '+birth+' · Telefone: '+(item.telefone||'Não informado')+' · Nacionalidade: '+(item.nacionalidade_iso2||'Não informada');
+  const photo=document.createElement('img');
+  photo.alt='Foto cadastrada por '+(item.nome||'jovem');photo.loading='lazy';
+  photo.style.cssText='display:none;width:100px;height:120px;object-fit:cover;border-radius:12px;border:1px solid #c9d3e6;margin:8px 0';
+  void (async()=>{
+    try{
+      const {data:link,error:photoError}=await supabase.storage.from('fju-inscricoes-fotos').createSignedUrl(item.usuario_id+'/perfil.jpg',300);
+      if(!photoError&&link?.signedUrl&&card.isConnected){photo.src=link.signedUrl;photo.style.display='block';}
+    }catch(_){}
+  })();
   const controls=document.createElement('div');controls.className='actions';
   const rank=document.createElement('select');rank.setAttribute('aria-label','Patente inicial de '+(item.nome||'jovem'));
   for(const value of ['Inconstante','Firme','CPO','Colaborador','Obreiro','Coordenador']){const opt=document.createElement('option');opt.value=value;opt.textContent=value;rank.append(opt);}
@@ -1579,9 +1591,21 @@ async function loadYouthSignups(){
   approve.addEventListener('click',async()=>{
     if(!confirm('Aceitar '+item.nome+' como '+rank.value+' e criar a ficha oficial?'))return;
     approve.disabled=true;reject.disabled=true;feedback.textContent='Criando ficha e vinculando conta…';
-    const {error}=await supabase.rpc('fju_decidir_inscricao_jovem',{p_inscricao_id:item.id,p_acao:'aprovar',p_patente:rank.value});
+    // A foto é privada e é copiada para o bucket oficial após a aprovação.
+    let photoBlob=null;
+    try{
+      const result=await supabase.storage.from('fju-inscricoes-fotos').download(item.usuario_id+'/perfil.jpg');
+      if(!result.error)photoBlob=result.data;
+    }catch(_){}
+    const {data:jovemId,error}=await supabase.rpc('fju_decidir_inscricao_jovem',{p_inscricao_id:item.id,p_acao:'aprovar',p_patente:rank.value});
     if(error){feedback.textContent='Não foi possível aprovar: '+error.message;approve.disabled=false;reject.disabled=false;return;}
+    let photoWarning='';
+    if(photoBlob&&jovemId){
+      const uploaded=await supabase.storage.from('fju-fotos').upload(jovemId+'/perfil.jpg',photoBlob,{contentType:'image/jpeg',upsert:true});
+      if(uploaded.error)photoWarning=' A ficha foi criada, mas a foto não foi transferida: '+uploaded.error.message;
+    }
     await loadYouthSignups();
+    status.textContent='Inscrição aprovada e ficha oficial criada.'+photoWarning;
   });
   reject.addEventListener('click',async()=>{
     if(!confirm('Rejeitar a inscrição de '+item.nome+'?'))return;
@@ -1590,7 +1614,7 @@ async function loadYouthSignups(){
     if(error){feedback.textContent='Não foi possível rejeitar: '+error.message;approve.disabled=false;reject.disabled=false;return;}
     await loadYouthSignups();
   });
-  controls.append(rank,approve,reject);card.append(name,meta,projects,controls,feedback);list.append(card);
+  controls.append(rank,approve,reject);card.append(name,meta,projects,details,photo,controls,feedback);list.append(card);
  }
 }
 el('inscricoes-refresh').addEventListener('click',()=>void loadYouthSignups());
