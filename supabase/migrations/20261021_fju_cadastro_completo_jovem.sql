@@ -132,6 +132,23 @@ $$;
 REVOKE ALL ON FUNCTION public.fju_decidir_inscricao_jovem(uuid,text,text) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.fju_decidir_inscricao_jovem(uuid,text,text) TO authenticated;
 
+-- Cartão da My Page: consulta exclusivamente a própria ficha já aprovada.
+CREATE OR REPLACE FUNCTION public.fju_consultar_meu_cartao_jovem()
+RETURNS TABLE(nome_completo text,polo_nome text,patente text,categoria text,projetos text[])
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = ''
+AS $
+ SELECT j.nome_completo::text,p.nome::text,j.patente::text,j.categoria::text,
+        coalesce(i.projetos_solicitados,'{}'::text[])
+ FROM public.fju_vinculos_conta_jovem v
+ JOIN public.fju_jovens j ON j.id=v.jovem_id
+ JOIN public.fju_polos p ON p.id=j.polo_id
+ LEFT JOIN public.fju_inscricoes_jovens i ON i.usuario_id=v.usuario_id
+ WHERE v.usuario_id=auth.uid() AND v.ativo
+ LIMIT 1;
+$;
+REVOKE ALL ON FUNCTION public.fju_consultar_meu_cartao_jovem() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.fju_consultar_meu_cartao_jovem() TO authenticated;
+
 -- A leitura da foto pela liderança passa por função com verificação de polo.
 CREATE OR REPLACE FUNCTION public.fju_pode_ler_foto_inscricao(p_usuario_id uuid)
 RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = ''
