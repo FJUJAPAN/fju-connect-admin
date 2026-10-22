@@ -11,7 +11,7 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="stylesheet" href="./cards-coordenadores.css">
 <link rel="stylesheet" href="./fichas-jovens.css">
-<meta name="theme-color" content="#253b75">
+<meta name="theme-color" content="#081e3b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="FJU Connect">
@@ -250,9 +250,10 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
   #main-nav.tabs button{transition:none}
 }
 </style>
+<link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 </head>
-<body>
-<header><div class="wrap"><h1>FJU Connect JAPAN · Admin</h1><p>Painel administrativo — acesso restrito</p></div></header>
+<body class="fju-admin-shell">
+<header class="fju-admin-header"><div class="fju-admin-header-inner"><a class="fju-admin-brand" href="https://fjujapan.github.io/fju-connect/" aria-label="FJU Connect JAPAN — site oficial"><span class="fju-admin-mark" aria-hidden="true">FJU<span>.</span></span><span class="fju-admin-brand-copy"><strong>CONNECT</strong><small>JAPAN</small></span></a><div class="fju-admin-header-tools"><span class="fju-admin-context">ÁREA ADMINISTRATIVA</span><a class="fju-admin-site-link" href="https://fjujapan.github.io/fju-connect/">↗ Site FJU</a></div></div></header>
 <main class="wrap">
 <section id="auth" class="panel auth"><h2>Entrar</h2><form id="login-form"><label for="email">E-mail</label><input id="email" type="email" autocomplete="username" required><label for="password">Senha</label><input id="password" type="password" autocomplete="current-password" required><p><button type="submit">Entrar</button></p></form><button class="secondary" id="forgot">Enviar recuperação de senha</button><details id="phone-login" style="margin:16px 0"><summary style="cursor:pointer;font-weight:700">Entrar com telefone e código SMS</summary><form id="phone-login-form" style="margin-top:12px"><label for="phone-login-number">Número do celular no Japão</label><input id="phone-login-number" type="tel" inputmode="tel" autocomplete="tel" placeholder="09012345678" required><p><button type="submit">Enviar código SMS</button></p></form><form id="phone-code-form" class="hidden"><label for="phone-login-code">Código recebido por SMS</label><input id="phone-login-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{4,8}" required><p><button type="submit">Confirmar código</button></p></form><p id="phone-login-message" class="message" role="status" aria-live="polite"></p><p class="muted">Disponível somente para telefone previamente vinculado à conta autorizada. O provedor SMS deve estar configurado no Supabase.</p></details><p id="auth-message" class="message" role="status" aria-live="polite"></p></section>
 <section id="recovery" class="panel auth hidden"><h2>Definir nova senha</h2><form id="recovery-form"><label for="new-password">Nova senha (mínimo de 8 caracteres)</label><input id="new-password" type="password" minlength="8" autocomplete="new-password" required><label for="confirm-password">Confirmar nova senha</label><input id="confirm-password" type="password" minlength="8" autocomplete="new-password" required><p><button type="submit">Salvar nova senha</button></p></form><p id="recovery-message" class="message" role="status" aria-live="polite"></p></section>
