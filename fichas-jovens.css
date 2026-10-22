@@ -94,3 +94,44 @@
  #jovens .youth-detail-avatar{flex-basis:76px;width:76px;height:76px}
  #jovens .youth-detail-info h2{font-size:16px}
 }
+
+
+/* FJU JAPAN | Refinamento visual 2026 — fichas dos jovens.
+   Apenas apresentação: não altera cadastro, banco, permissões ou eventos JS. */
+#jovens{--youth-ink:#1b2b4d;--youth-border:#e0e8f4;--youth-blue:#244b91}
+#jovens .youth-page-header{padding:4px 0 6px}
+#jovens .youth-page-header h2{font-size:clamp(21px,2.8vw,26px);letter-spacing:-.035em}
+#jovens .youth-page-subtitle{font-size:13px;max-width:660px}
+#youth-add-toggle{border-radius:14px;box-shadow:0 6px 16px rgba(33,64,121,.16);transition:transform .16s,box-shadow .16s}
+#youth-add-toggle:hover{transform:translateY(-1px);box-shadow:0 9px 20px rgba(33,64,121,.2)}
+#jovens .youth-list-controls input,#jovens .youth-list-controls select{border-radius:13px;background:#fff}
+#youth-list{gap:15px}
+#youth-list .youth-card{gap:13px;padding:18px;border:1px solid var(--youth-border);border-radius:20px;background:#fff;box-shadow:0 6px 22px rgba(20,42,82,.065);transition:transform .18s,border-color .18s,box-shadow .18s}
+#youth-list .youth-card:hover{transform:translateY(-2px);border-color:#bdcde9;box-shadow:0 12px 28px rgba(20,42,82,.1)}
+#youth-list .youth-avatar{flex-basis:68px;width:68px;height:68px;border-radius:18px;background:#ecf2fc;border-color:#e1e9f5}
+#youth-list .youth-card-name{font-size:16px;letter-spacing:-.018em;color:var(--youth-ink)}
+#youth-list .youth-card-metadata{font-size:12px}
+#youth-list .youth-rank{padding:5px 11px;font-size:11px;line-height:1.3}
+#youth-list .youth-card-actions{padding-top:13px;border-color:#e9eef7}
+#youth-list .youth-card-actions button{min-height:42px;border-radius:12px}
+#youth-list .youth-card-actions .youth-view-button{background:#244b91}
+#youth-list .youth-card-actions .youth-edit-button{background:#edf2fa;color:#294879}
+#youth-list .youth-card-more summary{border-radius:10px}
+#youth-list .youth-card-more summary:hover{background:#f4f7fd}
+#jovens #youth-detail{border:1px solid var(--youth-border);box-shadow:0 8px 28px rgba(20,42,82,.07)}
+#jovens .youth-detail-top{background:linear-gradient(120deg,#203d7a,#132446);border-radius:18px}
+@media(max-width:700px){
+ #youth-list{gap:11px}
+ #youth-list .youth-card{padding:15px;border-radius:17px}
+ #youth-list .youth-card:hover{transform:none}
+ #youth-list .youth-avatar{flex-basis:60px;width:60px;height:60px}
+ #youth-list .youth-card-actions button{min-height:44px}
+ #jovens .youth-list-controls{gap:8px}
+}
+@media(prefers-reduced-motion:reduce){
+ #youth-list .youth-card,#youth-add-toggle{transition:none}
+ #youth-list .youth-card:hover,#youth-add-toggle:hover{transform:none}
+}
+@media print{
+ #youth-list .youth-card{box-shadow:none;transform:none;break-inside:avoid}
+}
