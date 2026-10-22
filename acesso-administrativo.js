@@ -33,16 +33,19 @@ export function setupAdministrativeAccess({supabase,getProfile}){
         card.append(element('p',state[row.status]||row.status,'muted'));
         if(row.solicitado_em)card.append(element('p',new Date(row.solicitado_em).toLocaleString('pt-BR',{timeZone:'Asia/Tokyo'}),'muted'));
         if(row.solicitacao_patente_id){card.append(element('p','Vinculado à mudança de patente. A decisão é feita no pedido da ficha, acima.','muted'));}
-        if(row.status==='pendente'&&profile.papel==='nacional'&&!row.solicitacao_patente_id){
+        if(row.status==='pendente'&&profile.papel==='nacional'){
           const actions=element('div',null,'actions'),feedback=element('p',null,'message');feedback.setAttribute('role','status');
-          const approve=element('button','Aprovar acesso'),reject=element('button','Rejeitar','secondary');
+          const linked=Boolean(row.solicitacao_patente_id);
+          const approve=element('button',linked?'Aprovar patente e acesso':'Aprovar acesso'),reject=element('button',linked?'Rejeitar patente e acesso':'Rejeitar','secondary');
           for(const [button,approved] of [[approve,true],[reject,false]]){
             button.type='button';
             button.addEventListener('click',async()=>{
               if(!confirm((approved?'Liberar o painel administrativo para ':'Rejeitar o acesso de ')+row.nome_completo+' ('+row.email+'), polo '+row.polo_nome+'?'))return;
               approve.disabled=true;reject.disabled=true;feedback.textContent='Registrando decisão…';
               try{
-                const {error}=await supabase.rpc('fju_decidir_acesso_admin',{p_pedido_id:row.id,p_aprovar:approved});
+                const {error}=linked
+                  ?await supabase.rpc('fju_decidir_solicitacao',{p_solicitacao_id:row.solicitacao_patente_id,p_aprovar:approved})
+                  :await supabase.rpc('fju_decidir_acesso_admin',{p_pedido_id:row.id,p_aprovar:approved});
                 if(error)throw error;
                 if(current!==version||getProfile()!==profile)return;
                 await refresh();
