@@ -630,6 +630,7 @@ const show=(id)=>{
   if(id!=='app'){
     el('fju-admin-context').textContent='ÁREA ADMINISTRATIVA';
     setAdminMenuOpen(false);
+    clearAdminPrivateSession();
   }
 };
 const message=(id,msg,error=false)=>{el(id).textContent=msg;el(id).className='message '+(error?'error':'success')};
@@ -857,6 +858,23 @@ el('national-report-refresh').addEventListener('click',()=>void loadNationalRepo
 el('national-report-date').addEventListener('change',()=>void loadNationalReportOverview());
 
 let currentPoloNome='';
+/* Limpa dados de uma conta anterior quando o login ou perfil deixa de ser válido.
+   Respostas de consultas pendentes não poderão popular a próxima sessão. */
+function clearAdminPrivateSession(){
+  ++profileRequest;
+  ++signupLoadVersion;
+  ++requestsLoadVersion;
+  currentProfile=null;
+  currentPoloNome='';
+  el('inscricoes-list').replaceChildren();
+  el('requests-list').replaceChildren();
+  el('inscricoes-count').textContent='';
+  el('inscricoes-message').textContent='';
+  el('requests-message').textContent='';
+  resetYouthSession();
+  coordinatorCards.clear();
+  administrativeAccess.clear();
+}
 async function loadDashboard(profile,requestId){
   const local=profile.papel==='coordenador';
   el('scope-label').textContent=local?'Igreja':'Polos cadastrados';
@@ -884,7 +902,9 @@ async function loadDashboard(profile,requestId){
 }
 
 async function loadProfile(user){
+  const initialRequest=profileRequest;
   const {data,error}=await supabase.from('fju_perfis').select('papel,polo_id,ativo').eq('usuario_id',user.id).maybeSingle();
+  if(initialRequest!==profileRequest)return;
   if(error)throw error;
   if(!data?.ativo || !['nacional','coordenador'].includes(data.papel) || (data.papel==='coordenador'&&!data.polo_id))throw new Error('Esta conta não tem perfil ativo autorizado. Contate o administrador.');
   const requestId=++profileRequest;
@@ -1253,20 +1273,29 @@ async function requestYouthChange(r){
   youthMessage('Solicitação enviada ao Administrador Nacional. A ficha não foi alterada.');
 }
 let currentRequestFilter='pendente';
+let requestsLoadVersion=0;
 async function loadYouthRequests(){
+  const version=++requestsLoadVersion,profile=currentProfile;
+  const list=el('requests-list');
+  list.replaceChildren();
+  if(!profile){el('requests-message').textContent='Entre com uma conta autorizada.';return;}
+  el('requests-message').textContent='Consultando solicitações...';
   const accessByRequest=await administrativeAccess.requestsByRank();
-  const list=el('requests-list');list.replaceChildren();el('requests-message').textContent='Consultando solicitações...';
+  if(version!==requestsLoadVersion||currentProfile!==profile)return;
   let query=supabase.from('fju_solicitacoes').select('id,jovem_id,polo_id,tipo,justificativa,dados_propostos,dados_anteriores,solicitante_id,status,criado_em').order('criado_em',{ascending:false}).limit(100);
-  if(currentProfile?.papel==='coordenador')query=query.eq('polo_id',currentProfile.polo_id);
+  if(profile.papel==='coordenador')query=query.eq('polo_id',profile.polo_id);
   const {data,error}=await query;
+  if(version!==requestsLoadVersion||currentProfile!==profile)return;
   let requesterNames={};
-  if(currentProfile?.papel==='nacional'&&(data||[]).length){
+  if(profile.papel==='nacional'&&(data||[]).length){
     const {data:people,error:peopleError}=await supabase.rpc('fju_nomes_solicitantes');
+    if(version!==requestsLoadVersion||currentProfile!==profile)return;
     if(!peopleError)for(const person of people||[])requesterNames[person.usuario_id]=person.nome;
     else console.warn('Identificação de solicitantes indisponível',peopleError.message);
   }
   if(error){message('requests-message','A área depende da configuração no Supabase: '+error.message,true);return;}
   const {data:polos,error:polosError}=await supabase.from('fju_polos').select('id,nome');
+  if(version!==requestsLoadVersion||currentProfile!==profile)return;
   if(polosError){message('requests-message','Não foi possível identificar as igrejas: '+polosError.message,true);return;}
   const poloRows=polos||[];
   const counts={pendente:0,aprovada:0,rejeitada:0};
@@ -1283,6 +1312,7 @@ async function loadYouthRequests(){
     const {data:jovem,error:jovemError}=await supabase.from('fju_jovens')
       .select('nome_completo,polo_id,nascimento,telefone,nacionalidade_iso2,idiomas,patente,categoria')
       .eq('id',r.jovem_id).maybeSingle();
+    if(version!==requestsLoadVersion||currentProfile!==profile)return;
     const polo=poloRows.find(p=>String(p.id)===String(r.polo_id));
     const identificado=Boolean(jovem&&!jovemError&&polo&&String(jovem.polo_id)===String(r.polo_id));
     const head=document.createElement('div');head.className='authorization-head';
@@ -1304,11 +1334,11 @@ async function loadYouthRequests(){
       void (async()=>{
         try{
           const {data:files,error:filesError}=await supabase.storage.from('fju-fotos').list(r.jovem_id,{limit:20});
-          if(filesError)return;
+          if(filesError||version!==requestsLoadVersion||currentProfile!==profile)return;
           const file=(files||[]).find(x=>/^perfil\.(jpg|png|webp)$/i.test(x.name));
           if(!file)return;
           const {data:blob,error:photoError}=await supabase.storage.from('fju-fotos').download(r.jovem_id+'/'+file.name);
-          if(photoError||!blob||!avatar.isConnected)return;
+          if(photoError||!blob||!avatar.isConnected||version!==requestsLoadVersion||currentProfile!==profile)return;
           const url=URL.createObjectURL(blob);
           const img=document.createElement('img');img.className='authorization-avatar';img.alt='Foto de '+jovem.nome_completo;
           img.onload=()=>URL.revokeObjectURL(url);img.onerror=()=>URL.revokeObjectURL(url);
@@ -1355,13 +1385,15 @@ async function loadYouthRequests(){
       warn.textContent='Não foi possível confirmar o jovem e a igreja. Aprovação bloqueada até corrigir a identificação.';
       card.append(warn);
     }
-    if(currentProfile?.papel==='nacional'&&r.status==='pendente'&&identificado){
+    if(profile.papel==='nacional'&&r.status==='pendente'&&identificado){
       const approve=document.createElement('button');approve.type='button';approve.textContent=linkedAccess?'Aprovar patente e acesso':'Aprovar solicitação';approve.disabled=!!accessUnknown;
-      approve.onclick=async()=>{if(!confirm(linkedAccess?'Aprovar a patente Coordenador e liberar o painel para '+linkedAccess.email+' no polo '+linkedAccess.polo_nome+'?':'Aprovar esta solicitação? A ficha será atualizada automaticamente.'))return;
+      approve.onclick=async()=>{if(currentProfile!==profile||!card.isConnected)return;if(!confirm(linkedAccess?'Aprovar a patente Coordenador e liberar o painel para '+linkedAccess.email+' no polo '+linkedAccess.polo_nome+'?':'Aprovar esta solicitação? A ficha será atualizada automaticamente.'))return;
         const {error}=await supabase.rpc('fju_decidir_solicitacao',{p_solicitacao_id:r.id,p_aprovar:true});
-        if(error)message('requests-message',error.message,true);else {await loadYouthRequests();await administrativeAccess.refresh();await loadYouth();}};
+        if(currentProfile!==profile)return;
+        if(error)message('requests-message',error.message,true);
+        else {await loadYouthRequests();await administrativeAccess.refresh();await loadYouth();void refreshAdminPriorities(profile,profileRequest);}};
       const deny=document.createElement('button');deny.type='button';deny.className='secondary';deny.textContent='Recusar';
-      deny.onclick=async()=>{if(!confirm('Rejeitar esta solicitação? A ficha não será alterada.'))return;const {error}=await supabase.rpc('fju_decidir_solicitacao',{p_solicitacao_id:r.id,p_aprovar:false});if(error)message('requests-message',error.message,true);else {void loadYouthRequests();void administrativeAccess.refresh();}};
+      deny.onclick=async()=>{if(currentProfile!==profile||!card.isConnected)return;if(!confirm('Rejeitar esta solicitação? A ficha não será alterada.'))return;const {error}=await supabase.rpc('fju_decidir_solicitacao',{p_solicitacao_id:r.id,p_aprovar:false});if(currentProfile!==profile)return;if(error)message('requests-message',error.message,true);else {void loadYouthRequests();void administrativeAccess.refresh();void refreshAdminPriorities(profile,profileRequest);}};
       const actions=document.createElement('div');actions.className='authorization-actions';actions.append(approve,deny);card.append(actions);
     }
     list.append(card);
@@ -1799,7 +1831,8 @@ document.getElementById('fju-toggle-password').addEventListener('click',()=>{
 el('login-form').addEventListener('submit',async e=>{e.preventDefault();message('auth-message','Entrando...');const {error}=await supabase.auth.signInWithPassword({email:el('email').value.trim(),password:el('password').value});if(error){message('auth-message','Não foi possível entrar: '+error.message,true);return}await refresh()});
 el('forgot').addEventListener('click',async()=>{const email=el('email').value.trim();if(!email){message('auth-message','Digite seu e-mail acima para receber a recuperação.',true);return}const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});message('auth-message',error?'Não foi possível solicitar a recuperação: '+error.message:'Se a conta estiver cadastrada, enviaremos instruções ao e-mail.',!!error)});
 el('recovery-form').addEventListener('submit',async e=>{e.preventDefault();const pass=el('new-password').value;if(pass.length<8||pass!==el('confirm-password').value){message('recovery-message','As senhas precisam ser iguais e ter pelo menos 8 caracteres.',true);return}const {error}=await supabase.auth.updateUser({password:pass});if(error){message('recovery-message',error.message,true);return}recoveryMode=false;history.replaceState({},'',location.pathname);message('auth-message','Senha atualizada. Você já pode entrar.');await supabase.auth.signOut();show('auth')});
-el('logout').addEventListener('click',async()=>{++profileRequest;resetYouthSession();coordinatorCards.clear();await supabase.auth.signOut();show('auth')});
+el('logout').addEventListener('click',async()=>{clearAdminPrivateSession();await supabase.auth.signOut();show('auth')});
+let signupLoadVersion=0;
 function filterSignups(){
  const query=String(el('inscricoes-search').value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
  let visible=0;
@@ -1809,10 +1842,12 @@ function filterSignups(){
 }
 el('inscricoes-search').addEventListener('input',filterSignups);
 async function loadYouthSignups(){
+ const version=++signupLoadVersion,profile=currentProfile;
  const status=el('inscricoes-message'),list=el('inscricoes-list'),count=el('inscricoes-count');
- if(!currentProfile){status.textContent='Entre com uma conta autorizada.';return;}
+ if(!profile){status.textContent='Entre com uma conta autorizada.';return;}
  status.textContent='Consultando solicitações…';list.replaceChildren();count.textContent='';
  const {data,error}=await supabase.rpc('fju_listar_inscricoes_polo_detalhadas');
+ if(version!==signupLoadVersion||currentProfile!==profile)return;
  if(error){status.textContent='Não foi possível consultar inscrições: '+error.message;status.classList.add('error');return;}
  status.classList.remove('error');
  const rows=Array.isArray(data)?data:[];
@@ -1838,7 +1873,7 @@ async function loadYouthSignups(){
   void (async()=>{
     try{
       const {data:link,error:photoError}=await supabase.storage.from('fju-inscricoes-fotos').createSignedUrl(item.usuario_id+'/perfil.jpg',300);
-      if(!photoError&&link?.signedUrl&&card.isConnected){photo.src=link.signedUrl;photo.style.display='block';}
+      if(version===signupLoadVersion&&currentProfile===profile&&!photoError&&link?.signedUrl&&card.isConnected){photo.src=link.signedUrl;photo.style.display='block';}
     }catch(_){}
   })();
   const controls=document.createElement('div');controls.className='fju-signup-controls';
@@ -1849,6 +1884,7 @@ async function loadYouthSignups(){
   const reject=document.createElement('button');reject.type='button';reject.className='secondary';reject.textContent='Rejeitar';
   const feedback=document.createElement('p');feedback.className='message';feedback.setAttribute('role','status');
   approve.addEventListener('click',async()=>{
+    if(currentProfile!==profile||!card.isConnected)return;
     if(!confirm('Aceitar '+item.nome+' como '+rank.value+' e criar a ficha oficial?'))return;
     approve.disabled=true;reject.disabled=true;feedback.textContent='Criando ficha e vinculando conta…';
     // A foto é privada e é copiada para o bucket oficial após a aprovação.
@@ -1857,7 +1893,9 @@ async function loadYouthSignups(){
       const result=await supabase.storage.from('fju-inscricoes-fotos').download(item.usuario_id+'/perfil.jpg');
       if(!result.error)photoBlob=result.data;
     }catch(_){}
+    if(currentProfile!==profile)return;
     const {data:jovemId,error}=await supabase.rpc('fju_decidir_inscricao_jovem',{p_inscricao_id:item.id,p_acao:'aprovar',p_patente:rank.value});
+    if(currentProfile!==profile)return;
     if(error){feedback.textContent='Não foi possível aprovar: '+error.message;approve.disabled=false;reject.disabled=false;return;}
     let photoWarning='';
     if(photoBlob&&jovemId){
@@ -1865,14 +1903,19 @@ async function loadYouthSignups(){
       if(uploaded.error)photoWarning=' A ficha foi criada, mas a foto não foi transferida: '+uploaded.error.message;
     }
     await loadYouthSignups();
+    if(currentProfile!==profile)return;
     status.textContent='Inscrição aprovada e ficha oficial criada.'+photoWarning;
+    void refreshAdminPriorities(profile,profileRequest);
   });
   reject.addEventListener('click',async()=>{
+    if(currentProfile!==profile||!card.isConnected)return;
     if(!confirm('Rejeitar a inscrição de '+item.nome+'?'))return;
     approve.disabled=true;reject.disabled=true;feedback.textContent='Rejeitando…';
     const {error}=await supabase.rpc('fju_decidir_inscricao_jovem',{p_inscricao_id:item.id,p_acao:'rejeitar',p_patente:null});
+    if(currentProfile!==profile)return;
     if(error){feedback.textContent='Não foi possível rejeitar: '+error.message;approve.disabled=false;reject.disabled=false;return;}
     await loadYouthSignups();
+    if(currentProfile===profile)void refreshAdminPriorities(profile,profileRequest);
   });
   const head=document.createElement('div');head.className='fju-signup-head';
   const avatar=document.createElement('div');avatar.className='fju-signup-avatar';
@@ -2108,7 +2151,7 @@ document.getElementById('fju-settings-open-requests').addEventListener('click',(
 });
 document.querySelectorAll('#main-nav [data-tab]').forEach(button=>button.addEventListener('click',()=>activateMainTab(button)));
 document.getElementById('weekly-status-card')?.addEventListener('click',()=>document.querySelector('#main-nav [data-tab="relatorios"]')?.click());
-supabase.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){recoveryMode=true;show('recovery')}else if(event==='SIGNED_OUT'){recoveryMode=false;resetYouthSession();coordinatorCards.clear();show('auth')}});
+supabase.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){recoveryMode=true;show('recovery')}else if(event==='SIGNED_OUT'){recoveryMode=false;show('auth')}});
 if(location.search.includes('error=')){message('auth-message','O link de autenticação falhou ou expirou. Solicite outro.',true)}
 await refresh();
 </script>
