@@ -66,6 +66,9 @@ test('Funções abre no celular e fecha por X, toque fora, Esc e resize',()=>{
   const media={get matches(){return mobile;},addEventListener(type,cb){if(type==='change')resizeListener=cb;}};
   win.matchMedia=()=>media;
   win.eval('const el=id=>document.getElementById(id);\n'+snippet);
+  // Simula o estado autenticado: no HTML inicial #app começa oculto.
+  // Um controle invisível não pode receber foco em jsdom nem no navegador.
+  uniqueId('app').classList.remove('hidden');
   const shell=uniqueId('fju-admin-workspace');
   const sidebar=uniqueId('fju-admin-sidebar');
   const toggle=uniqueId('fju-admin-menu-toggle');
