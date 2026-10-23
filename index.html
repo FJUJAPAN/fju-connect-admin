@@ -1135,6 +1135,7 @@ let youthLoadVersion=0;
 async function loadYouth(){
   const profile=currentProfile;
   if(!profile)return;
+  hideYouthDetail();
   const loadVersion=++youthLoadVersion;
   youthMessage('Consultando fichas...');
   const polo=profile.papel==='coordenador'?profile.polo_id:el('youth-list-polo').value;
@@ -1265,6 +1266,17 @@ function renderYouth(){
   }
 }
 let detailPhotoUrl=null;
+let youthDetailLoadVersion=0;
+function hideYouthDetail(){
+  ++youthDetailLoadVersion;
+  const panel=el('youth-detail');
+  panel.classList.add('hidden');
+  panel.replaceChildren();
+  if(detailPhotoUrl){
+    URL.revokeObjectURL(detailPhotoUrl);
+    detailPhotoUrl=null;
+  }
+}
 const pendingYouthRemovalRequests=new Set();
 const submittedYouthRemovalRequests=new Set();
 function resetYouthSession(){
@@ -1283,21 +1295,29 @@ function resetYouthSession(){
   el('youth-list').replaceChildren();
   el('youth-visible-count').textContent='—';
   el('youth-search').value='';
-  const detail=el('youth-detail');
-  detail.classList.add('hidden');detail.replaceChildren();
-  if(detailPhotoUrl){URL.revokeObjectURL(detailPhotoUrl);detailPhotoUrl=null;}
+  hideYouthDetail();
 }
 async function viewYouth(id){
-  const r=youthRows.find(x=>x.id===id);if(!r)return;
-  const panel=el('youth-detail');panel.replaceChildren();panel.classList.remove('hidden');
-  if(detailPhotoUrl){URL.revokeObjectURL(detailPhotoUrl);detailPhotoUrl=null;}
+  const profile=currentProfile;
+  if(!profile||!['coordenador','nacional'].includes(profile.papel))return;
+  const r=youthRows.find(x=>String(x.id)===String(id));
+  if(!r)return;
+  if(profile.papel==='coordenador'&&String(r.polo_id)!==String(profile.polo_id))return;
+  if(String(r.polo_id)!==String(el('youth-list-polo').value))return;
+  hideYouthDetail();
+  const version=youthDetailLoadVersion;
+  const panel=el('youth-detail');
+  panel.classList.remove('hidden');
   const titleRow=document.createElement('div');titleRow.className='youth-detail-title-row';
   const heading=document.createElement('h3');heading.textContent='Ficha individual';
   const topClose=document.createElement('button');topClose.type='button';topClose.className='secondary youth-detail-close';topClose.textContent='Fechar';
-  topClose.onclick=()=>{panel.classList.add('hidden');if(detailPhotoUrl){URL.revokeObjectURL(detailPhotoUrl);detailPhotoUrl=null;}};
+  topClose.onclick=()=>{if(isCurrent())hideYouthDetail();};
   titleRow.append(heading,topClose);panel.append(titleRow);
   const top=document.createElement('div');top.className='youth-detail-top';
   const avatar=document.createElement('div');avatar.className='youth-detail-avatar';
+  const isCurrent=()=>version===youthDetailLoadVersion&&currentProfile===profile
+    &&!panel.classList.contains('hidden')&&panel.contains(avatar)
+    &&String(el('youth-list-polo').value)===String(r.polo_id);
   const initials=document.createElement('span');initials.textContent=youthCardInitials(r.nome_completo);
   avatar.append(initials);
   const info=document.createElement('div');info.className='youth-detail-info';
@@ -1308,7 +1328,7 @@ async function viewYouth(id){
     const editActions=document.createElement('div');editActions.className='actions';
     const editButton=document.createElement('button');editButton.type='button';
     editButton.textContent=currentProfile.papel==='coordenador'?'Solicitar edição':'Editar ficha';
-    editButton.onclick=()=>{panel.classList.add('hidden');editYouth(r.id);};
+    editButton.onclick=()=>{if(!isCurrent())return;hideYouthDetail();editYouth(r.id);};
     editActions.append(editButton);panel.append(editActions);
     if(currentProfile.papel==='coordenador'){
       const editNote=document.createElement('p');editNote.className='muted';
@@ -1328,6 +1348,7 @@ async function viewYouth(id){
   const historyList=document.createElement('div');historyList.className='stat';historyList.textContent='Carregando histórico...';panel.append(historyList);
   try{
     const {data:events,error}=await supabase.from('fju_historico_patentes').select('patente_anterior,patente_nova,alterado_em').eq('jovem_id',id).order('alterado_em',{ascending:false}).limit(50);
+    if(!isCurrent())return;
     if(error)throw error;
     historyList.replaceChildren();
     if(!events?.length){historyList.textContent='Ainda não há mudanças de patente registradas.';}
@@ -1337,23 +1358,31 @@ async function viewYouth(id){
       row.textContent=date+' — '+(ev.patente_anterior||'Sem patente')+' → '+(ev.patente_nova||'Sem patente');
       historyList.append(row);
     }
-  }catch(err){historyList.textContent='Histórico indisponível: '+err.message;}
-
-
+  }catch(err){
+    if(!isCurrent())return;
+    historyList.textContent='Histórico indisponível: '+(err?.message||'Erro de conexão.');
+  }
+  if(!isCurrent())return;
   panel.scrollIntoView({behavior:'smooth'});
   try{
     const {data:files,error}=await supabase.storage.from('fju-fotos').list(id,{limit:20});
+    if(!isCurrent())return;
     if(error)throw error;
     const file=(files||[]).find(f=>/^perfil\.(jpg|png|webp)$/.test(f.name));
     if(!file)return;
     const result=await supabase.storage.from('fju-fotos').download(id+'/'+file.name);
+    if(!isCurrent())return;
     if(result.error)throw result.error;
-    if(!panel.classList.contains('hidden')&&panel.contains(avatar)){
-      detailPhotoUrl=URL.createObjectURL(result.data);
-      const img=document.createElement('img');img.alt='Foto do jovem';img.src=detailPhotoUrl;
-      avatar.replaceChildren(img);
-    }
-  }catch(e){if(panel.classList.contains('hidden')||!panel.contains(avatar))return;const note=document.createElement('p');note.className='muted';note.textContent='Foto indisponível: '+e.message;panel.append(note);}
+    if(detailPhotoUrl)URL.revokeObjectURL(detailPhotoUrl);
+    detailPhotoUrl=URL.createObjectURL(result.data);
+    const img=document.createElement('img');img.alt='Foto do jovem';img.src=detailPhotoUrl;
+    avatar.replaceChildren(img);
+  }catch(e){
+    if(!isCurrent())return;
+    const note=document.createElement('p');note.className='muted';
+    note.textContent='Foto indisponível: '+(e?.message||'Erro de conexão.');
+    panel.append(note);
+  }
 }
 async function requestYouthChange(r,button){
   const profile=currentProfile;
@@ -1721,7 +1750,7 @@ el('youth-search').addEventListener('input',()=>{
   clearTimeout(youthSearchTimer);
   youthSearchTimer=setTimeout(renderYouth,160);
 });
-el('youth-list-polo').addEventListener('change',()=>{el('youth-detail').classList.add('hidden');void loadYouth();});
+el('youth-list-polo').addEventListener('change',()=>{hideYouthDetail();void loadYouth();});
 
 // O acompanhamento nacional pertence à aba Relatório semanal, não à Visão geral.
 el('report-weekly').insertBefore(el('national-report-panel'),el('national-weekly-controls'));
