@@ -13,7 +13,7 @@ body.fju-admin-shell .fju-admin-menu-overlay{display:none}
   body.fju-admin-shell .fju-admin-workspace.fju-menu-open .fju-admin-sidebar{
     position:fixed!important;top:0!important;bottom:0!important;left:0!important;
     z-index:320;display:block!important;width:min(350px,calc(100vw - 52px))!important;
-    max-width:none!important;max-height:100dvh;min-height:100vh;
+    max-width:none!important;height:100vh;height:100dvh;min-height:0;max-height:100dvh;
     overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;
     margin:0!important;border:0;border-right:1px solid #6985a850;
     border-radius:0 18px 18px 0;padding:calc(15px + env(safe-area-inset-top,0px)) 12px
@@ -60,4 +60,33 @@ body.fju-admin-shell .fju-admin-menu-overlay{display:none}
   body.fju-admin-shell .fju-admin-menu-overlay,
   body.fju-admin-shell .fju-admin-sidebar{display:none!important}
   body.fju-admin-shell.fju-admin-drawer-open{overflow:visible!important}
+}
+
+/* Mantém o título da seção e o botão Funções ao alcance mesmo em relatórios longos. */
+@media(max-width:900px){
+ body.fju-admin-shell .fju-content-toolbar{
+   position:sticky;top:72px;z-index:125;min-width:0;
+   display:flex;align-items:center;justify-content:space-between;gap:10px;
+   margin:0 -8px 13px;padding:11px 8px;
+   background:rgba(244,247,252,.97);
+   border-bottom:1px solid #dde5f2;
+   box-shadow:0 5px 14px rgba(21,43,78,.065);
+   -webkit-backdrop-filter:blur(13px);backdrop-filter:blur(13px);
+   scroll-margin-top:72px;
+ }
+ body.fju-admin-shell .fju-content-toolbar>div{min-width:0;flex:1}
+ body.fju-admin-shell .fju-content-toolbar h2{overflow-wrap:anywhere;line-height:1.15}
+ body.fju-admin-shell #fju-admin-menu-toggle{flex-shrink:0;white-space:nowrap}
+ body.fju-admin-shell .fju-admin-content>section.panel{scroll-margin-top:150px}
+}
+@media(max-width:700px){
+ body.fju-admin-shell .fju-content-toolbar{top:64px;scroll-margin-top:64px}
+ body.fju-admin-shell .fju-admin-content>section.panel{scroll-margin-top:140px}
+}
+@media(max-width:390px){
+ body.fju-admin-shell .fju-content-toolbar{margin-inline:-5px;padding-inline:5px}
+ body.fju-admin-shell .fju-content-toolbar h2{font-size:19px}
+}
+@media print{
+ body.fju-admin-shell .fju-content-toolbar{position:static!important;box-shadow:none!important}
 }
