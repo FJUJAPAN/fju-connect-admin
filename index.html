@@ -251,7 +251,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 }
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
-<link rel="stylesheet" href="./admin-dashboard.css?v=20261023f">
+<link rel="stylesheet" href="./admin-dashboard.css?v=20261023g">
 <link rel="stylesheet" href="./admin-reports.css?v=20261023a">
 <link rel="stylesheet" href="./admin-settings.css?v=20261023a">
 <link rel="stylesheet" href="./admin-login.css?v=20261023a">
@@ -458,7 +458,8 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 </div>
 <div id="fju-request-fichas" class="fju-request-zone">
   <div class="fju-request-zone-heading"><div><span class="fju-zone-num">01</span><h3 id="fju-request-fichas-heading">Alterações de fichas</h3></div><p id="fju-request-fichas-intro">Pedidos de edição, patente e exclusão.</p></div>
-  <div class="fju-request-actions"><button type="button" id="requests-refresh" class="secondary">Atualizar solicitações</button></div><p id="requests-message" class="message" role="status"></p><div class="authorization-filters" id="requests-filters"><button type="button" data-request-filter="pendente" class="active">Pendentes</button><button type="button" data-request-filter="aprovada">Aprovadas</button><button type="button" data-request-filter="rejeitada">Rejeitadas</button><button type="button" data-request-filter="todas">Todas</button></div><div id="requests-list" class="report-list"></div></div>
+  <div class="fju-request-actions"><button type="button" id="requests-refresh" class="secondary">Atualizar solicitações</button></div><p id="requests-message" class="message" role="status"></p><div class="authorization-filters" id="requests-filters"><button type="button" data-request-filter="pendente" class="active">Pendentes</button><button type="button" data-request-filter="aprovada">Aprovadas</button><button type="button" data-request-filter="rejeitada">Rejeitadas</button><button type="button" data-request-filter="todas">Todas</button></div><div id="requests-list" class="report-list"></div>
+<div class="fju-request-more"><button type="button" id="requests-load-more" class="secondary" hidden>Carregar mais 25 solicitações</button></div></div>
 <div id="fju-request-acessos" class="fju-request-zone">
   <div class="fju-request-zone-heading"><div><span class="fju-zone-num">02</span><h3 id="fju-request-acessos-heading">Acesso administrativo</h3></div><p id="fju-request-acessos-intro">Pedidos vinculados à ficha e à função de coordenador.</p></div>
   <div class="fju-request-actions"><button type="button" id="admin-access-refresh" class="secondary">Atualizar pedidos de acesso</button></div><p id="admin-access-message" class="message" role="status"></p><div id="admin-access-list" class="report-list"></div></div></section><section id="relatorios" class="panel hidden">
@@ -1283,45 +1284,78 @@ async function requestYouthChange(r){
 }
 let currentRequestFilter='pendente';
 let requestsLoadVersion=0;
+let requestsVisibleLimit=25;
+const requestPageSize=25;
 async function loadYouthRequests(){
-  const version=++requestsLoadVersion,profile=currentProfile;
-  const list=el('requests-list');
-  list.replaceChildren();
+  const version=++requestsLoadVersion,profile=currentProfile,filter=currentRequestFilter;
+  const list=el('requests-list'),more=el('requests-load-more');
+  list.replaceChildren();more.hidden=true;
   if(!profile){el('requests-message').textContent='Entre com uma conta autorizada.';return;}
   el('requests-message').textContent='Consultando solicitações...';
   const accessByRequest=await administrativeAccess.requestsByRank();
   if(version!==requestsLoadVersion||currentProfile!==profile)return;
-  let query=supabase.from('fju_solicitacoes').select('id,jovem_id,polo_id,tipo,justificativa,dados_propostos,dados_anteriores,solicitante_id,status,criado_em').order('criado_em',{ascending:false}).limit(100);
-  if(profile.papel==='coordenador')query=query.eq('polo_id',profile.polo_id);
-  const {data,error}=await query;
+  const baseQuery=()=> {
+    let query=supabase.from('fju_solicitacoes');
+    if(profile.papel==='coordenador')query=query.eq('polo_id',profile.polo_id);
+    return query;
+  };
+  // O status é filtrado no Supabase ANTES da paginação; pedidos antigos pendentes
+  // continuam acessíveis mesmo quando há centenas de decisões anteriores.
+  let query=baseQuery().select('id,jovem_id,polo_id,tipo,justificativa,dados_propostos,dados_anteriores,solicitante_id,status,criado_em',{count:'exact'})
+    .order('criado_em',{ascending:false}).order('id',{ascending:false});
+  if(filter!=='todas')query=query.eq('status',filter);
+  const counterQueries=['pendente','aprovada','rejeitada'].map(status=>
+    baseQuery().select('id',{head:true,count:'exact'}).eq('status',status)
+  );
+  const [mainResult,...countResults]=await Promise.all([query.range(0,requestsVisibleLimit-1),...counterQueries]);
   if(version!==requestsLoadVersion||currentProfile!==profile)return;
+  const {data,error,count}=mainResult;
+  if(error){message('requests-message','Não foi possível consultar solicitações: '+error.message,true);return;}
+  const visible=data||[];
+  const totals={};
+  for(const [index,status] of ['pendente','aprovada','rejeitada'].entries()){
+    totals[status]=countResults[index].error?null:countResults[index].count;
+  }
+  const allTotal=Object.values(totals).every(Number.isFinite)
+    ?Object.values(totals).reduce((sum,value)=>sum+value,0):null;
+  for(const btn of document.querySelectorAll('[data-request-filter]')){
+    const selected=btn.dataset.requestFilter;
+    const total=selected==='todas'?allTotal:totals[selected];
+    btn.classList.toggle('active',selected===filter);
+    btn.setAttribute('aria-pressed',String(selected===filter));
+    btn.textContent=({pendente:'Pendentes',aprovada:'Aprovadas',rejeitada:'Rejeitadas',todas:'Todas'})[selected]
+      +(Number.isFinite(total)?' ('+total+')':'');
+  }
+  const total=Number.isFinite(count)?count:visible.length;
+  message('requests-message',visible.length+' de '+total+' solicitação(ões) nesta categoria.');
+  more.hidden=visible.length>=total||visible.length===0;
+  more.textContent='Carregar mais '+Math.min(requestPageSize,total-visible.length)+' solicitações';
   let requesterNames={};
-  if(profile.papel==='nacional'&&(data||[]).length){
+  if(profile.papel==='nacional'&&visible.length){
     const {data:people,error:peopleError}=await supabase.rpc('fju_nomes_solicitantes');
     if(version!==requestsLoadVersion||currentProfile!==profile)return;
     if(!peopleError)for(const person of people||[])requesterNames[person.usuario_id]=person.nome;
     else console.warn('Identificação de solicitantes indisponível',peopleError.message);
   }
-  if(error){message('requests-message','A área depende da configuração no Supabase: '+error.message,true);return;}
   const {data:polos,error:polosError}=await supabase.from('fju_polos').select('id,nome');
   if(version!==requestsLoadVersion||currentProfile!==profile)return;
   if(polosError){message('requests-message','Não foi possível identificar as igrejas: '+polosError.message,true);return;}
   const poloRows=polos||[];
-  const counts={pendente:0,aprovada:0,rejeitada:0};
-  for(const request of data||[])if(Object.hasOwn(counts,request.status))counts[request.status]++;
-  for(const btn of document.querySelectorAll('[data-request-filter]')){
-    const filter=btn.dataset.requestFilter;
-    btn.classList.toggle('active',filter===currentRequestFilter);
-    btn.textContent=({pendente:'Pendentes',aprovada:'Aprovadas',rejeitada:'Rejeitadas',todas:'Todas'})[filter]+' ('+(filter==='todas'?(data||[]).length:counts[filter])+')';
+  // Uma única consulta de fichas por página evita dezenas de chamadas sequenciais.
+  const youthById=new Map();
+  const youthIds=[...new Set(visible.map(request=>request.jovem_id).filter(Boolean))];
+  if(youthIds.length){
+    const {data:people,error:youthError}=await supabase.from('fju_jovens')
+      .select('id,nome_completo,polo_id,nascimento,telefone,nacionalidade_iso2,idiomas,patente,categoria')
+      .in('id',youthIds);
+    if(version!==requestsLoadVersion||currentProfile!==profile)return;
+    if(!youthError)for(const youth of people||[])youthById.set(String(youth.id),youth);
+    else console.warn('Não foi possível identificar fichas para aprovação:',youthError.message);
   }
-  const visible=(data||[]).filter(r=>currentRequestFilter==='todas'||r.status===currentRequestFilter);
-  message('requests-message',visible.length+' solicitação(ões) nesta categoria.');
   for(const r of visible){
     const card=document.createElement('article');card.className='report-card';
-    const {data:jovem,error:jovemError}=await supabase.from('fju_jovens')
-      .select('nome_completo,polo_id,nascimento,telefone,nacionalidade_iso2,idiomas,patente,categoria')
-      .eq('id',r.jovem_id).maybeSingle();
-    if(version!==requestsLoadVersion||currentProfile!==profile)return;
+    const jovem=youthById.get(String(r.jovem_id))||null;
+    const jovemError=null;
     const polo=poloRows.find(p=>String(p.id)===String(r.polo_id));
     const identificado=Boolean(jovem&&!jovemError&&polo&&String(jovem.polo_id)===String(r.polo_id));
     const head=document.createElement('div');head.className='authorization-head';
@@ -1442,8 +1476,19 @@ async function loadYouthRequests(){
     list.append(card);
   }
 }
-document.querySelectorAll('[data-request-filter]').forEach(btn=>btn.addEventListener('click',()=>{currentRequestFilter=btn.dataset.requestFilter;void loadYouthRequests();}));
-el('requests-refresh').addEventListener('click',()=>void loadYouthRequests());
+document.querySelectorAll('[data-request-filter]').forEach(btn=>btn.addEventListener('click',()=>{
+  currentRequestFilter=btn.dataset.requestFilter;
+  requestsVisibleLimit=requestPageSize;
+  void loadYouthRequests();
+}));
+el('requests-refresh').addEventListener('click',()=>{
+  requestsVisibleLimit=requestPageSize;
+  void loadYouthRequests();
+});
+el('requests-load-more').addEventListener('click',()=>{
+  requestsVisibleLimit+=requestPageSize;
+  void loadYouthRequests();
+});
 function editYouth(id){
   const r=youthRows.find(x=>x.id===id);if(!r)return;
   el('youth-id').value=r.id;el('youth-polo').value=r.polo_id;
