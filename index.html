@@ -1008,20 +1008,24 @@ el('youth-add-toggle').addEventListener('click',()=>{
 el('youth-form-close').addEventListener('click',()=>{resetYouth();setYouthFormOpen(false);});
 function resetYouth(){el('youth-photo').disabled=false;if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}el('youth-form').reset();setYouthBirth('');refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
 async function initializeYouth(){
+  const profile=currentProfile;
+  if(!profile)return;
   resetYouthSession();
-  el('youth-page-subtitle').textContent=currentProfile?.papel==='coordenador'
+  const sessionVersion=youthLoadVersion;
+  el('youth-page-subtitle').textContent=profile.papel==='coordenador'
     ?'Veja os jovens da sua igreja, cadastre novas fichas e solicite alterações à liderança nacional.'
     :'Consulte as fichas por igreja e abra o formulário somente quando precisar cadastrar ou editar um jovem.';
   const {data,error}=await supabase.from('fju_polos').select('id,nome').order('nome');
+  if(currentProfile!==profile||sessionVersion!==youthLoadVersion)return;
   if(error){youthMessage('Não foi possível carregar polos: '+error.message,true);return;}
-  const allowed=currentProfile.papel==='coordenador'?(data||[]).filter(x=>x.id===currentProfile.polo_id):(data||[]);
+  const allowed=profile.papel==='coordenador'?(data||[]).filter(x=>x.id===profile.polo_id):(data||[]);
   el('youth-polo').replaceChildren();
   for(const polo of allowed){const opt=document.createElement('option');opt.value=polo.id;opt.textContent=polo.nome;el('youth-polo').append(opt);}
   const listPolo=el('youth-list-polo');listPolo.replaceChildren();
-  if(currentProfile.papel==='nacional'){const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Selecione uma igreja';listPolo.append(placeholder);}
+  if(profile.papel==='nacional'){const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Selecione uma igreja';listPolo.append(placeholder);}
   for(const polo of allowed){const option=document.createElement('option');option.value=String(polo.id);option.textContent=polo.nome;listPolo.append(option);}
-  if(currentProfile.papel==='coordenador')listPolo.value=String(currentProfile.polo_id);
-  el('youth-list-polo-wrap').classList.toggle('hidden',currentProfile.papel==='coordenador');
+  if(profile.papel==='coordenador')listPolo.value=String(profile.polo_id);
+  el('youth-list-polo-wrap').classList.toggle('hidden',profile.papel==='coordenador');
   resetYouth();setYouthFormOpen(false);await loadYouth();
 }
 async function loadYouthPhoto(id){
@@ -1059,10 +1063,11 @@ async function compactarFoto100KB(file){
 }
 let youthLoadVersion=0;
 async function loadYouth(){
-  if(!currentProfile)return;
+  const profile=currentProfile;
+  if(!profile)return;
   const loadVersion=++youthLoadVersion;
   youthMessage('Consultando fichas...');
-  const polo=currentProfile.papel==='coordenador'?currentProfile.polo_id:el('youth-list-polo').value;
+  const polo=profile.papel==='coordenador'?profile.polo_id:el('youth-list-polo').value;
   if(!polo){youthRows=[];renderYouth();youthMessage('Selecione uma igreja para visualizar as fichas.');return;}
   const all=[],batchSize=500;
   for(let start=0;;start+=batchSize){
@@ -1071,12 +1076,12 @@ async function loadYouth(){
       .is('excluido_em',null).eq('polo_id',polo)
       .order('nome_completo').order('id')
       .range(start,start+batchSize-1);
-    if(loadVersion!==youthLoadVersion)return;
+    if(loadVersion!==youthLoadVersion||currentProfile!==profile)return;
     if(error){youthMessage('Erro na consulta: '+error.message,true);return;}
     all.push(...(data||[]));
     if(!data||data.length<batchSize)break;
   }
-  if(loadVersion!==youthLoadVersion)return;
+  if(loadVersion!==youthLoadVersion||currentProfile!==profile)return;
   youthRows=all;renderYouth();youthMessage(`${youthRows.length} ficha(s) carregada(s) da igreja selecionada.`);
 }
 /* Fotos das fichas são carregadas somente quando o card entra na área visível.
@@ -1192,6 +1197,9 @@ function renderYouth(){
 let detailPhotoUrl=null;
 function resetYouthSession(){
   administrativeAccess.clear();
+  ++youthSubmitVersion;
+  youthSubmitInProgress=false;
+  setYouthSubmitting(false);
   ++youthLoadVersion;
   clearYouthCardPhotos();
   youthRows=[];
@@ -1502,10 +1510,25 @@ const coordinationHint=document.createElement('p');coordinationHint.className='m
 coordinationHint.textContent='Ao solicitar a patente Coordenador, o acesso ao painel no polo desta ficha será incluído no mesmo pedido. A conta é identificada automaticamente e somente o Nacional pode aprovar.';
 el('youth-rank').parentElement.append(coordinationHint);
 el('youth-rank').addEventListener('change',()=>{coordinationHint.hidden=el('youth-rank').value!=='Coordenador'||currentProfile?.papel!=='coordenador';});
+let youthSubmitInProgress=false;
+let youthSubmitVersion=0;
+function setYouthSubmitting(submitting){
+  for(const id of ['youth-submit','youth-clear','youth-form-close','youth-add-toggle']){
+    el(id).disabled=Boolean(submitting);
+  }
+  el('youth-form').setAttribute('aria-busy',String(Boolean(submitting)));
+}
 el('youth-form').addEventListener('submit',async e=>{
-  e.preventDefault();if(!currentProfile)return;
+  e.preventDefault();
+  const profile=currentProfile;
+  if(!profile||youthSubmitInProgress)return;
+  const submitVersion=++youthSubmitVersion;
+  youthSubmitInProgress=true;
+  setYouthSubmitting(true);
+  const stillCurrent=()=>currentProfile===profile&&submitVersion===youthSubmitVersion;
+  try{
   const polo_id=el('youth-polo').value;
-  if(currentProfile.papel==='coordenador'&&polo_id!==currentProfile.polo_id){youthMessage('Polo não autorizado.',true);return;}
+  if(profile.papel==='coordenador'&&polo_id!==currentProfile.polo_id){youthMessage('Polo não autorizado.',true);return;}
   if(!syncYouthBirth()){youthMessage('Preencha uma data de nascimento válida (dia, mês e ano).',true);return;}
   const payload={
     polo_id,nome_completo:el('youth-name').value.trim(),
@@ -1520,21 +1543,25 @@ el('youth-form').addEventListener('submit',async e=>{
   if(!payload.nome_completo){youthMessage('Informe um nome fictício.',true);return;}
   youthMessage('Salvando...');
   const id=el('youth-id').value;
-  if(id&&currentProfile.papel==='coordenador'){
+  if(id&&profile.papel==='coordenador'){
     const original=youthRows.find(x=>String(x.id)===String(id));if(!original){youthMessage('Ficha original não encontrada.',true);return;}
     const changes={};for(const key of ['nome_completo','nascimento','telefone','nacionalidade_iso2','idiomas','patente','categoria'])if(JSON.stringify(original[key]??null)!==JSON.stringify(payload[key]??null))changes[key]=payload[key];
     if(!Object.keys(changes).length){youthMessage('Nenhuma alteração encontrada.',true);return;}
     if(changes.patente==='coordenador'){
       const {data:account,error:accountError}=await supabase.rpc('fju_conta_coordenacao',{p_jovem_id:id});
+      if(!stillCurrent())return;
       if(accountError){youthMessage('Não foi possível identificar a conta para coordenação: '+accountError.message,true);return;}
       if(!account?.email){youthMessage('Confira o vínculo da conta desta ficha antes de solicitar a coordenação.',true);return;}
     }
     const {data:{user}}=await supabase.auth.getUser();
+    if(!stillCurrent())return;
     const {error}=await supabase.from('fju_solicitacoes').insert({jovem_id:id,polo_id:original.polo_id,tipo:(Object.keys(changes).every(k=>['patente','categoria'].includes(k))?'patente':'edicao'),justificativa:'Campos: '+Object.keys(changes).join(', '),dados_propostos:changes,solicitante_id:user?.id});
+    if(!stillCurrent())return;
     if(error){youthMessage('Não foi possível enviar a solicitação: '+error.message,true);return;}
     resetYouth();setYouthFormOpen(false);youthMessage(changes.patente==='coordenador'?'Pedido de patente Coordenador e acesso administrativo enviado ao Nacional. A conta foi identificada automaticamente.':'Solicitação enviada. A ficha original não foi alterada.');return;
   }
   const result=id?await supabase.from('fju_jovens').update(payload).eq('id',id).select('id').single():await supabase.from('fju_jovens').insert(payload).select('id').single();
+  if(!stillCurrent())return;
   const {error}=result;
   if(error){youthMessage('Não foi possível salvar: '+error.message,true);return;}
   const file=el('youth-photo').files?.[0];
@@ -1544,12 +1571,23 @@ el('youth-form').addEventListener('submit',async e=>{
     youthMessage('Ficha salva. Enviando foto privada...');
     let compactada;
     try{compactada=await compactarFoto100KB(file);}
-    catch(e){youthMessage('Ficha salva, mas a foto não pôde ser comprimida: '+e.message,true);return;}
+    catch(e){if(!stillCurrent())return;youthMessage('Ficha salva, mas a foto não pôde ser comprimida: '+e.message,true);return;}
+    if(!stillCurrent())return;
     const path=result.data.id+'/perfil.jpg';
     const uploaded=await supabase.storage.from('fju-fotos').upload(path,compactada,{contentType:'image/jpeg',upsert:true});
+    if(!stillCurrent())return;
     if(uploaded.error){youthMessage('Ficha salva, mas não foi possível enviar a foto: '+uploaded.error.message,true);await loadYouth();return;}
   }
-  resetYouth();setYouthFormOpen(false);await loadYouth();youthMessage(file?'Ficha e foto de teste salvas com sucesso.':'Ficha de teste salva com sucesso.');void loadDashboard(currentProfile,profileRequest);
+  resetYouth();setYouthFormOpen(false);await loadYouth();
+  if(!stillCurrent())return;
+  youthMessage(file?'Ficha e foto de teste salvas com sucesso.':'Ficha de teste salva com sucesso.');
+  void loadDashboard(profile,profileRequest);
+  }finally{
+    if(submitVersion===youthSubmitVersion){
+      youthSubmitInProgress=false;
+      setYouthSubmitting(false);
+    }
+  }
 });
 el('youth-photo').addEventListener('change',e=>{const file=e.target.files?.[0];const preview=el('youth-photo-preview');if(!file){preview.classList.add('hidden');return;}if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){youthMessage('Escolha uma imagem JPG, PNG ou WebP de até 5 MB.',true);e.target.value='';return;}if(photoUrl)URL.revokeObjectURL(photoUrl);photoUrl=URL.createObjectURL(file);preview.src=photoUrl;preview.classList.remove('hidden');});
 el('youth-clear').onclick=resetYouth;
