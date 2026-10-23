@@ -1,0 +1,24 @@
+/* FJU JAPAN — visual compartilhado do Painel de Controle */
+:root{color-scheme:light}
+body.fju-admin-editor{background:#f4f6fa;color:#172b49;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif}
+body.fju-admin-editor main{max-width:1080px;padding:24px 18px 80px}
+body.fju-admin-editor a{color:#183f73}
+body.fju-admin-editor .top{border-bottom:1px solid #e2e8f0;padding:0 0 16px;margin:0 0 18px}
+body.fju-admin-editor .top h1{font-size:clamp(22px,4vw,29px);letter-spacing:-.03em;margin:0;color:#142d50}
+body.fju-admin-editor .top>a{display:inline-flex;align-items:center;border:1px solid #d1dbe8;border-radius:10px;background:white;padding:10px 13px;text-decoration:none;font-weight:700}
+body.fju-admin-editor .card{background:white;border:1px solid #e0e6ef;border-radius:16px;box-shadow:0 5px 20px rgba(16,40,80,.045);padding:clamp(16px,3vw,24px);margin:16px 0}
+body.fju-admin-editor h2{color:#142d50;font-size:19px}
+body.fju-admin-editor label{color:#243e5c}
+body.fju-admin-editor input,body.fju-admin-editor textarea,body.fju-admin-editor select{background:#fff;color:#172b49;border:1px solid #cbd5e1;border-radius:10px;min-height:44px}
+body.fju-admin-editor input:focus-visible,body.fju-admin-editor textarea:focus-visible,body.fju-admin-editor select:focus-visible,body.fju-admin-editor button:focus-visible,body.fju-admin-editor a:focus-visible{outline:3px solid #f05a70;outline-offset:2px}
+body.fju-admin-editor button{background:#183b6b;color:white}
+body.fju-admin-editor .tabs button{background:#e8eef6;color:#16345a}
+body.fju-admin-editor .tabs button.active{background:#183b6b;color:#fff}
+body.fju-admin-editor .muted{color:#65758c}
+body.fju-admin-editor .item{border-color:#dce4ef;background:#fafcff}
+body.fju-admin-editor .error{color:#b52239}
+body.fju-admin-editor .ok{color:#187346}
+body.fju-admin-editor .submission-overlay{background:rgba(10,25,48,.65)}
+body.fju-admin-editor .submission-message{background:white;border-color:#d8e1ec;box-shadow:0 20px 70px #0b21404d}
+body.fju-admin-editor .submission-message p{color:#526680}
+@media(max-width:620px){body.fju-admin-editor main{padding:18px 12px 70px}body.fju-admin-editor .top{align-items:flex-start}body.fju-admin-editor .card{border-radius:13px}body.fju-admin-editor .top>a{font-size:13px}}
