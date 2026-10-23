@@ -139,3 +139,42 @@ body.fju-admin-shell .fju-daily-button:hover{background:linear-gradient(135deg,#
 body.fju-admin-shell .fju-daily-button:focus-visible{outline:3px solid #ba9dff;outline-offset:2px}
 @media(max-width:760px){.fju-daily-actions{grid-template-columns:minmax(0,1fr)}body.fju-admin-shell .fju-daily-button{min-height:70px;padding:12px 14px;align-items:center}.fju-daily-button strong{font-size:14px}}
 @media print{.fju-today-section{display:none!important}}
+
+/* FJU JAPAN | Central de solicitações: seções claras por competência. */
+#autorizacoes .fju-requests-landing{
+ margin:0 0 20px;padding:20px;border:1px solid #dae5f5;border-radius:18px;
+ background:linear-gradient(120deg,#eef4ff,#f8fbff)
+}
+#autorizacoes .fju-requests-kicker{display:block;font-weight:850;font-size:10px;letter-spacing:.14em;color:#5d6d96}
+#autorizacoes .fju-requests-landing h3{margin:7px 0;font-size:clamp(20px,2.6vw,26px);letter-spacing:-.035em;color:#1b365f}
+#autorizacoes .fju-requests-landing p{max-width:750px;font-size:13px;line-height:1.55;color:#536d8f;margin:0 0 16px}
+#autorizacoes .fju-requests-jump{display:flex;gap:9px;flex-wrap:wrap}
+#autorizacoes .fju-requests-jump button{
+ display:inline-flex;align-items:center;gap:8px;min-height:43px;padding:9px 13px;
+ border-radius:11px;background:#fff;color:#244579;border:1px solid #cedbf0;
+ font-size:12px;font-weight:800
+}
+#autorizacoes .fju-requests-jump button:hover{background:#e4eeff}
+#autorizacoes .fju-request-zone{
+ padding:19px;margin:0 0 18px;background:#fff;border:1px solid #e0e7f3;
+ border-radius:18px;box-shadow:0 5px 18px rgba(24,52,94,.045);
+ scroll-margin-top:95px
+}
+#autorizacoes .fju-request-zone-heading{border-bottom:1px solid #e6edf8;padding-bottom:12px;margin-bottom:12px}
+#autorizacoes .fju-request-zone-heading>div{display:flex;align-items:center;gap:10px}
+#autorizacoes .fju-zone-num{display:grid;place-items:center;flex:0 0 35px;height:35px;border-radius:11px;background:#203d73;color:#fff;font-size:12px;font-weight:850}
+#autorizacoes .fju-request-zone-heading h3{font-size:17px;font-weight:800;color:#1b345a;margin:0}
+#autorizacoes .fju-request-zone-heading p{margin:8px 0 0;color:#61728e;font-size:12px;line-height:1.55}
+#autorizacoes .fju-request-actions{display:flex;justify-content:flex-end;gap:8px;margin-bottom:12px}
+#autorizacoes .fju-request-actions button{min-height:40px}
+#autorizacoes .authorization-filters{margin:12px 0}
+#autorizacoes #requests-list,#autorizacoes #admin-access-list{display:grid;gap:11px}
+#autorizacoes .report-card{margin:0;min-width:0}
+@media(max-width:600px){
+ #autorizacoes .fju-requests-landing{padding:16px}
+ #autorizacoes .fju-requests-jump{flex-direction:column}
+ #autorizacoes .fju-requests-jump button{width:100%;justify-content:space-between;text-align:left;min-height:46px}
+ #autorizacoes .fju-request-zone{padding:12px}
+ #autorizacoes .fju-request-actions{justify-content:flex-start}
+}
+@media print{#autorizacoes .fju-requests-jump,#autorizacoes .fju-request-actions{display:none!important}}

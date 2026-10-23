@@ -251,7 +251,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 }
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
-<link rel="stylesheet" href="./admin-dashboard.css?v=20261023d">
+<link rel="stylesheet" href="./admin-dashboard.css?v=20261023e">
 </head>
 <body class="fju-admin-shell">
 <header class="fju-admin-header"><div class="fju-admin-header-inner"><a class="fju-admin-brand" href="https://fjujapan.github.io/fju-connect/" aria-label="FJU Connect JAPAN — site oficial"><span class="fju-admin-mark" aria-hidden="true">FJU<span>.</span></span><span class="fju-admin-brand-copy"><strong>CONNECT</strong><small>JAPAN</small></span></a><div class="fju-admin-header-tools"><span class="fju-admin-context">ÁREA ADMINISTRATIVA</span><a class="fju-admin-site-link" href="https://fjujapan.github.io/fju-connect/">↗ Site FJU</a></div></div></header>
@@ -355,7 +355,22 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <div class="youth-list-controls"><div><label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite o nome do jovem" type="search" autocomplete="off"></div><button type="button" id="youth-refresh" class="secondary">Atualizar</button></div>
 <div id="youth-detail" class="panel hidden" style="margin:0 0 14px;border:1px solid #dce3ef"></div><div id="youth-list" aria-label="Fichas salvas"></div>
 </section>
-<section id="inscricoes" class="panel hidden"><h2>Novos cadastros de jovens</h2><p class="muted">Solicitações feitas pelos jovens no site. Cada coordenador vê somente o seu polo. A ficha oficial não é criada automaticamente.</p><div class="actions"><button type="button" id="inscricoes-refresh" class="secondary">Atualizar solicitações</button><strong id="inscricoes-count" aria-live="polite"></strong></div><p id="inscricoes-message" class="message" role="status"></p><div id="inscricoes-list" class="report-list"></div></section><section id="autorizacoes" class="panel hidden"><h2>Autorizações de fichas</h2><p class="muted">Solicitações de alteração ou exclusão aguardando aprovação nacional. Nenhuma ficha é modificada ao enviar um pedido.</p><button type="button" id="requests-refresh" class="secondary">Atualizar solicitações</button><p id="requests-message" class="message" role="status"></p><div class="authorization-filters" id="requests-filters"><button type="button" data-request-filter="pendente" class="active">Pendentes</button><button type="button" data-request-filter="aprovada">Aprovadas</button><button type="button" data-request-filter="rejeitada">Rejeitadas</button><button type="button" data-request-filter="todas">Todas</button></div><div id="requests-list" class="report-list"></div><hr><h2>Acesso ao painel administrativo</h2><p class="muted">Pedidos do coordenador para liberar o painel no polo da ficha. Somente o Nacional pode aprovar ou rejeitar.</p><button type="button" id="admin-access-refresh" class="secondary">Atualizar pedidos de acesso</button><p id="admin-access-message" class="message" role="status"></p><div id="admin-access-list" class="report-list"></div></section><section id="relatorios" class="panel hidden">
+<section id="inscricoes" class="panel hidden"><h2>Novos cadastros de jovens</h2><p class="muted">Solicitações feitas pelos jovens no site. Cada coordenador vê somente o seu polo. A ficha oficial não é criada automaticamente.</p><div class="actions"><button type="button" id="inscricoes-refresh" class="secondary">Atualizar solicitações</button><strong id="inscricoes-count" aria-live="polite"></strong></div><p id="inscricoes-message" class="message" role="status"></p><div id="inscricoes-list" class="report-list"></div></section><section id="autorizacoes" class="panel hidden"><h2>Autorizações de fichas</h2>
+<div class="fju-requests-landing">
+  <span class="fju-requests-kicker" id="fju-requests-kicker">CENTRAL DE SOLICITAÇÕES</span>
+  <h3 id="fju-requests-title">Solicitações e autorizações</h3>
+  <p id="fju-requests-intro">Acompanhe os pedidos de alteração de fichas e de acesso administrativo.</p>
+  <div class="fju-requests-jump" aria-label="Tipos de solicitação">
+    <button type="button" data-request-jump="fju-request-fichas"><span aria-hidden="true">📝</span> Alterações de fichas <span aria-hidden="true">↘</span></button>
+    <button type="button" data-request-jump="fju-request-acessos"><span aria-hidden="true">🔑</span> Acesso administrativo <span aria-hidden="true">↘</span></button>
+  </div>
+</div>
+<div id="fju-request-fichas" class="fju-request-zone">
+  <div class="fju-request-zone-heading"><div><span class="fju-zone-num">01</span><h3 id="fju-request-fichas-heading">Alterações de fichas</h3></div><p id="fju-request-fichas-intro">Pedidos de edição, patente e exclusão.</p></div>
+  <div class="fju-request-actions"><button type="button" id="requests-refresh" class="secondary">Atualizar solicitações</button></div><p id="requests-message" class="message" role="status"></p><div class="authorization-filters" id="requests-filters"><button type="button" data-request-filter="pendente" class="active">Pendentes</button><button type="button" data-request-filter="aprovada">Aprovadas</button><button type="button" data-request-filter="rejeitada">Rejeitadas</button><button type="button" data-request-filter="todas">Todas</button></div><div id="requests-list" class="report-list"></div></div>
+<div id="fju-request-acessos" class="fju-request-zone">
+  <div class="fju-request-zone-heading"><div><span class="fju-zone-num">02</span><h3 id="fju-request-acessos-heading">Acesso administrativo</h3></div><p id="fju-request-acessos-intro">Pedidos vinculados à ficha e à função de coordenador.</p></div>
+  <div class="fju-request-actions"><button type="button" id="admin-access-refresh" class="secondary">Atualizar pedidos de acesso</button></div><p id="admin-access-message" class="message" role="status"></p><div id="admin-access-list" class="report-list"></div></div></section><section id="relatorios" class="panel hidden">
 <h2>Relatórios</h2>
 <div class="tabs" style="margin-bottom:16px"><button type="button" class="active" data-report-tab="semanal">Relatório semanal</button><button type="button" data-report-tab="especial">Evento especial</button></div>
 <div id="report-weekly"><div id="national-report-panel" class="hidden">
@@ -1791,6 +1806,19 @@ function updateAdminDashboardRole(profile,poloNome){
   });
   const authorizationLabel=document.querySelector('#main-nav [data-tab="autorizacoes"] .fju-nav-label-desktop');
   authorizationLabel.textContent=national?'Autorizações nacionais':'Minhas solicitações';
+  el('fju-requests-kicker').textContent=national?'APROVAÇÕES DA LIDERANÇA NACIONAL':'PEDIDOS DA MINHA IGREJA';
+  el('fju-requests-title').textContent=national?'Central de aprovações':'Acompanhamento de solicitações';
+  el('fju-requests-intro').textContent=national
+    ?'Analise os pedidos recebidos dos polos. As decisões são confirmadas antes de alterar qualquer ficha ou liberar um acesso.'
+    :'Consulte pedidos da sua igreja e acompanhe as decisões da liderança nacional. Somente o Nacional pode autorizar mudanças protegidas.';
+  el('fju-request-fichas-heading').textContent=national?'Autorizações de fichas':'Solicitações de fichas do polo';
+  el('fju-request-fichas-intro').textContent=national
+    ?'Pedidos de edição, patente e exclusão que aguardam decisão nacional.'
+    :'Alterações enviadas pela igreja para análise nacional, com histórico de status.';
+  el('fju-request-acessos-heading').textContent=national?'Aprovação de acesso ao painel':'Acesso administrativo solicitado';
+  el('fju-request-acessos-intro').textContent=national
+    ?'Aprove ou rejeite acessos vinculados a contas e polos autorizados.'
+    :'Veja os pedidos de acesso feitos a partir das fichas da sua igreja. A aprovação é exclusiva do Nacional.';
   setAdminMenuOpen(false);
 }
 function activateMainTab(button){
@@ -1813,6 +1841,14 @@ function activateMainTab(button){
     if(panel&&!panel.classList.contains('hidden'))el('fju-content-toolbar').scrollIntoView({behavior:'auto',block:'start'});
   }
 }
+document.querySelectorAll('[data-request-jump]').forEach(button=>{
+  button.addEventListener('click',()=>{
+    const target=el(button.dataset.requestJump);
+    if(target&&!target.closest('section.panel')?.classList.contains('hidden')){
+      target.scrollIntoView({behavior:'auto',block:'start'});
+    }
+  });
+});
 document.querySelectorAll('#main-nav [data-tab]').forEach(button=>button.addEventListener('click',()=>activateMainTab(button)));
 document.getElementById('weekly-status-card')?.addEventListener('click',()=>document.querySelector('#main-nav [data-tab="relatorios"]')?.click());
 supabase.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){recoveryMode=true;show('recovery')}else if(event==='SIGNED_OUT'){recoveryMode=false;resetYouthSession();coordinatorCards.clear();show('auth')}});
