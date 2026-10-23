@@ -1,0 +1,71 @@
+/* FJU JAPAN | Acabamento da barra de conta do Painel Admin.
+   Mantém alertas de validação, acessos, notificações e logout existentes. */
+body.fju-admin-shell #app>.topline.fju-session-bar{
+ display:flex;justify-content:space-between;align-items:center;gap:14px;
+ margin:0 0 13px;padding:13px 16px;border:1px solid #dce6f4;border-radius:17px;
+ background:#fff;box-shadow:0 6px 21px rgba(17,43,78,.055)
+}
+.fju-session-user{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
+.fju-session-avatar{
+ display:grid;place-items:center;width:49px;height:49px;flex:0 0 49px;
+ border-radius:15px;background:linear-gradient(145deg,#1e477c,#193258);
+ color:#fff;letter-spacing:-.08em;font-weight:900;font-size:15px;
+ box-shadow:inset 0 -2px 0 #9bb8e060
+}
+.fju-session-info{min-width:0}
+.fju-session-eyebrow{display:block;margin:0 0 4px;color:#617697;letter-spacing:.13em;font-size:9px;font-weight:850}
+body.fju-admin-shell #app>.topline.fju-session-bar #identity{
+ margin:0 0 7px;font-size:14px;line-height:1.35;font-weight:800;color:#21395e;
+ overflow-wrap:anywhere
+}
+.fju-session-tags{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.fju-session-tags>*{
+ display:inline-flex;align-items:center;max-width:100%;padding:5px 9px;border-radius:999px;
+ font-size:10px;font-weight:750;line-height:1.25;overflow-wrap:anywhere
+}
+.fju-session-tags strong{color:#355a93;background:#e8f1ff}
+.fju-session-tags span{color:#596b82;background:#f0f3f8}
+.fju-session-actions{flex:0 0 auto;gap:8px}
+body.fju-admin-shell .fju-session-actions button{
+ min-height:43px;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+ border:1px solid #d4dff0;border-radius:12px;
+ font-size:12px;padding:9px 13px;background:#edf3fd;color:#264979;font-weight:800
+}
+body.fju-admin-shell .fju-session-actions .fju-session-logout{background:#fff;color:#425675}
+body.fju-admin-shell .fju-session-actions button:hover{background:#dfe9f9}
+.fju-session-notifications{position:relative}
+.fju-session-notifications #pending-bell-count:not([hidden]){
+ display:inline-grid;place-items:center;padding:2px 6px;min-width:18px;
+ color:#fff;background:#bd4250;border-radius:99px;font-size:10px
+}
+body.fju-admin-shell #app>details.fju-validation-notice{
+ margin:0 0 15px;padding:0;border:1px solid #eddfb9;border-left:3px solid #d6a548;
+ border-radius:12px;background:#fffaf0;color:#624f2c;font-size:12px;
+ box-shadow:0 2px 9px #493a1108
+}
+.fju-validation-notice summary{
+ list-style:none;display:flex;align-items:center;gap:10px;min-height:43px;padding:9px 14px;
+ cursor:pointer;font-weight:750;line-height:1.5
+}
+.fju-validation-notice summary::-webkit-details-marker{display:none}
+.fju-validation-notice summary::after{content:"⌄";font-size:21px;margin-left:auto;flex-shrink:0}
+.fju-validation-notice[open] summary::after{transform:rotate(180deg)}
+.fju-validation-notice summary:focus-visible{outline:3px solid #91a9e8;outline-offset:2px;border-radius:10px}
+.fju-validation-notice p{font-size:12px;line-height:1.6;margin:0;padding:0 14px 14px;color:#68562f}
+@media(max-width:700px){
+ body.fju-admin-shell #app>.topline.fju-session-bar{align-items:flex-start;gap:10px;padding:12px}
+ .fju-session-avatar{width:42px;height:42px;flex-basis:42px;border-radius:13px;font-size:13px}
+ .fju-session-user{gap:9px}
+ .fju-session-actions{display:flex;flex-direction:column;gap:5px;align-items:stretch}
+ body.fju-admin-shell .fju-session-actions button{min-height:40px;min-width:62px;padding:7px 9px}
+ body.fju-admin-shell #app>.topline.fju-session-bar #identity{font-size:12px}
+ .fju-session-tags>*{padding:4px 7px;font-size:9px}
+ .fju-validation-notice summary{padding:10px;font-size:11px}
+}
+@media(max-width:390px){
+ .fju-session-eyebrow{font-size:8px}
+ .fju-session-avatar{width:37px;height:37px;flex-basis:37px;font-size:12px}
+ .fju-session-user{gap:7px}
+ .fju-session-tags{gap:4px}
+}
+@media print{body.fju-admin-shell .fju-session-bar,body.fju-admin-shell .fju-validation-notice{display:none!important}}
