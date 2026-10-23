@@ -10,6 +10,8 @@ export function setupCoordinatorCards({supabase,compressPhoto,navigateToTab}){
   const nationalArea=byId('leader-national-area');
   const directory=byId('leader-directory');
   const directoryMessage=byId('leader-directory-message');
+  const directorySearch=byId('leader-directory-search');
+  const directoryVisibleCount=byId('leader-directory-visible-count');
   const editor=byId('leader-editor');
   const nameInput=byId('leader-name');
   const fileInput=byId('leader-photo');
@@ -34,6 +36,8 @@ export function setupCoordinatorCards({supabase,compressPhoto,navigateToTab}){
     ownArea?.classList.add('hidden');
     nationalArea?.classList.add('hidden');
     if(directory)directory.replaceChildren();
+    if(directorySearch)directorySearch.value='';
+    if(directoryVisibleCount)directoryVisibleCount.textContent='';
     if(homeCard)homeCard.replaceChildren();
     if(ownCard)ownCard.replaceChildren();
     if(nameInput)nameInput.value='';
@@ -112,8 +116,24 @@ export function setupCoordinatorCards({supabase,compressPhoto,navigateToTab}){
     renderOwn();
     tell(data?'Você pode atualizar seu nome ou foto.':'Preencha seu nome e foto para criar seu card.');
   }
+  function filterDirectory(){
+    if(!directorySearch||!directory)return;
+    const normalize=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+    const query=normalize(directorySearch.value);
+    let visible=0;
+    const items=[...directory.querySelectorAll('.leader-directory-item')];
+    for(const item of items){
+      item.hidden=Boolean(query&&!item.dataset.search.includes(query));
+      if(!item.hidden)visible++;
+    }
+    directoryVisibleCount.textContent=query
+      ?visible+' de '+items.length+' encontrado(s)'
+      :items.length+' coordenador(es)';
+  }
+  directorySearch?.addEventListener('input',filterDirectory);
   async function loadDirectory(requestToken){
     directory.replaceChildren();
+    directoryVisibleCount.textContent='';
     directoryMessage.textContent='Carregando coordenadores...';
     const {data,error}=await supabase.rpc('fju_listar_cards_coordenadores');
     if(requestToken!==token)return;
@@ -127,6 +147,7 @@ export function setupCoordinatorCards({supabase,compressPhoto,navigateToTab}){
       :'Ainda não há coordenadores ativos para exibir.';
     for(const person of rows){
       const slot=make('div','leader-directory-item');
+      slot.dataset.search=String([person.nome_exibicao,person.polo_nome].join(' ')).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
       slot.append(createCard({nome:person.nome_exibicao,polo:person.polo_nome,pendente:!person.nome_exibicao}));
       directory.append(slot);
       if(person.foto_path){
@@ -137,6 +158,7 @@ export function setupCoordinatorCards({supabase,compressPhoto,navigateToTab}){
         })();
       }
     }
+    filterDirectory();
   }
   async function load(user,profile,poloName){
     clear();
