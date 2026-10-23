@@ -20,7 +20,7 @@ function fixture(role='coordenador',options={}){
  const profile={papel:role,polo_id:role==='coordenador'?'polo-A':null};
  const calls=[],pendingYouth=deferred();
  const supplies={
-   fju_jovens:options.youthCount??12,
+   fju_jovens:Object.prototype.hasOwnProperty.call(options,'youthCount')?options.youthCount:12,
    fju_polos:23
  };
  w.__profile=profile;
