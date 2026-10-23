@@ -619,7 +619,16 @@ const SUPABASE_URL='https://hmacroktklgwkofxsygv.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_mdkfafhpqtthwzU8Hf7u9A_rErx3MFJ';
 const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const el=id=>document.getElementById(id);
-const administrativeAccess=setupAdministrativeAccess({supabase,getProfile:()=>currentProfile});
+const administrativeAccess=setupAdministrativeAccess({
+  supabase,getProfile:()=>currentProfile,
+  onDecision:()=>{
+    if(!currentProfile)return;
+    const profile=currentProfile;
+    void loadYouthRequests();
+    void loadYouth();
+    void refreshAdminPriorities(profile,profileRequest);
+  }
+});
 const coordinatorCards=setupCoordinatorCards({supabase,compressPhoto:compactarFoto100KB,navigateToTab:()=>document.querySelector('#main-nav [data-tab="lideranca"]')?.click()});
 const quantityOptions=document.createDocumentFragment();
 for(let n=0;n<=1000;n++){const option=document.createElement('option');option.value=String(n);option.textContent=String(n);quantityOptions.append(option);}
@@ -1386,15 +1395,49 @@ async function loadYouthRequests(){
       card.append(warn);
     }
     if(profile.papel==='nacional'&&r.status==='pendente'&&identificado){
-      const approve=document.createElement('button');approve.type='button';approve.textContent=linkedAccess?'Aprovar patente e acesso':'Aprovar solicitação';approve.disabled=!!accessUnknown;
-      approve.onclick=async()=>{if(currentProfile!==profile||!card.isConnected)return;if(!confirm(linkedAccess?'Aprovar a patente Coordenador e liberar o painel para '+linkedAccess.email+' no polo '+linkedAccess.polo_nome+'?':'Aprovar esta solicitação? A ficha será atualizada automaticamente.'))return;
-        const {error}=await supabase.rpc('fju_decidir_solicitacao',{p_solicitacao_id:r.id,p_aprovar:true});
-        if(currentProfile!==profile)return;
-        if(error)message('requests-message',error.message,true);
-        else {await loadYouthRequests();await administrativeAccess.refresh();await loadYouth();void refreshAdminPriorities(profile,profileRequest);}};
-      const deny=document.createElement('button');deny.type='button';deny.className='secondary';deny.textContent='Recusar';
-      deny.onclick=async()=>{if(currentProfile!==profile||!card.isConnected)return;if(!confirm('Rejeitar esta solicitação? A ficha não será alterada.'))return;const {error}=await supabase.rpc('fju_decidir_solicitacao',{p_solicitacao_id:r.id,p_aprovar:false});if(currentProfile!==profile)return;if(error)message('requests-message',error.message,true);else {void loadYouthRequests();void administrativeAccess.refresh();void refreshAdminPriorities(profile,profileRequest);}};
-      const actions=document.createElement('div');actions.className='authorization-actions';actions.append(approve,deny);card.append(actions);
+      const approve=document.createElement('button');approve.type='button';
+      approve.textContent=linkedAccess?'Aprovar patente e acesso':'Aprovar solicitação';
+      approve.disabled=!!accessUnknown;
+      const deny=document.createElement('button');deny.type='button';
+      deny.className='secondary';deny.textContent='Recusar';
+      const feedback=document.createElement('p');feedback.className='message';
+      feedback.setAttribute('role','status');feedback.setAttribute('aria-live','polite');
+      let submitting=false;
+      async function decide(aprovado){
+        if(submitting||currentProfile!==profile||!card.isConnected)return;
+        if(aprovado&&accessUnknown)return;
+        const question=aprovado
+          ?(linkedAccess
+            ?'Aprovar a patente Coordenador e liberar o painel para '+linkedAccess.email+' no polo '+linkedAccess.polo_nome+'?'
+            :'Aprovar esta solicitação? A ficha será atualizada automaticamente.')
+          :'Rejeitar esta solicitação? A ficha não será alterada.';
+        if(!confirm(question))return;
+        submitting=true;approve.disabled=true;deny.disabled=true;
+        feedback.classList.remove('error');
+        feedback.textContent=aprovado?'Aprovando solicitação…':'Recusando solicitação…';
+        try{
+          const {error}=await supabase.rpc('fju_decidir_solicitacao',{
+            p_solicitacao_id:r.id,p_aprovar:aprovado
+          });
+          if(currentProfile!==profile||!card.isConnected)return;
+          if(error)throw error;
+          feedback.textContent=aprovado?'Aprovado com sucesso.':'Solicitação recusada.';
+          await loadYouthRequests();
+          if(currentProfile!==profile)return;
+          void administrativeAccess.refresh();
+          if(aprovado)void loadYouth();
+          void refreshAdminPriorities(profile,profileRequest);
+        }catch(error){
+          if(currentProfile!==profile||!card.isConnected)return;
+          feedback.classList.add('error');
+          feedback.textContent='Não foi possível concluir: '+(error?.message||'Tente novamente.');
+          approve.disabled=!!accessUnknown;deny.disabled=false;
+        }finally{submitting=false;}
+      }
+      approve.addEventListener('click',()=>void decide(true));
+      deny.addEventListener('click',()=>void decide(false));
+      const actions=document.createElement('div');actions.className='authorization-actions';
+      actions.append(approve,deny);card.append(actions,feedback);
     }
     list.append(card);
   }
