@@ -1949,14 +1949,34 @@ async function loadSpecialEvents(){
   }
 }
 async function loadEventRequests(events=[],poloNames=new Map(),version=specialEventsLoadVersion,profile=currentProfile){
- const list=el('event-requests-list');if(!list||!profile)return;
+ const list=el('event-requests-list');if(!list||!profile)return null;
  const panel=el('event-requests-panel');
- const {data,error}=await supabase.from('fju_solicitacoes_eventos').select('id,tipo,evento_id,polo_id,dados_propostos,status,criado_em').eq('status','pendente').order('criado_em',{ascending:true}).limit(200);
- if(version!==specialEventsLoadVersion||currentProfile!==profile)return;
+ // Pagina até buscar todos os pedidos pendentes. Antes, limit(200) ocultava
+ // pedidos mais novos e podia permitir repetir exclusões fora da primeira página.
+ const data=[],pageSize=200;
+ for(let offset=0;;offset+=pageSize){
+   let query=supabase.from('fju_solicitacoes_eventos')
+     .select('id,tipo,evento_id,polo_id,dados_propostos,status,criado_em')
+     .eq('status','pendente');
+   if(profile.papel==='coordenador')query=query.eq('polo_id',profile.polo_id);
+   const result=await query.order('criado_em',{ascending:true})
+     .order('id',{ascending:true}).range(offset,offset+pageSize-1);
+   if(version!==specialEventsLoadVersion||currentProfile!==profile)return null;
+   if(result.error){
+     list.replaceChildren();
+     panel.classList.remove('hidden');
+     list.textContent='Não foi possível carregar solicitações: '+result.error.message;
+     el('event-requests-count').textContent='Erro';
+     return null;
+   }
+   const batch=result.data||[];
+   data.push(...batch);
+   if(batch.length<pageSize)break;
+ }
+ if(version!==specialEventsLoadVersion||currentProfile!==profile)return null;
  list.replaceChildren();
- if(error){panel.classList.remove('hidden');list.textContent='Não foi possível carregar solicitações: '+error.message;el('event-requests-count').textContent='Erro';return null;}
- const pendingRemovals=new Set((data||[]).filter(req=>req.tipo==='exclusao'&&req.evento_id).map(req=>String(req.evento_id)));
- const pending=(data||[]).length;
+ const pendingRemovals=new Set(data.filter(req=>req.tipo==='exclusao'&&req.evento_id).map(req=>String(req.evento_id)));
+ const pending=data.length;
  panel.classList.toggle('hidden',pending===0);
  el('event-requests-count').textContent=pending+' pendente'+(pending===1?'':'s');
  el('event-requests-count').classList.toggle('has-pending',pending>0);
