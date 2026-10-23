@@ -55,3 +55,49 @@
  .leader-directory{grid-template-columns:minmax(0,1fr)}
  .leader-directory .leader-card{max-width:390px;width:100%;justify-self:center}
 }
+
+/* FJU JAPAN | Liderança integrada ao painel de controle; sem mudar permissões. */
+#lideranca .leader-section-banner{
+ padding:20px 22px;margin:0 0 15px;border-radius:18px;
+ background:linear-gradient(120deg,#152e56,#264c82);border:1px solid #46628c;
+ box-shadow:0 7px 22px rgba(20,44,80,.12);color:#fff
+}
+#lideranca .leader-section-banner>span{
+ display:block;color:#cadcf9;letter-spacing:.16em;font-weight:850;font-size:10px
+}
+#lideranca .leader-section-banner h3{margin:8px 0;font-size:clamp(22px,2.8vw,28px);color:#fff;letter-spacing:-.025em;line-height:1.2}
+#lideranca .leader-section-banner p{margin:0;color:#d9e7fa;font-size:13px;line-height:1.55;max-width:700px}
+#lideranca .leader-section-intro{margin:14px 0 20px;line-height:1.55}
+#lideranca .leader-own-heading{margin:0 0 12px}
+#lideranca .leader-own-heading h3{margin:0 0 4px;color:#243d66;font-size:17px}
+#lideranca .leader-own-heading p{margin:0;color:#627593;font-size:12px;line-height:1.55}
+#lideranca .leader-self-layout{grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:14px;margin-bottom:22px}
+#lideranca .leader-own-card{min-width:0}
+#lideranca .leader-editor{padding:20px;border-color:#dae4f3;border-radius:18px;background:#f8faff}
+#lideranca .leader-editor input[type=text],#lideranca .leader-editor input[type=file]{border-radius:11px;border:1px solid #c9d6ea}
+#lideranca .leader-editor button[type=submit]{border-radius:12px;background:#244a82;min-height:46px}
+#lideranca .leader-directory-heading{display:flex;align-items:start;justify-content:space-between;flex-wrap:wrap;gap:9px;border-top:1px solid #e3eaf5;padding-top:21px}
+#lideranca .leader-directory-heading h3{margin:0 0 5px;color:#233d67;font-size:18px}
+#lideranca .leader-directory-heading p{font-size:12px;color:#617591;line-height:1.55;margin:0}
+#lideranca .leader-private-mark{display:inline-block;background:#ecf1fb;border-radius:99px;padding:6px 10px;color:#365788;font-size:11px;font-weight:800}
+#lideranca .leader-directory-tools{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:17px 0 12px}
+#lideranca .leader-directory-tools>div{flex:1;min-width:0;max-width:440px}
+#lideranca .leader-directory-tools label{margin:0 0 6px;color:#4b6283;font-size:12px}
+#lideranca #leader-directory-search{min-height:45px;width:100%;font-size:16px;border-radius:12px}
+#lideranca #leader-directory-visible-count{font-size:12px;color:#586c89;font-weight:750;white-space:nowrap}
+#lideranca .leader-directory{grid-template-columns:repeat(auto-fill,minmax(min(100%,265px),1fr));gap:14px}
+#lideranca .leader-directory-item[hidden]{display:none!important}
+#lideranca .leader-directory .leader-card{min-height:325px;padding:18px 16px}
+#lideranca .leader-directory .leader-card h3{font-size:17px}
+#lideranca .leader-profile-note{line-height:1.55}
+@media(max-width:760px){
+ #lideranca .leader-section-banner{padding:17px}
+ #lideranca .leader-self-layout{grid-template-columns:minmax(0,1fr);gap:13px}
+ #lideranca .leader-own-heading{text-align:left}
+ #lideranca .leader-directory-tools{align-items:stretch;flex-direction:column}
+ #lideranca .leader-directory-tools>div{max-width:none}
+ #lideranca #leader-directory-visible-count{align-self:flex-start}
+ #lideranca .leader-directory{grid-template-columns:minmax(0,1fr)}
+ #lideranca .leader-editor{padding:15px}
+}
+@media print{#lideranca .leader-editor,#lideranca .leader-directory-tools{display:none!important}}
