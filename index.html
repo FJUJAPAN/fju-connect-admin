@@ -387,7 +387,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
   <button type="button" class="fju-priority-card" data-priority-tab="inscricoes"><span class="fju-priority-label">📩 Inscrições de jovens</span><strong id="fju-priority-signups" aria-live="polite">…</strong><span id="fju-priority-signups-note">Aguardando atualização</span></button>
   <button type="button" class="fju-priority-card" data-priority-tab="autorizacoes"><span class="fju-priority-label">✅ <span id="fju-priority-requests-label">Solicitações</span></span><strong id="fju-priority-requests" aria-live="polite">…</strong><span id="fju-priority-requests-note">Aguardando atualização</span></button>
   <button type="button" class="fju-priority-card" data-priority-tab="relatorios"><span class="fju-priority-label">📊 <span id="fju-priority-reports-label">Relatórios da semana</span></span><strong id="fju-priority-reports" aria-live="polite">…</strong><span id="fju-priority-reports-note">Aguardando atualização</span></button>
-</div><div class="grid"><div class="stat"><span id="scope-label">Igreja</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><button type="button" id="weekly-status-card" class="stat weekly-status-card" aria-label="Abrir relatório semanal"><span>Relatório desta semana</span><b id="pending-count">Verificando…</b><small>Toque para abrir o relatório →</small></button></div>
+</div><div class="grid"><div class="stat"><span id="scope-label">Igreja</span><b id="scope-count">—</b></div><div class="stat">Jovens ativos<b id="youth-count">—</b></div><button type="button" id="weekly-status-card" class="stat weekly-status-card" aria-label="Abrir relatório semanal"><span>Último relatório semanal</span><b id="pending-count">Verificando…</b><small>Toque para abrir o relatório →</small></button></div>
 <h3 class="fju-actions-title">Acesso rápido</h3>
 <div class="fju-dashboard-actions" aria-label="Atalhos do painel de controle">
   <button type="button" class="fju-action-card" data-open-tab="jovens" data-national-title="Fichas dos 23 polos" data-local-title="Fichas do meu polo" data-national-desc="Consultar, cadastrar e organizar jovens." data-local-desc="Consultar, cadastrar e solicitar alterações."><span aria-hidden="true" class="fju-action-icon">👥</span><strong>Fichas dos jovens</strong><span>Cadastros e acompanhamento</span><span aria-hidden="true" class="fju-action-arrow">→</span></button>
@@ -647,7 +647,18 @@ const message=(id,msg,error=false)=>{el(id).textContent=msg;el(id).className='me
 let recoveryMode=false;
 let profileRequest=0; let currentProfile=null; let youthRows=[]; let photoUrl=null;
 let youthInitialization=Promise.resolve();
-async function countRows(table){const {count,error}=await supabase.from(table).select('*',{count:'exact',head:true});if(error)throw error;return count??0;}
+async function countRows(table,profile=null){
+  let query=supabase.from(table).select('id',{count:'exact',head:true});
+  if(table==='fju_jovens'){
+    // Mesma definição de ficha ativa da lista de jovens.
+    query=query.is('excluido_em',null);
+    if(profile?.papel==='coordenador')query=query.eq('polo_id',profile.polo_id);
+  }
+  const {count,error}=await query;
+  if(error)throw error;
+  if(!Number.isFinite(count))throw new Error('O Supabase não retornou a contagem.');
+  return count;
+}
 function localISODate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return y+'-'+m+'-'+day;}
 function previousSundayISO(){
   const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
@@ -886,6 +897,10 @@ let currentPoloNome='';
    Respostas de consultas pendentes não poderão popular a próxima sessão. */
 function clearAdminPrivateSession(){
   ++profileRequest;
+  ++dashboardLoadVersion;
+  el('youth-count').textContent='—';
+  el('pending-count').textContent='Verificando…';
+  el('scope-count').textContent='—';
   specialEventRemovalsInFlight.clear();
   ++specialEventSubmitVersion;
   specialEventSubmitting=false;
@@ -919,29 +934,46 @@ function clearAdminPrivateSession(){
   coordinatorCards.clear();
   administrativeAccess.clear();
 }
+let dashboardLoadVersion=0;
 async function loadDashboard(profile,requestId){
+  const version=++dashboardLoadVersion;
+  const isActive=()=>requestId===profileRequest&&currentProfile===profile&&version===dashboardLoadVersion;
+  if(!isActive())return;
   const local=profile.papel==='coordenador';
   el('scope-label').textContent=local?'Igreja':'Polos cadastrados';
   el('scope-count').textContent=local?('FJU '+(currentPoloNome||'Polo')):'—';
   el('youth-count').textContent='…';
-  if(!local){try{const n=await countRows('fju_polos');if(requestId===profileRequest)el('scope-count').textContent=String(n)}catch{if(requestId===profileRequest)el('scope-count').textContent='Indisponível'}}
-  for(const [table,id] of [['fju_jovens','youth-count']]){
-    try{const n=await countRows(table);if(requestId===profileRequest)el(id).textContent=String(n)}
-    catch{if(requestId===profileRequest)el(id).textContent='Indisponível'}
+  if(!local){
+    try{
+      const total=await countRows('fju_polos');
+      if(isActive())el('scope-count').textContent=String(total);
+    }catch{
+      if(isActive())el('scope-count').textContent='Indisponível';
+    }
   }
+  if(!isActive())return;
+  try{
+    const total=await countRows('fju_jovens',profile);
+    if(isActive())el('youth-count').textContent=String(total);
+  }catch{
+    if(isActive())el('youth-count').textContent='Indisponível';
+  }
+  if(!isActive())return;
   if(local){
-    if(requestId!==profileRequest)return;
     el('pending-count').textContent='Verificando…';
     try{
-      const lastSunday=previousSundayISO();
-      const d=new Date(lastSunday+'T12:00:00Z');
-      const tokyoDay=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Tokyo',weekday:'short'}).format(new Date());
-      if(tokyoDay!=='Sun')d.setUTCDate(d.getUTCDate()+7);
-      const weekSunday=d.toISOString().slice(0,10);
-      const {data,error}=await supabase.from('fju_relatorios_semanais').select('polo_id').eq('polo_id',profile.polo_id).eq('semana_domingo',weekSunday).limit(1);
+      // O relatório do próximo domingo só é liberado naquele domingo.
+      // Nos demais dias, acompanhar o último domingo concluído.
+      const weekSunday=previousSundayISO();
+      const {data,error}=await supabase.from('fju_relatorios_semanais')
+        .select('polo_id').eq('polo_id',profile.polo_id)
+        .eq('semana_domingo',weekSunday).limit(1);
+      if(!isActive())return;
       if(error)throw error;
-      if(requestId===profileRequest)el('pending-count').textContent=data?.length?'✓ Enviado':'● Pendente';
-    }catch(err){if(requestId===profileRequest)el('pending-count').textContent='Status indisponível';}
+      el('pending-count').textContent=data?.length?'✓ Enviado':'● Pendente';
+    }catch{
+      if(isActive())el('pending-count').textContent='Status indisponível';
+    }
   }
 }
 
@@ -2361,7 +2393,7 @@ function updatePriorityReportStatus(){
   el('fju-priority-reports').textContent=raw||'…';
   el('fju-priority-reports-note').textContent=national
     ?'Polos pendentes na semana selecionada'
-    :'Situação do envio desta semana';
+    :'Situação do último domingo liberado';
 }
 new MutationObserver(updatePriorityReportStatus).observe(el('pending-count'),{childList:true,characterData:true,subtree:true});
 async function refreshAdminPriorities(profile,requestId){
