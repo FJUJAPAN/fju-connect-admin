@@ -2049,7 +2049,13 @@ el('special-event-form').addEventListener('submit',async e=>{
       resetSpecialEventEdit();
       message('special-event-message',editId?'Evento atualizado com sucesso.':'Evento especial salvo com sucesso.');
     }
-    await loadSpecialEvents();
+    // Falha ao atualizar a lista não desfaz o evento já salvo no Supabase.
+    try{
+      await loadSpecialEvents();
+    }catch(refreshError){
+      if(!stillCurrent())return;
+      message('special-event-message','Evento gravado ou solicitação enviada, mas não foi possível atualizar a lista. Use Atualizar para consultar novamente.',true);
+    }
     if(!stillCurrent())return;
     if(profile.papel==='coordenador')void refreshAdminPriorities(profile,profileRequest);
   }catch(error){
