@@ -255,9 +255,10 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <link rel="stylesheet" href="./admin-reports.css?v=20261023a">
 <link rel="stylesheet" href="./admin-settings.css?v=20261023a">
 <link rel="stylesheet" href="./admin-login.css?v=20261023a">
+<link rel="stylesheet" href="./admin-shell-finish.css?v=20261023a">
 </head>
 <body class="fju-admin-shell">
-<header class="fju-admin-header"><div class="fju-admin-header-inner"><a class="fju-admin-brand" href="https://fjujapan.github.io/fju-connect/" aria-label="FJU Connect JAPAN — site oficial"><span class="fju-admin-mark" aria-hidden="true">FJU<span>.</span></span><span class="fju-admin-brand-copy"><strong>CONNECT</strong><small>JAPAN</small></span></a><div class="fju-admin-header-tools"><span class="fju-admin-context">ÁREA ADMINISTRATIVA</span><a class="fju-admin-site-link" href="https://fjujapan.github.io/fju-connect/">↗ Site FJU</a></div></div></header>
+<header class="fju-admin-header"><div class="fju-admin-header-inner"><a class="fju-admin-brand" href="https://fjujapan.github.io/fju-connect/" aria-label="FJU Connect JAPAN — site oficial"><span class="fju-admin-mark" aria-hidden="true">FJU<span>.</span></span><span class="fju-admin-brand-copy"><strong>CONNECT</strong><small>JAPAN</small></span></a><div class="fju-admin-header-tools"><span class="fju-admin-context" id="fju-admin-context">ÁREA ADMINISTRATIVA</span><a class="fju-admin-site-link" href="https://fjujapan.github.io/fju-connect/">↗ Site FJU</a></div></div></header>
 <main class="wrap">
 <section id="auth" class="panel auth fju-login-shell">
   <div class="fju-login-intro">
@@ -321,7 +322,28 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
   </form>
   <p id="recovery-message" class="message" role="status" aria-live="polite"></p>
 </section>
-<div id="app" class="hidden"><div class="topline"><p id="identity" class="muted"></p><div class="actions"><button id="pending-bell" type="button" class="secondary" aria-label="Verificar pendências do relatório" title="Pendências do relatório">🔔 <span id="pending-bell-count" hidden>1</span></button><a href="https://fjujapan.github.io/fju-connect/" style="color:#253b75;font-weight:650;font-size:13px">← Site FJU</a><button id="logout" class="secondary">Sair</button></div></div><div class="notice"><strong>Ambiente em validação.</strong> Login, fichas, autorizações, relatórios e impressão disponíveis para testes. Antes de cadastrar dados reais, confirme as permissões de acesso por igreja e a proteção das fotos.</div>
+<div id="app" class="hidden">
+<div class="topline fju-session-bar" aria-label="Conta administrativa conectada">
+  <div class="fju-session-user">
+    <span class="fju-session-avatar" aria-hidden="true">FJU</span>
+    <div class="fju-session-info">
+      <span class="fju-session-eyebrow">SESSÃO AUTORIZADA</span>
+      <p id="identity" class="muted"></p>
+      <div class="fju-session-tags">
+        <strong id="fju-session-role">Verificando perfil</strong>
+        <span id="fju-session-scope">Consultando igreja</span>
+      </div>
+    </div>
+  </div>
+  <div class="actions fju-session-actions">
+    <button id="pending-bell" type="button" class="secondary fju-session-notifications" aria-label="Verificar pendências do relatório" title="Pendências do relatório">🔔 <span id="pending-bell-count" hidden>1</span></button>
+    <button id="logout" type="button" class="secondary fju-session-logout">Sair <span aria-hidden="true">↗</span></button>
+  </div>
+</div>
+<details class="notice fju-validation-notice">
+  <summary><span aria-hidden="true">⚠️</span> Atenção: confira as permissões e a proteção das fotos antes de cadastrar dados reais.</summary>
+  <p><strong>Ambiente em validação.</strong> Login, fichas, autorizações, relatórios e impressão estão disponíveis. Antes do uso com dados reais, confirme as permissões por igreja e o acesso às fotos.</p>
+</details>
 
 <div class="fju-admin-workspace" id="fju-admin-workspace">
 <aside class="fju-admin-sidebar" id="fju-admin-sidebar" aria-label="Funções administrativas">
@@ -586,7 +608,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
   </section>
 </div>
 </section></div></div></div>
-</main><div id="print-area" class="hidden"></div><footer>FJU Connect JAPAN · Teste de autenticação</footer>
+</main><div id="print-area" class="hidden"></div><footer>© 2026 FJU JAPAN · FJU Connect Admin</footer>
 <script type="module">
 import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import {setupCoordinatorCards} from './cards-coordenadores.js';
@@ -601,7 +623,10 @@ const quantityOptions=document.createDocumentFragment();
 for(let n=0;n<=1000;n++){const option=document.createElement('option');option.value=String(n);option.textContent=String(n);quantityOptions.append(option);}
 for(const select of document.querySelectorAll('select.weekly-quantity')){select.append(quantityOptions.cloneNode(true));select.value='0';}
 
-const show=(id)=>{for(const s of ['auth','recovery','app'])el(s).classList.toggle('hidden',s!==id)};
+const show=(id)=>{
+  for(const s of ['auth','recovery','app'])el(s).classList.toggle('hidden',s!==id);
+  if(id!=='app')el('fju-admin-context').textContent='ÁREA ADMINISTRATIVA';
+};
 const message=(id,msg,error=false)=>{el(id).textContent=msg;el(id).className='message '+(error?'error':'success')};
 let recoveryMode=false;
 let profileRequest=0; let currentProfile=null; let youthRows=[]; let photoUrl=null;
@@ -867,7 +892,10 @@ async function loadProfile(user){
   }
   if(requestId!==profileRequest)return;
   const role=data.papel==='nacional'?'Administrador Nacional':'Coordenador Local';
-  el('identity').textContent=`Conectado: ${user.email} · ${role}${poloNome?' · FJU '+poloNome:''}`;
+  el('identity').textContent=user.email||'E-mail indisponível';
+  el('fju-session-role').textContent=role;
+  el('fju-session-scope').textContent=poloNome?'FJU '+poloNome:'Visão nacional · Todos os polos';
+  el('fju-admin-context').textContent=data.papel==='nacional'?'ADMINISTRAÇÃO NACIONAL':'COORDENAÇÃO LOCAL';
   el('fju-settings-email').textContent=user.email||'E-mail indisponível';
   el('role-detail').textContent=data.papel==='nacional'?'Perfil: Administrador Nacional — visão de todos os polos autorizados.':`Perfil: Coordenador Local — FJU ${poloNome}.`;
   el('dashboard-note').textContent=`${data.papel==='nacional'?'Visão nacional':'Visão do polo FJU '+poloNome}. Contagens fornecidas pelo Supabase com as políticas RLS da conta autenticada. Pendências locais ainda não calculadas.`;
