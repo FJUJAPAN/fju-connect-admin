@@ -10,7 +10,7 @@ const end=html.indexOf("\nlet currentRequestFilter='pendente';",begin);
 assert.ok(begin>=0&&end>begin,'Fluxo de exclusão não encontrado');
 const handler=html.slice(begin,end);
 assert.match(handler,/tipo:'exclusao'/);
-assert.doesNotMatch(handler,/\.delete\(/);
+assert.doesNotMatch(handler,/supabase\.from\(['\"]fju_jovens['\"]\)/);
 
 function deferred(){let resolve;const promise=new Promise(r=>resolve=r);return {promise,resolve};}
 const flush=async()=>{for(let i=0;i<8;i++)await new Promise(r=>setImmediate(r));};
