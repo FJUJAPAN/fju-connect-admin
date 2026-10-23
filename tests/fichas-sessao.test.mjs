@@ -36,7 +36,8 @@ function formFixture(){
   'const resetYouth=()=>window.__success.push("reset");'+
   'const setYouthFormOpen=()=>window.__success.push("close");'+
   'const loadYouth=async()=>window.__success.push("reload");'+
-  'const loadDashboard=()=>window.__success.push("dashboard");'+formCode);
+  'const loadDashboard=()=>window.__success.push("dashboard");'+formCode+
+  '\nwindow.__invalidateYouth=()=>{currentProfile=null;++youthSubmitVersion;youthSubmitInProgress=false;};');
  return {w,dom,doc,calls,pending,cleanup:()=>dom.window.close()};
 }
 test('duplo submit de jovem envia uma única gravação',async()=>{
@@ -60,7 +61,7 @@ test('logout com gravação pendente não muda a tela da nova sessão',async()=>
  try{
    f.doc.querySelector('#youth-form').dispatchEvent(new f.w.Event('submit',{cancelable:true,bubbles:true}));
    assert.equal(f.calls.length,1);
-   f.w.eval('currentProfile=null;++youthSubmitVersion;youthSubmitInProgress=false;');
+   f.w.__invalidateYouth();
    f.pending.resolve({data:{id:'jovem-1'},error:null});
    await settle();
    assert.deepEqual(f.w.__success,[]);
