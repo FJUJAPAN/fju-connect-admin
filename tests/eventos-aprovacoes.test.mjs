@@ -20,7 +20,8 @@ function fixture(role='nacional'){
  w.__db={
   from:table=>{
     assert.equal(table,'fju_solicitacoes_eventos');
-    return {select:()=>({eq:()=>({order:()=>({limit:()=>Promise.resolve({data:[req],error:null})})})})};
+    const query={eq:()=>query,order:()=>query,range:()=>Promise.resolve({data:[req],error:null})};
+    return {select:()=>query};
   },
   rpc:(name,args)=>{calls.push({name,args});return decision.promise;}
  };
