@@ -9,7 +9,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>FJU Connect JAPAN · Admin</title>
 <link rel="manifest" href="./manifest.webmanifest">
-<link rel="stylesheet" href="./cards-coordenadores.css">
+<link rel="stylesheet" href="./cards-coordenadores.css?v=20261023b">
 <link rel="stylesheet" href="./fichas-jovens.css">
 <meta name="theme-color" content="#081e3b">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -449,7 +449,16 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 </div></section>
 <section id="lideranca" class="panel hidden">
 <h2>FJU JAPAN · Liderança</h2>
-<p class="leader-section-intro">Um espaço para reconhecer quem cuida dos jovens em cada igreja. Fotos e perfis ficam disponíveis somente para pessoas autorizadas no painel.</p>
+<div class="leader-section-banner">
+  <span id="leader-banner-eyebrow">FJU JAPAN · LIDERANÇA</span>
+  <h3 id="leader-banner-title">Equipe de liderança</h3>
+  <p id="leader-banner-description">Organize sua apresentação e acompanhe os perfis de quem cuida dos jovens.</p>
+</div>
+<p class="leader-section-intro">Os perfis são privados e visíveis somente a contas autorizadas. A função e o polo são definidos pela liderança.</p>
+<div class="leader-own-heading">
+  <h3>Meu cartão de liderança</h3>
+  <p>Visualize seu cartão e personalize somente o nome exibido e a foto.</p>
+</div>
 <div id="leader-own-area" class="leader-self-layout hidden">
 <div id="leader-own-card"></div>
 <form id="leader-editor" class="leader-editor">
@@ -465,8 +474,17 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 </form>
 </div>
 <div id="leader-national-area" class="hidden">
-<p class="leader-directory-message" id="leader-directory-message">Carregando coordenadores...</p>
-<div id="leader-directory" class="leader-directory"></div>
+  <div class="leader-directory-heading">
+    <div><h3>Diretório de coordenadores</h3><p>Encontre os responsáveis cadastrados por nome ou igreja.</p></div>
+    <span class="leader-private-mark">🔒 Acesso restrito</span>
+  </div>
+  <div class="leader-directory-tools">
+    <div><label for="leader-directory-search">Buscar coordenador ou polo</label>
+    <input type="search" id="leader-directory-search" placeholder="Nome ou cidade" autocomplete="off"></div>
+    <span id="leader-directory-visible-count" role="status" aria-live="polite"></span>
+  </div>
+  <p class="leader-directory-message" id="leader-directory-message">Carregando coordenadores...</p>
+  <div id="leader-directory" class="leader-directory"></div>
 </div>
 </section>
 <section id="config" class="panel hidden"><div id="notification-settings" class="panel" style="margin-bottom:14px"><h3 style="margin:0 0 8px">🔔 Notificações de relatórios</h3><p id="notification-status" class="muted" role="status" aria-live="polite">Verificando disponibilidade...</p><button type="button" id="enable-notifications">Ativar notificações neste aparelho</button> <button type="button" class="secondary" id="register-device" hidden>Registrar este aparelho</button> <button type="button" class="secondary" id="unlink-device" hidden>Desvincular este aparelho</button> <button type="button" class="secondary" id="test-push" hidden>Enviar notificação de teste</button><p class="muted" style="font-size:12px">Esta etapa autoriza notificações no aparelho. Os lembretes automáticos serão ativados após a configuração do serviço de envio.</p></div>
@@ -1825,6 +1843,11 @@ document.querySelectorAll('.fju-daily-button[data-action-tab]').forEach(button=>
 });
 function updateAdminDashboardRole(profile,poloNome){
   const national=profile.papel==='nacional';
+  el('leader-banner-eyebrow').textContent=national?'ADMINISTRAÇÃO NACIONAL · LIDERANÇA':'COORDENAÇÃO LOCAL · LIDERANÇA';
+  el('leader-banner-title').textContent=national?'Liderança FJU JAPAN':'Minha liderança · FJU '+poloNome;
+  el('leader-banner-description').textContent=national
+    ?'Personalize seu cartão e encontre os coordenadores das igrejas em um só lugar.'
+    :'Atualize seu cartão de liderança com seu nome e foto. Suas permissões permanecem definidas pela administração nacional.';
   el('fju-reports-eyebrow').textContent=national?'ADMINISTRAÇÃO NACIONAL · RELATÓRIOS':'COORDENAÇÃO LOCAL · RELATÓRIOS';
   el('fju-reports-title').textContent=national?'Acompanhar relatórios nacionais':'Relatórios da FJU '+poloNome;
   el('fju-reports-description').textContent=national
