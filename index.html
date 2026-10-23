@@ -251,7 +251,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 }
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
-<link rel="stylesheet" href="./admin-dashboard.css?v=20261023b">
+<link rel="stylesheet" href="./admin-dashboard.css?v=20261023c">
 </head>
 <body class="fju-admin-shell">
 <header class="fju-admin-header"><div class="fju-admin-header-inner"><a class="fju-admin-brand" href="https://fjujapan.github.io/fju-connect/" aria-label="FJU Connect JAPAN — site oficial"><span class="fju-admin-mark" aria-hidden="true">FJU<span>.</span></span><span class="fju-admin-brand-copy"><strong>CONNECT</strong><small>JAPAN</small></span></a><div class="fju-admin-header-tools"><span class="fju-admin-context">ÁREA ADMINISTRATIVA</span><a class="fju-admin-site-link" href="https://fjujapan.github.io/fju-connect/">↗ Site FJU</a></div></div></header>
@@ -278,7 +278,16 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
     <button type="button" id="fju-admin-menu-toggle" class="fju-menu-toggle" aria-controls="fju-admin-sidebar" aria-expanded="false">☰ Funções</button>
   </div>
 <section id="inicio" class="panel"><h2>Visão geral</h2>
-<div class="fju-overview-intro"><strong id="fju-overview-title">Seu painel administrativo</strong><p id="fju-overview-description">Acesse rapidamente as ferramentas de gestão da FJU.</p></div><div class="grid"><div class="stat"><span id="scope-label">Igreja</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><button type="button" id="weekly-status-card" class="stat weekly-status-card" aria-label="Abrir relatório semanal"><span>Relatório desta semana</span><b id="pending-count">Verificando…</b><small>Toque para abrir o relatório →</small></button></div>
+<div class="fju-overview-intro"><strong id="fju-overview-title">Seu painel administrativo</strong><p id="fju-overview-description">Acesse rapidamente as ferramentas de gestão da FJU.</p></div>
+<div class="fju-priority-heading">
+  <div><h3>Pendências importantes</h3><p>Informações disponíveis conforme o perfil autorizado.</p></div>
+  <button type="button" id="fju-priorities-refresh" class="fju-priority-refresh" aria-label="Atualizar pendências">↻ Atualizar</button>
+</div>
+<div class="fju-priority-grid" aria-label="Pendências e acompanhamento">
+  <button type="button" class="fju-priority-card" data-priority-tab="inscricoes"><span class="fju-priority-label">📩 Inscrições de jovens</span><strong id="fju-priority-signups" aria-live="polite">…</strong><span id="fju-priority-signups-note">Aguardando atualização</span></button>
+  <button type="button" class="fju-priority-card" data-priority-tab="autorizacoes"><span class="fju-priority-label">✅ <span id="fju-priority-requests-label">Solicitações</span></span><strong id="fju-priority-requests" aria-live="polite">…</strong><span id="fju-priority-requests-note">Aguardando atualização</span></button>
+  <button type="button" class="fju-priority-card" data-priority-tab="relatorios"><span class="fju-priority-label">📊 <span id="fju-priority-reports-label">Relatórios da semana</span></span><strong id="fju-priority-reports" aria-live="polite">…</strong><span id="fju-priority-reports-note">Aguardando atualização</span></button>
+</div><div class="grid"><div class="stat"><span id="scope-label">Igreja</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><button type="button" id="weekly-status-card" class="stat weekly-status-card" aria-label="Abrir relatório semanal"><span>Relatório desta semana</span><b id="pending-count">Verificando…</b><small>Toque para abrir o relatório →</small></button></div>
 <h3 class="fju-actions-title">Acesso rápido</h3>
 <div class="fju-dashboard-actions" aria-label="Atalhos do painel de controle">
   <button type="button" class="fju-action-card" data-open-tab="jovens" data-national-title="Fichas dos 23 polos" data-local-title="Fichas do meu polo" data-national-desc="Consultar, cadastrar e organizar jovens." data-local-desc="Consultar, cadastrar e solicitar alterações."><span aria-hidden="true" class="fju-action-icon">👥</span><strong>Fichas dos jovens</strong><span>Cadastros e acompanhamento</span><span aria-hidden="true" class="fju-action-arrow">→</span></button>
@@ -716,6 +725,7 @@ async function loadProfile(user){
   configureWeeklyReportAccess();
   if(data.papel==='nacional')void loadNationalReportOverview();else el('national-report-panel').classList.add('hidden');
   show('app');
+  void refreshAdminPriorities(data,requestId);
   void coordinatorCards.load(user,data,poloNome);
   void initializeYouth();
   void loadDashboard(data,requestId);
@@ -1658,6 +1668,63 @@ async function loadYouthSignups(){
 }
 el('inscricoes-refresh').addEventListener('click',()=>void loadYouthSignups());
 
+/* Prioridades do painel: leitura autorizada pelo Supabase, sem conceder privilégios. */
+function updatePriorityReportStatus(){
+  const national=currentProfile?.papel==='nacional';
+  const raw=el('pending-count').textContent.trim();
+  el('fju-priority-reports-label').textContent=national?'Relatórios dos polos':'Meu relatório semanal';
+  el('fju-priority-reports').textContent=raw||'…';
+  el('fju-priority-reports-note').textContent=national
+    ?'Polos pendentes na semana selecionada'
+    :'Situação do envio desta semana';
+}
+new MutationObserver(updatePriorityReportStatus).observe(el('pending-count'),{childList:true,characterData:true,subtree:true});
+async function refreshAdminPriorities(profile,requestId){
+  if(!profile||requestId!==profileRequest)return;
+  const national=profile.papel==='nacional';
+  el('fju-priority-requests-label').textContent=national?'Pedidos para decisão':'Minhas solicitações';
+  el('fju-priority-signups').textContent='…';
+  el('fju-priority-requests').textContent='…';
+  el('fju-priority-signups-note').textContent='Consultando inscrições…';
+  el('fju-priority-requests-note').textContent='Consultando solicitações…';
+  updatePriorityReportStatus();
+  const [signups,requests]=await Promise.allSettled([
+    supabase.rpc('fju_listar_inscricoes_polo_detalhadas'),
+    (()=>{
+      let query=supabase.from('fju_solicitacoes').select('id',{count:'exact',head:true}).eq('status','pendente');
+      if(!national)query=query.eq('polo_id',profile.polo_id);
+      return query;
+    })()
+  ]);
+  if(requestId!==profileRequest||currentProfile!==profile)return;
+  if(signups.status==='fulfilled'&&!signups.value.error&&Array.isArray(signups.value.data)){
+    const n=signups.value.data.length;
+    el('fju-priority-signups').textContent=String(n);
+    el('fju-priority-signups-note').textContent=n?'Inscrições esperando análise':'Nenhuma inscrição pendente';
+  }else{
+    el('fju-priority-signups').textContent='—';
+    el('fju-priority-signups-note').textContent='Não foi possível consultar';
+  }
+  if(requests.status==='fulfilled'&&!requests.value.error&&Number.isFinite(requests.value.count)){
+    const n=requests.value.count;
+    el('fju-priority-requests').textContent=String(n);
+    el('fju-priority-requests-note').textContent=n
+      ?(national?'Pedidos aguardando decisão':'Pedidos aguardando análise nacional')
+      :'Nenhuma solicitação pendente';
+  }else{
+    el('fju-priority-requests').textContent='—';
+    el('fju-priority-requests-note').textContent='Não foi possível consultar';
+  }
+}
+document.querySelectorAll('[data-priority-tab]').forEach(button=>button.addEventListener('click',()=>{
+  document.querySelector('#main-nav [data-tab="'+button.dataset.priorityTab+'"]')?.click();
+}));
+el('fju-priorities-refresh').addEventListener('click',()=>{
+  if(!currentProfile)return;
+  void refreshAdminPriorities(currentProfile,profileRequest);
+  if(currentProfile.papel==='nacional')void loadNationalReportOverview();
+  else void loadDashboard(currentProfile,profileRequest);
+});
 function setAdminMenuOpen(open){
   const shell=el('fju-admin-workspace'),toggle=el('fju-admin-menu-toggle');
   shell.classList.toggle('fju-menu-open',Boolean(open));
