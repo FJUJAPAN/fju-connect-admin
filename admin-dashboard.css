@@ -117,3 +117,25 @@ body.fju-admin-shell .fju-priority-card:hover{background:#eef4ff;border-color:#9
 @media(max-width:660px){.fju-priority-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.fju-priority-grid .fju-priority-card:last-child{grid-column:1/-1;min-height:92px}.fju-priority-card strong{font-size:22px}}
 @media(max-width:370px){.fju-priority-grid{grid-template-columns:1fr}.fju-priority-grid .fju-priority-card:last-child{grid-column:auto}}
 @media print{.fju-priority-heading,.fju-priority-grid{display:none!important}}
+
+/* FJU JAPAN | Ações essenciais para Nacional e coordenador da igreja. */
+.fju-today-section{margin:12px 0 20px}
+.fju-today-heading{margin-bottom:10px}
+.fju-today-heading h3{font-size:17px;color:#20365d;margin:0 0 4px}
+.fju-today-heading p{font-size:12px;color:#65758d;margin:0}
+.fju-daily-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.fju-daily-actions[hidden]{display:none!important}
+body.fju-admin-shell .fju-daily-button{
+ min-width:0;display:flex;align-items:flex-start;text-align:left;gap:9px;min-height:101px;
+ border-radius:15px;border:1px solid #cbd9ee;background:linear-gradient(135deg,#203c70,#15284b);
+ color:#fff;padding:14px 12px;box-shadow:0 5px 14px rgba(20,46,89,.1)
+}
+body.fju-admin-shell .fju-daily-button:hover{background:linear-gradient(135deg,#294a84,#1b3158)}
+.fju-daily-button>span:first-child{font-size:20px;flex-shrink:0}
+.fju-daily-button>span:nth-child(2){display:flex;flex-direction:column;gap:5px;flex:1;min-width:0}
+.fju-daily-button strong{font-size:13px;line-height:1.25;overflow-wrap:anywhere}
+.fju-daily-button small{color:#ccd9f2;font-size:11px;line-height:1.4;overflow-wrap:anywhere;font-weight:500}
+.fju-daily-button>span:last-child{flex-shrink:0;font-weight:800;color:#dcb8ff}
+body.fju-admin-shell .fju-daily-button:focus-visible{outline:3px solid #ba9dff;outline-offset:2px}
+@media(max-width:760px){.fju-daily-actions{grid-template-columns:minmax(0,1fr)}body.fju-admin-shell .fju-daily-button{min-height:70px;padding:12px 14px;align-items:center}.fju-daily-button strong{font-size:14px}}
+@media print{.fju-today-section{display:none!important}}
