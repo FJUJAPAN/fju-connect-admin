@@ -251,6 +251,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 }
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
+<link rel="stylesheet" href="./admin-dashboard.css?v=20261023b">
 </head>
 <body class="fju-admin-shell">
 <header class="fju-admin-header"><div class="fju-admin-header-inner"><a class="fju-admin-brand" href="https://fjujapan.github.io/fju-connect/" aria-label="FJU Connect JAPAN — site oficial"><span class="fju-admin-mark" aria-hidden="true">FJU<span>.</span></span><span class="fju-admin-brand-copy"><strong>CONNECT</strong><small>JAPAN</small></span></a><div class="fju-admin-header-tools"><span class="fju-admin-context">ÁREA ADMINISTRATIVA</span><a class="fju-admin-site-link" href="https://fjujapan.github.io/fju-connect/">↗ Site FJU</a></div></div></header>
@@ -258,9 +259,38 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <section id="auth" class="panel auth"><h2>Entrar</h2><form id="login-form"><label for="email">E-mail</label><input id="email" type="email" autocomplete="username" required><label for="password">Senha</label><input id="password" type="password" autocomplete="current-password" required><p><button type="submit">Entrar</button></p></form><button class="secondary" id="forgot">Enviar recuperação de senha</button><details id="phone-login" style="margin:16px 0"><summary style="cursor:pointer;font-weight:700">Entrar com telefone e código SMS</summary><form id="phone-login-form" style="margin-top:12px"><label for="phone-login-number">Número do celular no Japão</label><input id="phone-login-number" type="tel" inputmode="tel" autocomplete="tel" placeholder="09012345678" required><p><button type="submit">Enviar código SMS</button></p></form><form id="phone-code-form" class="hidden"><label for="phone-login-code">Código recebido por SMS</label><input id="phone-login-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{4,8}" required><p><button type="submit">Confirmar código</button></p></form><p id="phone-login-message" class="message" role="status" aria-live="polite"></p><p class="muted">Disponível somente para telefone previamente vinculado à conta autorizada. O provedor SMS deve estar configurado no Supabase.</p></details><p id="auth-message" class="message" role="status" aria-live="polite"></p></section>
 <section id="recovery" class="panel auth hidden"><h2>Definir nova senha</h2><form id="recovery-form"><label for="new-password">Nova senha (mínimo de 8 caracteres)</label><input id="new-password" type="password" minlength="8" autocomplete="new-password" required><label for="confirm-password">Confirmar nova senha</label><input id="confirm-password" type="password" minlength="8" autocomplete="new-password" required><p><button type="submit">Salvar nova senha</button></p></form><p id="recovery-message" class="message" role="status" aria-live="polite"></p></section>
 <div id="app" class="hidden"><div class="topline"><p id="identity" class="muted"></p><div class="actions"><button id="pending-bell" type="button" class="secondary" aria-label="Verificar pendências do relatório" title="Pendências do relatório">🔔 <span id="pending-bell-count" hidden>1</span></button><a href="https://fjujapan.github.io/fju-connect/" style="color:#253b75;font-weight:650;font-size:13px">← Site FJU</a><button id="logout" class="secondary">Sair</button></div></div><div class="notice"><strong>Ambiente em validação.</strong> Login, fichas, autorizações, relatórios e impressão disponíveis para testes. Antes de cadastrar dados reais, confirme as permissões de acesso por igreja e a proteção das fotos.</div>
+
+<div class="fju-admin-workspace" id="fju-admin-workspace">
+<aside class="fju-admin-sidebar" id="fju-admin-sidebar" aria-label="Funções administrativas">
+  <div class="fju-sidebar-heading">
+    <div><small>FJU CONNECT JAPAN</small><strong>Painel de controle</strong><span id="fju-sidebar-role">Área administrativa</span></div>
+    <button type="button" id="fju-admin-menu-close" class="fju-sidebar-close" aria-label="Fechar menu de funções">✕</button>
+  </div>
+  <p class="fju-sidebar-group">GERENCIAMENTO</p>
+<nav id="main-nav" class="tabs" aria-label="Navegação do FJU Connect"><button type="button" data-tab="inicio" aria-controls="inicio" aria-current="page" class="active"><svg class="fju-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21v-8h6v8"/></svg><span class="fju-nav-label-desktop">Visão geral</span><span class="fju-nav-label-mobile">Início</span></button><button type="button" data-tab="jovens" aria-controls="jovens"><svg class="fju-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="fju-nav-label-desktop">Fichas</span><span class="fju-nav-label-mobile">Fichas</span></button><button type="button" data-tab="relatorios" aria-controls="relatorios"><svg class="fju-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5V3h6v1.5M9 10h6M9 14h6M9 18h4"/></svg><span class="fju-nav-label-desktop">Relatório semanal</span><span class="fju-nav-label-mobile">Relatórios</span></button><button type="button" data-tab="inscricoes" aria-controls="inscricoes"><span aria-hidden="true">📩</span><span class="fju-nav-label-desktop">Novos cadastros</span><span class="fju-nav-label-mobile">Inscrições</span></button><button type="button" data-tab="autorizacoes" aria-controls="autorizacoes"><svg class="fju-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg><span class="fju-nav-label-desktop">Autorizações</span><span class="fju-nav-label-mobile">Pedidos</span></button><button type="button" id="leader-nav" data-tab="lideranca" aria-controls="lideranca"><svg class="fju-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span class="fju-nav-label-desktop">Meu perfil</span><span class="fju-nav-label-mobile">Perfil</span></button><button type="button" data-tab="config" aria-controls="config"><svg class="fju-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="m19.4 15 .2.2 1.1 1.5-1.7 2.9-1.8-.5a8 8 0 0 1-2.4 1.4l-.5 1.9h-3.4l-.5-1.9a8 8 0 0 1-2.4-1.4l-1.8.5-1.7-2.9 1.1-1.5a8 8 0 0 1 0-2.8l-1.1-1.5L6.2 8l1.8.5a8 8 0 0 1 2.4-1.4l.5-1.9h3.4l.5 1.9a8 8 0 0 1 2.4 1.4L19 8l1.7 2.9-1.1 1.5a8 8 0 0 1-.2 2.6z"/></svg><span class="fju-nav-label-desktop">Configuração</span><span class="fju-nav-label-mobile">Ajustes</span></button></nav>
+  <p class="fju-sidebar-group fju-sidebar-group-tools">CONTEÚDO</p>
+  <a class="fju-sidebar-external" href="./materias.html"><span aria-hidden="true">📰</span><span>Matérias FJU</span><span aria-hidden="true">↗</span></a>
+  <a class="fju-sidebar-external fju-sidebar-portal" href="https://fjujapan.github.io/fju-connect/"><span aria-hidden="true">🌐</span><span>Site oficial</span><span aria-hidden="true">↗</span></a>
+</aside>
+<div class="fju-admin-content">
+  <div class="fju-content-toolbar">
+    <div><small id="fju-dashboard-context">ÁREA ADMINISTRATIVA</small><h2 id="fju-dashboard-heading">Visão geral</h2></div>
+    <button type="button" id="fju-admin-menu-toggle" class="fju-menu-toggle" aria-controls="fju-admin-sidebar" aria-expanded="false">☰ Funções</button>
+  </div>
+<section id="inicio" class="panel"><h2>Visão geral</h2>
+<div class="fju-overview-intro"><strong id="fju-overview-title">Seu painel administrativo</strong><p id="fju-overview-description">Acesse rapidamente as ferramentas de gestão da FJU.</p></div><div class="grid"><div class="stat"><span id="scope-label">Igreja</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><button type="button" id="weekly-status-card" class="stat weekly-status-card" aria-label="Abrir relatório semanal"><span>Relatório desta semana</span><b id="pending-count">Verificando…</b><small>Toque para abrir o relatório →</small></button></div>
+<h3 class="fju-actions-title">Acesso rápido</h3>
+<div class="fju-dashboard-actions" aria-label="Atalhos do painel de controle">
+  <button type="button" class="fju-action-card" data-open-tab="jovens" data-national-title="Fichas dos 23 polos" data-local-title="Fichas do meu polo" data-national-desc="Consultar, cadastrar e organizar jovens." data-local-desc="Consultar, cadastrar e solicitar alterações."><span aria-hidden="true" class="fju-action-icon">👥</span><strong>Fichas dos jovens</strong><span>Cadastros e acompanhamento</span><span aria-hidden="true" class="fju-action-arrow">→</span></button>
+  <button type="button" class="fju-action-card" data-open-tab="relatorios" data-national-title="Relatórios nacionais" data-local-title="Relatório semanal" data-national-desc="Acompanhar envios e indicadores por polo." data-local-desc="Preencher e acompanhar os relatórios da igreja."><span aria-hidden="true" class="fju-action-icon">📊</span><strong>Relatórios</strong><span>Indicadores semanais</span><span aria-hidden="true" class="fju-action-arrow">→</span></button>
+  <button type="button" class="fju-action-card" data-open-tab="inscricoes" data-national-title="Novos cadastros" data-local-title="Inscrições do meu polo" data-national-desc="Acompanhar pedidos de inscrição." data-local-desc="Analisar os jovens que se cadastraram."><span aria-hidden="true" class="fju-action-icon">📩</span><strong>Inscrições</strong><span>Solicitações de cadastro</span><span aria-hidden="true" class="fju-action-arrow">→</span></button>
+  <button type="button" class="fju-action-card" data-open-tab="autorizacoes" data-national-title="Pedidos para aprovação" data-local-title="Minhas solicitações" data-national-desc="Decidir alterações, patentes e acessos." data-local-desc="Acompanhar solicitações enviadas ao Nacional."><span aria-hidden="true" class="fju-action-icon">✅</span><strong>Autorizações</strong><span>Solicitações e decisões</span><span aria-hidden="true" class="fju-action-arrow">→</span></button>
+  <button type="button" class="fju-action-card" data-open-tab="lideranca" data-national-title="Liderança nacional" data-local-title="Meu perfil de liderança" data-national-desc="Consultar a equipe de coordenadores." data-local-desc="Atualizar nome e foto do meu perfil."><span aria-hidden="true" class="fju-action-icon">🏅</span><strong>Liderança</strong><span>Perfis da equipe</span><span aria-hidden="true" class="fju-action-arrow">→</span></button>
+  <button type="button" class="fju-action-card" data-open-tab="config" data-national-title="Configurações" data-local-title="Notificações e ajustes" data-national-desc="Ajustes e dispositivos autorizados." data-local-desc="Gerenciar notificações deste aparelho."><span aria-hidden="true" class="fju-action-icon">⚙️</span><strong>Configurações</strong><span>Ajustes e notificações</span><span aria-hidden="true" class="fju-action-arrow">→</span></button>
+  <a class="fju-action-card fju-action-link" href="./materias.html"><span aria-hidden="true" class="fju-action-icon">📰</span><strong>Matérias FJU</strong><span>Escrever e acompanhar publicações.</span><span aria-hidden="true" class="fju-action-arrow">↗</span></a>
+</div>
 <section id="fju-my-page" class="card" style="margin:12px 0;padding:16px" aria-label="Minha página"><strong>👤 My Page</strong><div id="my-page-role" class="muted">Aguardando autenticação…</div><div id="my-page-email" style="overflow-wrap:anywhere"></div><div id="my-page-polo" class="muted"></div><p class="muted" style="font-size:12px">Foto e patente aguardam vínculo seguro com a ficha oficial.</p></section>
-<a href="./materias.html" style="display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border-radius:10px;background:#7541b5;color:white;font-weight:700;text-decoration:none;margin:8px">📰 Matérias FJU</a><nav id="main-nav" class="tabs" aria-label="Navegação do FJU Connect"><button type="button" data-tab="inicio" aria-controls="inicio" aria-current="page" class="active"><svg class="fju-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21v-8h6v8"/></svg><span class="fju-nav-label-desktop">Visão geral</span><span class="fju-nav-label-mobile">Início</span></button><button type="button" data-tab="jovens" aria-controls="jovens"><svg class="fju-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="fju-nav-label-desktop">Fichas</span><span class="fju-nav-label-mobile">Fichas</span></button><button type="button" data-tab="relatorios" aria-controls="relatorios"><svg class="fju-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5V3h6v1.5M9 10h6M9 14h6M9 18h4"/></svg><span class="fju-nav-label-desktop">Relatório semanal</span><span class="fju-nav-label-mobile">Relatórios</span></button><button type="button" data-tab="inscricoes" aria-controls="inscricoes"><span aria-hidden="true">📩</span><span class="fju-nav-label-desktop">Novos cadastros</span><span class="fju-nav-label-mobile">Inscrições</span></button><button type="button" data-tab="autorizacoes" aria-controls="autorizacoes"><svg class="fju-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg><span class="fju-nav-label-desktop">Autorizações</span><span class="fju-nav-label-mobile">Pedidos</span></button><button type="button" id="leader-nav" data-tab="lideranca" aria-controls="lideranca"><svg class="fju-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span class="fju-nav-label-desktop">Meu perfil</span><span class="fju-nav-label-mobile">Perfil</span></button><button type="button" data-tab="config" aria-controls="config"><svg class="fju-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="m19.4 15 .2.2 1.1 1.5-1.7 2.9-1.8-.5a8 8 0 0 1-2.4 1.4l-.5 1.9h-3.4l-.5-1.9a8 8 0 0 1-2.4-1.4l-1.8.5-1.7-2.9 1.1-1.5a8 8 0 0 1 0-2.8l-1.1-1.5L6.2 8l1.8.5a8 8 0 0 1 2.4-1.4l.5-1.9h3.4l.5 1.9a8 8 0 0 1 2.4 1.4L19 8l1.7 2.9-1.1 1.5a8 8 0 0 1-.2 2.6z"/></svg><span class="fju-nav-label-desktop">Configuração</span><span class="fju-nav-label-mobile">Ajustes</span></button></nav>
-<section id="inicio" class="panel"><h2>Visão geral</h2><div class="grid"><div class="stat"><span id="scope-label">Igreja</span><b id="scope-count">—</b></div><div class="stat">Jovens cadastrados<b id="youth-count">—</b></div><button type="button" id="weekly-status-card" class="stat weekly-status-card" aria-label="Abrir relatório semanal"><span>Relatório desta semana</span><b id="pending-count">Verificando…</b><small>Toque para abrir o relatório →</small></button></div><p id="dashboard-note" class="muted">Indicadores consultados conforme as permissões da conta autenticada.</p>
+<p id="dashboard-note" class="muted">Indicadores consultados conforme as permissões da conta autenticada.</p>
 <div id="leader-home" class="leader-home-block hidden">
 <div class="leader-home-header"><h3>Seu perfil de liderança</h3><button type="button" id="leader-home-edit" class="secondary">Editar meu perfil</button></div>
 <div id="leader-home-card"></div>
@@ -392,7 +422,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 </div>
 </section>
 <section id="config" class="panel hidden"><div id="notification-settings" class="panel" style="margin-bottom:14px"><h3 style="margin:0 0 8px">🔔 Notificações de relatórios</h3><p id="notification-status" class="muted" role="status" aria-live="polite">Verificando disponibilidade...</p><button type="button" id="enable-notifications">Ativar notificações neste aparelho</button> <button type="button" class="secondary" id="register-device" hidden>Registrar este aparelho</button> <button type="button" class="secondary" id="unlink-device" hidden>Desvincular este aparelho</button> <button type="button" class="secondary" id="test-push" hidden>Enviar notificação de teste</button><p class="muted" style="font-size:12px">Esta etapa autoriza notificações no aparelho. Os lembretes automáticos serão ativados após a configuração do serviço de envio.</p></div>
-<h2>Configuração</h2><p id="role-detail"></p><p class="muted">As regras de acesso efetivas são aplicadas no banco pelo RLS. A interface não substitui essas políticas.</p></section></div>
+<h2>Configuração</h2><p id="role-detail"></p><p class="muted">As regras de acesso efetivas são aplicadas no banco pelo RLS. A interface não substitui essas políticas.</p></section></div></div></div>
 </main><div id="print-area" class="hidden"></div><footer>FJU Connect JAPAN · Teste de autenticação</footer>
 <script type="module">
 import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -678,6 +708,7 @@ async function loadProfile(user){
   el('dashboard-note').textContent=`${data.papel==='nacional'?'Visão nacional':'Visão do polo FJU '+poloNome}. Contagens fornecidas pelo Supabase com as políticas RLS da conta autenticada. Pendências locais ainda não calculadas.`;
   currentProfile=data;
   currentPoloNome=poloNome;
+  updateAdminDashboardRole(data,poloNome);
    el('my-page-role').textContent=role;
    el('my-page-email').textContent=user.email||'';
    el('my-page-polo').textContent=poloNome?'FJU '+poloNome:'Visão nacional';
@@ -1626,6 +1657,40 @@ async function loadYouthSignups(){
  }
 }
 el('inscricoes-refresh').addEventListener('click',()=>void loadYouthSignups());
+
+function setAdminMenuOpen(open){
+  const shell=el('fju-admin-workspace'),toggle=el('fju-admin-menu-toggle');
+  shell.classList.toggle('fju-menu-open',Boolean(open));
+  toggle.setAttribute('aria-expanded',String(Boolean(open)));
+}
+el('fju-admin-menu-toggle').addEventListener('click',()=>{
+  setAdminMenuOpen(!el('fju-admin-workspace').classList.contains('fju-menu-open'));
+});
+el('fju-admin-menu-close').addEventListener('click',()=>setAdminMenuOpen(false));
+document.querySelectorAll('.fju-dashboard-actions [data-open-tab]').forEach(shortcut=>{
+  shortcut.addEventListener('click',()=>{
+    const tab=document.querySelector('#main-nav [data-tab="'+shortcut.dataset.openTab+'"]');
+    if(tab&&!tab.hidden)tab.click();
+  });
+});
+function updateAdminDashboardRole(profile,poloNome){
+  const national=profile.papel==='nacional';
+  el('fju-sidebar-role').textContent=national?'Administração Nacional':'FJU '+poloNome;
+  el('fju-dashboard-context').textContent=national?'ADMINISTRAÇÃO NACIONAL':'COORDENAÇÃO LOCAL · '+poloNome.toUpperCase();
+  el('fju-overview-title').textContent=national?'Painel Nacional FJU JAPAN':'Painel da FJU '+poloNome;
+  el('fju-overview-description').textContent=national
+    ?'Acompanhe os polos, cadastros, pedidos e relatórios nacionais em um só lugar.'
+    :'Gerencie os jovens, inscrições, relatórios e solicitações da sua igreja.';
+  document.querySelectorAll('.fju-dashboard-actions [data-open-tab]').forEach(button=>{
+    const title=national?button.dataset.nationalTitle:button.dataset.localTitle;
+    const desc=national?button.dataset.nationalDesc:button.dataset.localDesc;
+    button.querySelector('strong').textContent=title;
+    button.querySelector('strong + span').textContent=desc;
+  });
+  const authorizationLabel=document.querySelector('#main-nav [data-tab="autorizacoes"] .fju-nav-label-desktop');
+  authorizationLabel.textContent=national?'Autorizações nacionais':'Minhas solicitações';
+  setAdminMenuOpen(false);
+}
 function activateMainTab(button){
   const sectionId=button.dataset.tab;
   if(sectionId==='inscricoes')void loadYouthSignups();
@@ -1638,13 +1703,12 @@ function activateMainTab(button){
     else item.removeAttribute('aria-current');
   });
   document.querySelectorAll('#app section.panel').forEach(panel=>panel.classList.toggle('hidden',panel.id!==sectionId));
-  if(window.matchMedia('(max-width:700px)').matches){
-    const nav=el('main-nav');
-    const navRect=nav.getBoundingClientRect(),buttonRect=button.getBoundingClientRect();
-    const centered=nav.scrollLeft+(buttonRect.left+buttonRect.width/2)-(navRect.left+navRect.width/2);
-    nav.scrollTo({left:centered,behavior:window.matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});
+  const label=button.querySelector('.fju-nav-label-desktop')?.textContent?.trim()||'Painel de controle';
+  el('fju-dashboard-heading').textContent=label;
+  setAdminMenuOpen(false);
+  if(window.matchMedia('(max-width:900px)').matches){
     const panel=el(sectionId);
-    if(panel&&!panel.classList.contains('hidden'))panel.scrollIntoView({behavior:'auto',block:'start'});
+    if(panel&&!panel.classList.contains('hidden'))el('fju-content-toolbar').scrollIntoView({behavior:'auto',block:'start'});
   }
 }
 document.querySelectorAll('#main-nav [data-tab]').forEach(button=>button.addEventListener('click',()=>activateMainTab(button)));
