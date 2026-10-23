@@ -251,7 +251,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 }
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
-<link rel="stylesheet" href="./admin-dashboard.css?v=20261023c">
+<link rel="stylesheet" href="./admin-dashboard.css?v=20261023d">
 </head>
 <body class="fju-admin-shell">
 <header class="fju-admin-header"><div class="fju-admin-header-inner"><a class="fju-admin-brand" href="https://fjujapan.github.io/fju-connect/" aria-label="FJU Connect JAPAN — site oficial"><span class="fju-admin-mark" aria-hidden="true">FJU<span>.</span></span><span class="fju-admin-brand-copy"><strong>CONNECT</strong><small>JAPAN</small></span></a><div class="fju-admin-header-tools"><span class="fju-admin-context">ÁREA ADMINISTRATIVA</span><a class="fju-admin-site-link" href="https://fjujapan.github.io/fju-connect/">↗ Site FJU</a></div></div></header>
@@ -279,6 +279,19 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
   </div>
 <section id="inicio" class="panel"><h2>Visão geral</h2>
 <div class="fju-overview-intro"><strong id="fju-overview-title">Seu painel administrativo</strong><p id="fju-overview-description">Acesse rapidamente as ferramentas de gestão da FJU.</p></div>
+<section class="fju-today-section" aria-label="Ações principais do painel">
+  <div class="fju-today-heading"><h3>O que você precisa fazer?</h3><p>Acesse a tarefa diretamente, sem procurar pelos menus.</p></div>
+  <div class="fju-daily-actions" data-role-target="nacional" hidden>
+    <button type="button" class="fju-daily-button" data-action-tab="autorizacoes"><span aria-hidden="true">✅</span><span><strong>Analisar solicitações</strong><small>Aprovar ou rejeitar alterações e patentes</small></span><span aria-hidden="true">→</span></button>
+    <button type="button" class="fju-daily-button" data-action-tab="relatorios"><span aria-hidden="true">📈</span><span><strong>Acompanhar relatórios</strong><small>Verificar envios e pendências dos polos</small></span><span aria-hidden="true">→</span></button>
+    <button type="button" class="fju-daily-button" data-action-tab="jovens"><span aria-hidden="true">👥</span><span><strong>Gerenciar fichas</strong><small>Consultar os jovens por igreja</small></span><span aria-hidden="true">→</span></button>
+  </div>
+  <div class="fju-daily-actions" data-role-target="coordenador" hidden>
+    <button type="button" class="fju-daily-button" data-action-tab="jovens" data-action-kind="add-youth"><span aria-hidden="true">➕</span><span><strong>Cadastrar jovem</strong><small>Abrir uma nova ficha no seu polo</small></span><span aria-hidden="true">→</span></button>
+    <button type="button" class="fju-daily-button" data-action-tab="relatorios"><span aria-hidden="true">📝</span><span><strong>Relatório semanal</strong><small>Preencher e acompanhar o envio da igreja</small></span><span aria-hidden="true">→</span></button>
+    <button type="button" class="fju-daily-button" data-action-tab="inscricoes"><span aria-hidden="true">📩</span><span><strong>Novas inscrições</strong><small>Analisar os pedidos dos jovens do seu polo</small></span><span aria-hidden="true">→</span></button>
+  </div>
+</section>
 <div class="fju-priority-heading">
   <div><h3>Pendências importantes</h3><p>Informações disponíveis conforme o perfil autorizado.</p></div>
   <button type="button" id="fju-priorities-refresh" class="fju-priority-refresh" aria-label="Atualizar pendências">↻ Atualizar</button>
@@ -451,6 +464,7 @@ const show=(id)=>{for(const s of ['auth','recovery','app'])el(s).classList.toggl
 const message=(id,msg,error=false)=>{el(id).textContent=msg;el(id).className='message '+(error?'error':'success')};
 let recoveryMode=false;
 let profileRequest=0; let currentProfile=null; let youthRows=[]; let photoUrl=null;
+let youthInitialization=Promise.resolve();
 async function countRows(table){const {count,error}=await supabase.from(table).select('*',{count:'exact',head:true});if(error)throw error;return count??0;}
 function localISODate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return y+'-'+m+'-'+day;}
 function previousSundayISO(){
@@ -727,7 +741,7 @@ async function loadProfile(user){
   show('app');
   void refreshAdminPriorities(data,requestId);
   void coordinatorCards.load(user,data,poloNome);
-  void initializeYouth();
+  youthInitialization=initializeYouth();
   void loadDashboard(data,requestId);
 }
 
@@ -1740,6 +1754,24 @@ document.querySelectorAll('.fju-dashboard-actions [data-open-tab]').forEach(shor
     if(tab&&!tab.hidden)tab.click();
   });
 });
+/* Atalhos contextuais: usam os botões existentes, mantendo o mesmo fluxo. */
+document.querySelectorAll('.fju-daily-button[data-action-tab]').forEach(button=>{
+  button.addEventListener('click',async()=>{
+    if(!currentProfile)return;
+    const profile=currentProfile;
+    const target=document.querySelector('#main-nav [data-tab="'+button.dataset.actionTab+'"]');
+    if(!target)return;
+    target.click();
+    if(button.dataset.actionKind==='add-youth'){
+      try{await youthInitialization;}catch(error){
+        console.warn('Não foi possível preparar o cadastro:',error);
+        return;
+      }
+      if(currentProfile!==profile||el('jovens').classList.contains('hidden'))return;
+      if(el('youth-entry-panel').classList.contains('hidden'))el('youth-add-toggle').click();
+    }
+  });
+});
 function updateAdminDashboardRole(profile,poloNome){
   const national=profile.papel==='nacional';
   el('fju-sidebar-role').textContent=national?'Administração Nacional':'FJU '+poloNome;
@@ -1748,6 +1780,9 @@ function updateAdminDashboardRole(profile,poloNome){
   el('fju-overview-description').textContent=national
     ?'Acompanhe os polos, cadastros, pedidos e relatórios nacionais em um só lugar.'
     :'Gerencie os jovens, inscrições, relatórios e solicitações da sua igreja.';
+  document.querySelectorAll('.fju-daily-actions').forEach(group=>{
+    group.hidden=group.dataset.roleTarget!==profile.papel;
+  });
   document.querySelectorAll('.fju-dashboard-actions [data-open-tab]').forEach(button=>{
     const title=national?button.dataset.nationalTitle:button.dataset.localTitle;
     const desc=national?button.dataset.nationalDesc:button.dataset.localDesc;
