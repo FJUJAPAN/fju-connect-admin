@@ -97,3 +97,23 @@ body.fju-admin-shell #inicio #fju-my-page{margin-top:20px!important}
 }
 @media(prefers-reduced-motion:reduce){.fju-action-card{transition:none}.fju-action-card:hover{transform:none}}
 @media print{.fju-admin-sidebar,.fju-content-toolbar,.fju-dashboard-actions{display:none!important}body.fju-admin-shell .fju-admin-workspace{display:block!important}}
+
+/* FJU JAPAN | Resumo de prioridades — Nacional e coordenador local. */
+.fju-priority-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin:20px 0 11px}
+.fju-priority-heading h3{font-size:16px;color:#20365e;margin:0}
+.fju-priority-heading p{font-size:12px;color:#687993;margin:5px 0 0}
+body.fju-admin-shell .fju-priority-refresh{background:#e8eef9;color:#284779;border-radius:11px;padding:9px 13px;min-height:40px;font-size:12px}
+.fju-priority-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:20px}
+body.fju-admin-shell .fju-priority-card{
+ min-width:0;min-height:122px;padding:14px 14px 15px;text-align:left;
+ display:flex;align-items:flex-start;flex-direction:column;justify-content:space-between;gap:8px;
+ background:#f8faff;color:#293c61;border:1px solid #dbe5f4;border-radius:15px;
+ box-shadow:0 4px 15px rgba(12,35,73,.045)
+}
+body.fju-admin-shell .fju-priority-card:hover{background:#eef4ff;border-color:#9aafd3}
+.fju-priority-label{font-weight:750;font-size:12px;line-height:1.4;overflow-wrap:anywhere}
+.fju-priority-card strong{font-size:clamp(18px,2vw,26px);color:#1d376b;overflow-wrap:anywhere}
+.fju-priority-card>span:last-child{font-size:11px;color:#61748f;line-height:1.4}
+@media(max-width:660px){.fju-priority-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.fju-priority-grid .fju-priority-card:last-child{grid-column:1/-1;min-height:92px}.fju-priority-card strong{font-size:22px}}
+@media(max-width:370px){.fju-priority-grid{grid-template-columns:1fr}.fju-priority-grid .fju-priority-card:last-child{grid-column:auto}}
+@media print{.fju-priority-heading,.fju-priority-grid{display:none!important}}
