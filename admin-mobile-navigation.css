@@ -1,0 +1,63 @@
+/* FJU JAPAN | Navegação administrativa mobile tipo drawer.
+   Sem menu de rodapé. CSS posterior ao admin-dashboard.css. */
+body.fju-admin-shell .fju-admin-menu-overlay[hidden]{display:none!important}
+body.fju-admin-shell .fju-admin-menu-overlay{display:none}
+@media(max-width:900px){
+  body.fju-admin-shell.fju-admin-drawer-open{overflow:hidden}
+  body.fju-admin-shell .fju-admin-menu-overlay:not([hidden]){
+    display:block!important;position:fixed;inset:0;z-index:310;
+    width:100%;height:100%;padding:0;margin:0;border:0;border-radius:0;
+    background:rgba(4,12,29,.65);box-shadow:none;cursor:pointer;
+    -webkit-tap-highlight-color:transparent
+  }
+  body.fju-admin-shell .fju-admin-workspace.fju-menu-open .fju-admin-sidebar{
+    position:fixed!important;top:0!important;bottom:0!important;left:0!important;
+    z-index:320;display:block!important;width:min(350px,calc(100vw - 52px))!important;
+    max-width:none!important;max-height:100dvh;min-height:100vh;
+    overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;
+    margin:0!important;border:0;border-right:1px solid #6985a850;
+    border-radius:0 18px 18px 0;padding:calc(15px + env(safe-area-inset-top,0px)) 12px
+      calc(24px + env(safe-area-inset-bottom,0px));
+    box-shadow:16px 0 35px rgba(0,0,0,.28)
+  }
+  body.fju-admin-shell .fju-admin-workspace:not(.fju-menu-open) .fju-admin-sidebar{
+    display:none!important
+  }
+  body.fju-admin-shell .fju-admin-sidebar .fju-sidebar-heading{
+    position:relative;padding:5px 7px 17px
+  }
+  body.fju-admin-shell .fju-admin-sidebar .fju-sidebar-close{
+    display:inline-flex;align-items:center;justify-content:center;
+    flex-shrink:0;min-height:44px;min-width:44px;margin:0;
+    background:#ffffff1c;color:#fff;border:1px solid #ffffff2e;
+    border-radius:11px;font-size:18px
+  }
+  body.fju-admin-shell .fju-admin-sidebar .fju-sidebar-close:focus-visible{
+    outline:3px solid #c3a7ff;outline-offset:2px
+  }
+  body.fju-admin-shell #main-nav.tabs{
+    position:static!important;inset:auto!important;
+    display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+    padding:0!important;margin:0!important;width:auto!important;
+    max-width:none!important;background:transparent!important;
+    border:0!important;border-radius:0!important;
+    box-shadow:none!important;overflow:visible!important
+  }
+  body.fju-admin-shell #main-nav.tabs button{
+    display:flex!important;width:100%!important;max-width:none!important;
+    min-height:46px!important;padding:10px 12px!important;text-align:left!important;
+    font-size:13px!important;border-radius:11px!important
+  }
+  body.fju-admin-shell .fju-sidebar-external{min-height:46px}
+  body.fju-admin-shell .fju-content-toolbar{scroll-margin-top:77px}
+}
+@media(max-width:600px){
+  body.fju-admin-shell .fju-admin-workspace.fju-menu-open .fju-admin-sidebar{
+    border-radius:0 15px 15px 0
+  }
+}
+@media print{
+  body.fju-admin-shell .fju-admin-menu-overlay,
+  body.fju-admin-shell .fju-admin-sidebar{display:none!important}
+  body.fju-admin-shell.fju-admin-drawer-open{overflow:visible!important}
+}
