@@ -1190,7 +1190,7 @@ function renderYouth(){
       request.textContent='Solicitar edição';request.onclick=()=>editYouth(r.id);
       const remove=document.createElement('button');remove.type='button';
       remove.className='secondary youth-request-delete';remove.textContent='Solicitar exclusão';
-      remove.onclick=()=>requestYouthChange(r);
+      remove.onclick=()=>void requestYouthChange(r,remove);
       extra.append(request,remove);more.append(summary,extra);actions.append(more);
     }
     card.append(main,actions);list.append(card);
@@ -1199,7 +1199,11 @@ function renderYouth(){
   }
 }
 let detailPhotoUrl=null;
+const pendingYouthRemovalRequests=new Set();
+const submittedYouthRemovalRequests=new Set();
 function resetYouthSession(){
+  pendingYouthRemovalRequests.clear();
+  submittedYouthRemovalRequests.clear();
   administrativeAccess.clear();
   ++youthSubmitVersion;
   youthSubmitInProgress=false;
@@ -1285,14 +1289,43 @@ async function viewYouth(id){
     }
   }catch(e){if(panel.classList.contains('hidden')||!panel.contains(avatar))return;const note=document.createElement('p');note.className='muted';note.textContent='Foto indisponível: '+e.message;panel.append(note);}
 }
-async function requestYouthChange(r){
-  if(currentProfile?.papel!=='coordenador')return;
+async function requestYouthChange(r,button){
+  const profile=currentProfile;
+  if(profile?.papel!=='coordenador'||String(r.polo_id)!==String(profile.polo_id))return;
+  if(!youthRows.some(row=>String(row.id)===String(r.id)))return;
+  const id=String(r.id);
+  if(pendingYouthRemovalRequests.has(id))return;
+  if(submittedYouthRemovalRequests.has(id)){
+    youthMessage('A solicitação de exclusão desta ficha já foi enviada nesta sessão. Acompanhe em Autorizações.');
+    return;
+  }
   const motivo=prompt('Informe o motivo da exclusão de '+r.nome_completo+':');
   if(!motivo?.trim())return;
-  const {data:{user}}=await supabase.auth.getUser();
-  const {error}=await supabase.from('fju_solicitacoes').insert({jovem_id:r.id,polo_id:r.polo_id,tipo:'exclusao',justificativa:motivo.trim(),dados_propostos:{},solicitante_id:user?.id});
-  if(error){youthMessage('Não foi possível solicitar. Verifique se a tabela de autorizações foi configurada: '+error.message,true);return;}
-  youthMessage('Solicitação enviada ao Administrador Nacional. A ficha não foi alterada.');
+  pendingYouthRemovalRequests.add(id);
+  const originalLabel=button?.textContent;
+  if(button){button.disabled=true;button.textContent='Enviando solicitação…';}
+  const isActive=()=>currentProfile===profile&&pendingYouthRemovalRequests.has(id);
+  try{
+    const {data,error:authError}=await supabase.auth.getUser();
+    if(!isActive())return;
+    if(authError||!data?.user?.id)throw new Error('Conta não identificada. Entre novamente.');
+    const {error}=await supabase.from('fju_solicitacoes').insert({
+      jovem_id:r.id,polo_id:r.polo_id,tipo:'exclusao',
+      justificativa:motivo.trim(),dados_propostos:{},solicitante_id:data.user.id
+    });
+    if(!isActive())return;
+    if(error)throw error;
+    submittedYouthRemovalRequests.add(id);
+    if(button){button.textContent='Solicitação enviada';button.disabled=true;}
+    youthMessage('Pedido enviado ao Administrador Nacional. A ficha não foi excluída e aguarda aprovação.');
+    void refreshAdminPriorities(profile,profileRequest);
+  }catch(error){
+    if(!isActive())return;
+    youthMessage('Não foi possível solicitar exclusão: '+(error?.message||'Tente novamente.'),true);
+    if(button&&button.isConnected){button.disabled=false;button.textContent=originalLabel;}
+  }finally{
+    if(isActive())pendingYouthRemovalRequests.delete(id);
+  }
 }
 let currentRequestFilter='pendente';
 let requestsLoadVersion=0;
