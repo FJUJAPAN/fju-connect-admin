@@ -42,7 +42,7 @@ function fixture(){
   };
   w.__profile=profile;w.__supabase={from:query};
   w.__access={requestsByRank:async()=>new Map()};
-  w.eval('var currentProfile=window.__profile; var supabase=window.__supabase; const administrativeAccess=window.__access; const el=id=>document.getElementById(id); const message=(id,text)=>{el(id).textContent=text};\\n'+snippet+'\\nwindow.__loadRequests=loadYouthRequests;');
+  w.eval('var currentProfile=window.__profile; var supabase=window.__supabase; const administrativeAccess=window.__access; const el=id=>document.getElementById(id); const message=(id,text)=>{el(id).textContent=text};\n'+snippet+'\nwindow.__loadRequests=loadYouthRequests;');
   return {dom,w,doc,trace,cleanup:()=>dom.window.close()};
 }
 const flush=async()=>{for(let i=0;i<12;i++)await new Promise(resolve=>setImmediate(resolve));};
@@ -56,8 +56,8 @@ test('Pendentes usam filtro Supabase antes da página e contadores completos',as
     assert.equal(f.doc.querySelectorAll('#requests-list .report-card').length,25);
     assert.equal(f.doc.querySelector('#requests-load-more').hidden,false);
     assert.match(f.doc.querySelector('#requests-message').textContent,/25 de 143/);
-    assert.match(f.doc.querySelector('[data-request-filter="aprovada"]').textContent,/\\(50\\)/);
-    assert.match(f.doc.querySelector('[data-request-filter="rejeitada"]').textContent,/\\(19\\)/);
+    assert.match(f.doc.querySelector('[data-request-filter="aprovada"]').textContent,/\(50\)/);
+    assert.match(f.doc.querySelector('[data-request-filter="rejeitada"]').textContent,/\(19\)/);
   }finally{f.cleanup();}
 });
 test('Carregar mais amplia de 25 para 50 pedidos',async()=>{
