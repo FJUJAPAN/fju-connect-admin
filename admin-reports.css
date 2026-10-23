@@ -1,0 +1,122 @@
+/* FJU JAPAN | Relatórios no padrão do Painel de Controle.
+   Somente apresentação: preservar formulários, RLS, datas, aprovações e impressão. */
+#relatorios{min-width:0}
+#relatorios .fju-reports-hero{
+ padding:21px 22px;margin:0 0 16px;border-radius:18px;color:#fff;
+ background:linear-gradient(120deg,#142c53,#245183);
+ border:1px solid #385b85;box-shadow:0 7px 20px rgba(19,48,92,.12)
+}
+#relatorios .fju-reports-eyebrow{display:block;font-size:10px;font-weight:850;letter-spacing:.16em;color:#c6dcf9}
+#relatorios .fju-reports-hero h3{font-size:clamp(21px,2.7vw,27px);letter-spacing:-.03em;margin:8px 0;color:#fff;line-height:1.2}
+#relatorios .fju-reports-hero p{max-width:720px;margin:0;color:#dce9fa;line-height:1.55;font-size:13px}
+#relatorios .fju-report-tabs{
+ display:flex;flex-wrap:wrap;gap:7px;background:#edf2fa;border:1px solid #dce5f2;
+ padding:6px;border-radius:14px;box-shadow:none;margin:0 0 18px!important
+}
+#relatorios .fju-report-tabs button{
+ flex:1 1 140px;min-height:45px;border-radius:10px;white-space:normal;
+ text-align:center;background:transparent;color:#4c6284;border:1px solid transparent;
+ padding:10px 15px;font-size:13px;font-weight:800
+}
+#relatorios .fju-report-tabs button.active{background:#223f73;color:#fff;box-shadow:0 3px 8px rgba(19,49,88,.14)}
+#relatorios .fju-report-tabs button:focus-visible{outline:3px solid #9aaff1;outline-offset:2px}
+#relatorios #national-report-panel,
+#relatorios #weekly-entry-wrap,
+#relatorios #report-special{
+ border:1px solid #e0e8f4;border-radius:17px;padding:18px;
+ background:#fff;box-shadow:0 5px 19px rgba(20,39,78,.045);min-width:0
+}
+#relatorios #national-report-panel.hidden,
+#relatorios #weekly-entry-wrap.hidden,
+#relatorios #report-special.hidden{display:none!important}
+#relatorios #national-report-panel>h3:first-child{font-size:19px;margin:0 0 7px;color:#203a68}
+#relatorios #national-report-panel>p.muted{margin:0 0 16px;line-height:1.55;font-size:12px}
+#relatorios #national-report-panel>.grid{gap:12px;margin:0 0 13px}
+#relatorios #national-report-panel .grid>div{min-width:0}
+#relatorios #national-report-panel .grid>div>label{margin:0 0 7px;color:#4b6382;font-weight:750}
+#relatorios #national-report-panel select{min-height:46px;border-radius:11px;width:100%;font-size:16px}
+#relatorios #national-week-button{
+ min-height:47px!important;border:1px solid #c9d6e8;text-align:left!important;
+ background:#f7faff;color:#224477;border-radius:11px;width:100%!important;
+ padding:12px 14px
+}
+#relatorios #national-report-refresh,
+#relatorios #print-national-report{min-height:46px;border-radius:11px;flex:1 1 auto}
+#relatorios #national-report-panel .report-section-title{
+ font-size:16px;color:#233d66;margin:22px 0 12px;padding-top:14px;border-top:1px solid #e7edf6
+}
+#relatorios #national-report-list{gap:11px;margin-top:12px}
+#relatorios #national-report-list>.report-card{border-radius:15px;border:1px solid #dfe7f2;padding:15px;box-shadow:0 4px 12px rgba(20,39,78,.055)}
+#relatorios #national-report-list .report-card-title{font-size:16px;color:#20345b}
+#relatorios #national-report-list .report-metric{background:#f5f8fe;border:1px solid #ecf1fa}
+#relatorios #national-report-list .report-highlight{background:#eaf1fe}
+#relatorios #national-report-list .report-metric span{font-size:11px}
+#relatorios #national-report-list .report-metric b{font-size:21px}
+#relatorios #national-report-analytics{margin-top:18px;border:1px solid #d9e4f3;border-radius:14px;background:#fbfcff;padding:0 14px 15px}
+#relatorios #national-report-analytics>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:55px;font-size:13px;color:#264a7f;font-weight:850}
+#relatorios #national-report-analytics>summary::-webkit-details-marker{display:none}
+#relatorios #national-report-analytics>summary::after{content:"⌄";font-size:22px;line-height:1}
+#relatorios #national-report-analytics[open]>summary::after{transform:rotate(180deg)}
+#relatorios #national-report-analytics>summary:focus-visible{outline:2px solid #779ce5;outline-offset:2px;border-radius:8px}
+#relatorios #national-report-summary{margin:12px 0 20px}
+#relatorios #national-report-summary .stat{padding:13px;border:1px solid #e2e9f5;background:#f0f5fc}
+#relatorios #national-weekly-controls{margin-top:12px;padding:13px 16px;background:#f6f8fd;border:1px solid #e3e9f4;border-radius:13px}
+#relatorios #national-weekly-controls.hidden{display:none!important}
+#relatorios #national-weekly-controls p{margin:0 0 9px;font-size:12px;line-height:1.55}
+#relatorios .fju-report-entry-heading{display:flex;align-items:center;gap:12px;margin:0 0 14px}
+#relatorios .fju-report-entry-heading>span{flex:none;width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:#eaf1fd;font-size:22px}
+#relatorios .fju-report-entry-heading h3{font-size:19px;color:#1f3b6a;letter-spacing:-.025em;margin:0 0 3px}
+#relatorios .fju-report-entry-heading p{font-size:12px;color:#66768f;margin:0;line-height:1.5}
+#relatorios .fju-report-deadline{margin:0 0 16px;padding:11px 12px;background:#f7f9fe;border-left:3px solid #7c91c4;border-radius:7px;font-size:12px}
+#relatorios #weekly-report-form .weekly-report-grid{gap:11px 12px;align-items:stretch}
+#relatorios #weekly-report-form .weekly-report-grid>div{
+ min-width:0;background:#f8faff;border:1px solid #e5ebf5;
+ padding:12px;border-radius:13px
+}
+#relatorios #weekly-report-form .weekly-report-grid>div.weekly-calendar-wrap{
+ background:#edf4ff;border-color:#d6e3f7;position:relative
+}
+#relatorios #weekly-report-form .weekly-report-grid>div.hidden{display:none!important}
+#relatorios #weekly-report-form label{display:block;font-size:12px;font-weight:750;color:#3e5374;margin:0 0 8px;min-height:unset;line-height:1.35}
+#relatorios #weekly-report-form .weekly-report-grid select{min-height:47px;font-size:16px;background:#fff;border-radius:10px;width:100%;padding:10px}
+#relatorios #weekly-date-button{width:100%;min-height:47px;background:#fff;border:1px solid #bbcee8;color:#213f73;text-align:left;border-radius:10px;font-size:13px}
+#relatorios #weekly-report-form>p{margin:14px 0 0}
+#relatorios #weekly-report-form .weekly-submit{
+ min-height:49px;border-radius:12px;background:#225590;color:#fff;
+ box-shadow:0 5px 13px rgba(30,79,139,.15);font-size:14px
+}
+#relatorios #weekly-report-message:not(:empty),#relatorios #special-event-message:not(:empty){padding:10px 12px;border-radius:10px;background:#f3f7fe}
+#relatorios #report-special .special-event-grid{gap:12px}
+#relatorios #special-event-form .special-event-grid>div{
+ border:1px solid #e4ebf6;background:#f9fbff;border-radius:12px;padding:12px
+}
+#relatorios #special-event-form .special-event-grid>div.hidden{display:none!important}
+#relatorios #special-event-form label{color:#42597b;font-weight:750;margin:0 0 8px;min-height:unset}
+#relatorios #special-event-form input,#relatorios #special-event-form select{border-radius:10px;min-height:47px;font-size:16px}
+#relatorios #special-event-submit{min-height:46px;border-radius:11px;background:#24548f}
+#relatorios #special-event-cancel{min-height:46px}
+#relatorios #report-special .special-event-fold{margin-top:16px;border:1px solid #dae4f3;border-radius:13px}
+#relatorios #report-special .special-event-fold>summary{min-height:52px}
+@media(max-width:720px){
+ #relatorios .fju-reports-hero{padding:16px}
+ #relatorios #national-report-panel,#relatorios #weekly-entry-wrap,#relatorios #report-special{padding:13px}
+ #relatorios #national-report-panel>.grid{grid-template-columns:minmax(0,1fr)}
+ #relatorios #national-report-panel .grid>.actions{display:flex;flex-wrap:wrap}
+ #relatorios #national-report-panel .report-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #relatorios #weekly-report-form .weekly-report-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ #relatorios #weekly-report-form .weekly-report-grid>div{padding:10px}
+ #relatorios #weekly-report-form .weekly-report-grid>div.weekly-date-full{grid-column:1/-1}
+ #relatorios #weekly-report-form label{font-size:11.5px}
+ #relatorios #weekly-report-form .weekly-calendar-days button{font-size:13px}
+ #relatorios #report-special .special-event-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:385px){
+ #relatorios .fju-report-tabs button{flex-basis:100%}
+ #relatorios #weekly-report-form .weekly-report-grid>div{padding:9px}
+ #relatorios #weekly-report-form .weekly-report-grid label{font-size:11px}
+ #relatorios .fju-report-entry-heading h3{font-size:17px}
+}
+@media print{
+ #relatorios .fju-reports-hero,#relatorios .fju-report-tabs{box-shadow:none}
+ #relatorios #national-report-panel,#relatorios #weekly-entry-wrap,#relatorios #report-special{box-shadow:none}
+}

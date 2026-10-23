@@ -252,6 +252,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023f">
+<link rel="stylesheet" href="./admin-reports.css?v=20261023a">
 </head>
 <body class="fju-admin-shell">
 <header class="fju-admin-header"><div class="fju-admin-header-inner"><a class="fju-admin-brand" href="https://fjujapan.github.io/fju-connect/" aria-label="FJU Connect JAPAN — site oficial"><span class="fju-admin-mark" aria-hidden="true">FJU<span>.</span></span><span class="fju-admin-brand-copy"><strong>CONNECT</strong><small>JAPAN</small></span></a><div class="fju-admin-header-tools"><span class="fju-admin-context">ÁREA ADMINISTRATIVA</span><a class="fju-admin-site-link" href="https://fjujapan.github.io/fju-connect/">↗ Site FJU</a></div></div></header>
@@ -376,7 +377,12 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
   <div class="fju-request-zone-heading"><div><span class="fju-zone-num">02</span><h3 id="fju-request-acessos-heading">Acesso administrativo</h3></div><p id="fju-request-acessos-intro">Pedidos vinculados à ficha e à função de coordenador.</p></div>
   <div class="fju-request-actions"><button type="button" id="admin-access-refresh" class="secondary">Atualizar pedidos de acesso</button></div><p id="admin-access-message" class="message" role="status"></p><div id="admin-access-list" class="report-list"></div></div></section><section id="relatorios" class="panel hidden">
 <h2>Relatórios</h2>
-<div class="tabs" style="margin-bottom:16px"><button type="button" class="active" data-report-tab="semanal">Relatório semanal</button><button type="button" data-report-tab="especial">Evento especial</button></div>
+<div class="fju-reports-hero">
+  <span class="fju-reports-eyebrow" id="fju-reports-eyebrow">FJU JAPAN · RELATÓRIOS</span>
+  <h3 id="fju-reports-title">Acompanhamento de relatórios</h3>
+  <p id="fju-reports-description">Selecione uma área abaixo para acompanhar os números ou registrar uma atividade.</p>
+</div>
+<div class="tabs fju-report-tabs" role="group" aria-label="Tipo de relatório" style="margin-bottom:16px"><button type="button" class="active" data-report-tab="semanal">Relatório semanal</button><button type="button" data-report-tab="especial">Evento especial</button></div>
 <div id="report-weekly"><div id="national-report-panel" class="hidden">
 <h3>Relatórios semanais por igreja</h3>
 <p class="muted">Indicadores calculados a partir dos relatórios semanais registrados pelos polos.</p>
@@ -391,7 +397,8 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 </div>
 <div id="national-weekly-controls" class="hidden"><p class="muted">Os relatórios são enviados pelos coordenadores. Use o botão abaixo somente quando precisar preencher excepcionalmente.</p><button type="button" id="national-weekly-toggle" class="secondary" aria-expanded="false">Preencher relatório excepcionalmente</button></div>
 <div id="weekly-entry-wrap">
-<p class="muted">Preencha os números referentes à semana e salve o relatório. Disponível para preenchimento aos domingos, com prazo até às 22h (horário do Japão).</p>
+<div class="fju-report-entry-heading"><span aria-hidden="true">📝</span><div><h3>Preencher relatório semanal</h3><p>Os valores correspondem à semana de segunda a domingo.</p></div></div>
+<p class="muted fju-report-deadline">Prazo de envio: domingo até às 22h (horário do Japão). Após o prazo, o envio será identificado como atrasado.</p>
 <form id="weekly-report-form">
 <div class="grid weekly-report-grid">
 <div id="weekly-polo-wrap" class="hidden"><label for="weekly-polo">Igreja do relatório</label><select id="weekly-polo"><option value="">Selecione a igreja</option></select></div>
@@ -412,7 +419,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 
 </div>
 <div id="report-special" class="hidden">
-<p>Registre o movimento especial realizado pelo polo e o total de jovens que participaram.</p>
+<div class="fju-report-entry-heading"><span aria-hidden="true">📅</span><div><h3>Evento especial</h3><p>Registre o movimento realizado pelo polo e o total de jovens participantes.</p></div></div>
 <form id="special-event-form"><input type="hidden" id="special-event-edit-id">
 <div class="grid special-event-grid">
 <div id="special-event-polo-wrap"><label for="special-event-polo">Igreja responsável pelo evento</label><select id="special-event-polo" required></select></div>
@@ -1818,6 +1825,11 @@ document.querySelectorAll('.fju-daily-button[data-action-tab]').forEach(button=>
 });
 function updateAdminDashboardRole(profile,poloNome){
   const national=profile.papel==='nacional';
+  el('fju-reports-eyebrow').textContent=national?'ADMINISTRAÇÃO NACIONAL · RELATÓRIOS':'COORDENAÇÃO LOCAL · RELATÓRIOS';
+  el('fju-reports-title').textContent=national?'Acompanhar relatórios nacionais':'Relatórios da FJU '+poloNome;
+  el('fju-reports-description').textContent=national
+    ?'Confira os envios de todas as igrejas, filtre por polo ou situação e imprima os resultados.'
+    :'Preencha o relatório semanal da sua igreja e acompanhe os eventos especiais.';
   el('fju-sidebar-role').textContent=national?'Administração Nacional':'FJU '+poloNome;
   el('fju-dashboard-context').textContent=national?'ADMINISTRAÇÃO NACIONAL':'COORDENAÇÃO LOCAL · '+poloNome.toUpperCase();
   el('fju-overview-title').textContent=national?'Painel Nacional FJU JAPAN':'Painel da FJU '+poloNome;
