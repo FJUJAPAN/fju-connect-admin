@@ -1,5 +1,5 @@
 // FJU JAPAN | Solicitação e aprovação nacional de acesso ao painel.
-export function setupAdministrativeAccess({supabase,getProfile}){
+export function setupAdministrativeAccess({supabase,getProfile,onDecision=()=>{}}){
   const list=document.getElementById('admin-access-list');
   const status=document.getElementById('admin-access-message');
   let version=0;
@@ -40,6 +40,7 @@ export function setupAdministrativeAccess({supabase,getProfile}){
           for(const [button,approved] of [[approve,true],[reject,false]]){
             button.type='button';
             button.addEventListener('click',async()=>{
+              if(approve.disabled||reject.disabled||current!==version||getProfile()!==profile||!card.isConnected)return;
               if(!confirm((approved?'Liberar o painel administrativo para ':'Rejeitar o acesso de ')+row.nome_completo+' ('+row.email+'), polo '+row.polo_nome+'?'))return;
               approve.disabled=true;reject.disabled=true;feedback.textContent='Registrando decisão…';
               try{
@@ -49,7 +50,8 @@ export function setupAdministrativeAccess({supabase,getProfile}){
                 if(error)throw error;
                 if(current!==version||getProfile()!==profile)return;
                 await refresh();
-              }catch(error){if(current===version){feedback.textContent=errorText(error);approve.disabled=false;reject.disabled=false;}}
+                if(getProfile()===profile)onDecision();
+              }catch(error){if(current===version&&getProfile()===profile&&card.isConnected){feedback.textContent=errorText(error);approve.disabled=false;reject.disabled=false;}}
             });
           }
           actions.append(approve,reject);card.append(actions,feedback);
