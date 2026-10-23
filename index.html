@@ -1294,18 +1294,18 @@ async function loadYouthRequests(){
   el('requests-message').textContent='Consultando solicitações...';
   const accessByRequest=await administrativeAccess.requestsByRank();
   if(version!==requestsLoadVersion||currentProfile!==profile)return;
-  const baseQuery=()=> {
-    let query=supabase.from('fju_solicitacoes');
+  const baseQuery=(fields,options)=> {
+    let query=supabase.from('fju_solicitacoes').select(fields,options);
     if(profile.papel==='coordenador')query=query.eq('polo_id',profile.polo_id);
     return query;
   };
   // O status é filtrado no Supabase ANTES da paginação; pedidos antigos pendentes
   // continuam acessíveis mesmo quando há centenas de decisões anteriores.
-  let query=baseQuery().select('id,jovem_id,polo_id,tipo,justificativa,dados_propostos,dados_anteriores,solicitante_id,status,criado_em',{count:'exact'})
+  let query=baseQuery('id,jovem_id,polo_id,tipo,justificativa,dados_propostos,dados_anteriores,solicitante_id,status,criado_em',{count:'exact'})
     .order('criado_em',{ascending:false}).order('id',{ascending:false});
   if(filter!=='todas')query=query.eq('status',filter);
   const counterQueries=['pendente','aprovada','rejeitada'].map(status=>
-    baseQuery().select('id',{head:true,count:'exact'}).eq('status',status)
+    baseQuery('id',{head:true,count:'exact'}).eq('status',status)
   );
   const [mainResult,...countResults]=await Promise.all([query.range(0,requestsVisibleLimit-1),...counterQueries]);
   if(version!==requestsLoadVersion||currentProfile!==profile)return;
