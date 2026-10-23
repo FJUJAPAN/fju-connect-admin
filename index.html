@@ -715,21 +715,36 @@ function normalizeReportSunday(value){
   return d.toISOString().slice(0,10);
 }
 
+let nationalReportLoadVersion=0;
 async function loadNationalReportOverview(){
-  if(currentProfile?.papel!=='nacional')return;
+  const profile=currentProfile;
+  if(profile?.papel!=='nacional')return;
+  const version=++nationalReportLoadVersion;
   el('national-report-panel').classList.remove('hidden');
   const dateInput=el('national-report-date');
   dateInput.value=normalizeReportSunday(dateInput.value);
   if(dateInput.value>previousSundayISO())dateInput.value=previousSundayISO();
-  updateNationalWeekRange(dateInput.value);
+  const selectedDate=dateInput.value;
+  updateNationalWeekRange(selectedDate);
+  const isActive=()=>version===nationalReportLoadVersion&&currentProfile===profile&&dateInput.value===selectedDate;
   const list=el('national-report-list');list.textContent='Consultando polos e relatórios...';
+  // Consulta oito semanas, inclusive a selecionada, para evitar o limite
+  // dos 1.000 relatórios mais recentes ocultando semanas antigas.
+  const weeks=Array.from({length:8},(_,i)=>{
+    const d=new Date(selectedDate+'T12:00:00Z');
+    d.setUTCDate(d.getUTCDate()-(7-i)*7);
+    return d.toISOString().slice(0,10);
+  });
   const [{data:polos,error:poloError},{data:reports,error:reportError}]=await Promise.all([
     supabase.from('fju_polos').select('id,nome').order('nome'),
-    supabase.from('fju_relatorios_semanais').select('*').order('semana_domingo',{ascending:false}).limit(1000)
+    supabase.from('fju_relatorios_semanais').select('*')
+      .gte('semana_domingo',weeks[0]).lte('semana_domingo',selectedDate)
+      .order('semana_domingo',{ascending:false})
   ]);
+  if(!isActive())return;
   if(poloError||reportError){list.textContent='Não foi possível consultar o painel: '+(poloError?.message||reportError?.message);return;}
   const poloRows=polos||[], reportRows=reports||[];
-  const selected=reportRows.filter(r=>r.semana_domingo===dateInput.value);
+  const selected=reportRows.filter(r=>r.semana_domingo===selectedDate);
   const byPolo=new Map(selected.map(r=>[r.polo_id,r]));
   const submitted=poloRows.filter(p=>byPolo.has(p.id)).length;
   const pending=Math.max(0,poloRows.length-submitted);
@@ -749,8 +764,7 @@ async function loadNationalReportOverview(){
     box.append(span,b);summary.append(box);
   }
   const trend=el('national-trend-chart');trend.replaceChildren();
-  const weeks=[...new Set(reportRows.map(r=>r.semana_domingo))].sort().slice(-8);
-  if(!weeks.length){trend.textContent='Ainda não há relatórios semanais suficientes para montar o gráfico.';}
+  if(!reportRows.length){trend.textContent='Ainda não há relatórios semanais suficientes para montar o gráfico.';}
   else{
     const chartTitle=document.createElement('p');chartTitle.className='muted';chartTitle.textContent='Total único informado em cada semana';trend.append(chartTitle);
     const bars=document.createElement('div');bars.className='chart-bars';
@@ -789,7 +803,7 @@ async function loadNationalReportOverview(){
   if(!poloRows.length){list.textContent='Nenhum polo disponível para esta conta.';return;}
   for(const polo of poloRows){
     const r=byPolo.get(polo.id);
-    const row=document.createElement('article');row.className='report-card';row.dataset.polo=String(polo.id);row.dataset.status=reportDeadlineStatus(r,dateInput.value);
+    const row=document.createElement('article');row.className='report-card';row.dataset.polo=String(polo.id);row.dataset.status=reportDeadlineStatus(r,selectedDate);
     const head=document.createElement('div');head.className='report-card-head';
     const title=document.createElement('div');title.className='report-card-title';title.textContent=polo.nome;
     const badge=document.createElement('span');badge.className='report-badge';badge.textContent=!r?'Pendente':row.dataset.status==='atrasado'?'Enviado com atraso':row.dataset.status==='indefinido'?'Verificar data do envio':'Enviado no prazo';if(row.dataset.status==='atrasado'){badge.style.background='#fff3c4';badge.style.color='#805600';}else if(!r){badge.style.background='#fee2e2';badge.style.color='#b91c1c';}else if(row.dataset.status==='indefinido'){badge.style.background='#e5e7eb';badge.style.color='#374151';}else{badge.style.background='#dcfce7';badge.style.color='#166534';}
@@ -803,7 +817,7 @@ async function loadNationalReportOverview(){
       const metrics=document.createElement('div');metrics.className='report-metrics';
       const addMetric=(label,value)=>{const m=document.createElement('div');m.className='report-metric';const l=document.createElement('span');l.textContent=label;const v=document.createElement('b');v.textContent=String(Number(value)||0);m.append(l,v);metrics.append(m);};
       addMetric('Total único',r.total_jovens_unicos);addMetric('Firmes',r.jovens_firmes);addMetric('Novos',r.jovens_novos);addMetric('Afastados',r.jovens_afastados);addMetric('Domingo 9h30',r.presenca_domingo_930);addMetric('Encontro FJU',r.presenca_encontro_fju);addMetric('Batizados Espírito Santo',r.batizados_espirito_santo);addMetric('Batizados nas águas',r.batizados_aguas);details.append(metrics);
-    }else{const p=document.createElement('p');p.className='muted';p.textContent='Nenhum relatório registrado para '+dateInput.value+'.';details.append(p);}
+    }else{const p=document.createElement('p');p.className='muted';p.textContent='Nenhum relatório registrado para '+selectedDate+'.';details.append(p);}
     row.append(details);list.append(row);
   }
   applyNationalFilters();
@@ -872,6 +886,11 @@ let currentPoloNome='';
    Respostas de consultas pendentes não poderão popular a próxima sessão. */
 function clearAdminPrivateSession(){
   ++profileRequest;
+  ++nationalReportLoadVersion;
+  el('national-report-list').replaceChildren();
+  el('national-report-summary').replaceChildren();
+  el('national-trend-chart').replaceChildren();
+  el('national-polo-chart').replaceChildren();
   ++signupLoadVersion;
   ++requestsLoadVersion;
   currentProfile=null;
