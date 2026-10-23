@@ -1,0 +1,22 @@
+name: FJU JAPAN - Painel Administrativo (Interface)
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  ui-regression:
+    name: Testar login, abas e menu mobile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Instalar dependências de testes
+        run: npm ci
+      - name: Conferir navegação administrativa
+        run: node --test tests/interface-admin.test.mjs
