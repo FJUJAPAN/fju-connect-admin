@@ -886,6 +886,7 @@ let currentPoloNome='';
    Respostas de consultas pendentes não poderão popular a próxima sessão. */
 function clearAdminPrivateSession(){
   ++profileRequest;
+  specialEventRemovalsInFlight.clear();
   ++specialEventSubmitVersion;
   specialEventSubmitting=false;
   setSpecialEventSubmitting(false);
@@ -1834,6 +1835,7 @@ async function setupSpecialEventPolo(){
   }
 }
 let specialEventsLoadVersion=0;
+const specialEventRemovalsInFlight=new Map();
 async function loadSpecialEvents(){
   const profile=currentProfile,version=++specialEventsLoadVersion;
   const list=el('special-event-list');
@@ -1848,7 +1850,7 @@ async function loadSpecialEvents(){
   const names=new Map((polos||[]).map(p=>[String(p.id),p.nome]));
   list.replaceChildren();list.className='report-list';
   el('special-event-count').textContent=String((events||[]).length);
-  await loadEventRequests(events||[],names,version,profile);
+  const pendingEventRemovals=await loadEventRequests(events||[],names,version,profile);
   if(version!==specialEventsLoadVersion||currentProfile!==profile)return;
   if(!events?.length){list.textContent='Nenhum evento especial registrado ainda.';return;}
   for(const ev of events){
@@ -1875,22 +1877,74 @@ async function loadSpecialEvents(){
       el('special-event-form').scrollIntoView({behavior:'smooth',block:'start'});
     });
     const del=document.createElement('button');del.type='button';del.className='secondary';del.textContent='Excluir';
-    del.addEventListener('click',async()=>{
-      if(currentProfile?.papel==='coordenador'){
-        if(!confirm('Solicitar autorização nacional para excluir '+ev.nome_evento+'?'))return;
-        const {data:{user}}=await supabase.auth.getUser();
-        const {error}=await supabase.from('fju_solicitacoes_eventos').insert({tipo:'exclusao',evento_id:String(ev.id),polo_id:String(ev.polo_id),solicitante_id:user.id});
-        message('special-event-message',error?'Não foi possível solicitar: '+error.message:'Solicitação de exclusão enviada para aprovação nacional.',!!error);
-        if(!error)await loadSpecialEvents();return;
-      }
-      if(!confirm('Excluir definitivamente o evento '+ev.nome_evento+'?'))return;
-      const {data,error}=await supabase.from('fju_eventos_especiais').delete().eq('id',ev.id).select('id');
-      if(error||!data?.length){message('special-event-message','Não foi possível excluir. Verifique as permissões no Supabase: '+(error?.message||'nenhum registro alterado'),true);return;}
-      message('special-event-message','Evento excluído.');await loadSpecialEvents();
-    });
-    if(currentProfile?.papel==='coordenador'){
-      edit.hidden=true;del.textContent='Solicitar exclusão';
+    const eventId=String(ev.id),local=profile.papel==='coordenador';
+    const requestAlreadyPending=local&&(pendingEventRemovals===null||pendingEventRemovals?.has(eventId));
+    if(local){
+      edit.hidden=true;
+      del.textContent=pendingEventRemovals===null?'Verifique as solicitações'
+        :requestAlreadyPending?'Exclusão aguardando Nacional':'Solicitar exclusão';
+      del.disabled=Boolean(requestAlreadyPending);
     }
+    del.addEventListener('click',async()=>{
+      if(currentProfile!==profile||version!==specialEventsLoadVersion||!card.isConnected)return;
+      if(!['coordenador','nacional'].includes(profile.papel))return;
+      if(local&&String(ev.polo_id)!==String(profile.polo_id))return;
+      if(local&&(pendingEventRemovals===null||pendingEventRemovals?.has(eventId)))return;
+      if(specialEventRemovalsInFlight.has(eventId))return;
+      const question=local
+        ?'Solicitar autorização nacional para excluir '+ev.nome_evento+'?'
+        :'Excluir definitivamente o evento '+ev.nome_evento+'?';
+      if(!confirm(question))return;
+      const token=Symbol('remoção de evento');
+      specialEventRemovalsInFlight.set(eventId,token);
+      const originalLabel=del.textContent;
+      del.disabled=true;del.textContent=local?'Enviando pedido…':'Excluindo evento…';
+      const active=()=>currentProfile===profile&&version===specialEventsLoadVersion&&card.isConnected
+        &&specialEventRemovalsInFlight.get(eventId)===token;
+      try{
+        if(local){
+          const {data:auth,error:authError}=await supabase.auth.getUser();
+          if(!active())return;
+          if(authError||!auth?.user?.id)throw new Error('Sessão expirada. Entre novamente.');
+          // Reconsulta pendências ao enviar, mesmo após atualizar a tela.
+          const {data:existing,error:queryError}=await supabase.from('fju_solicitacoes_eventos')
+            .select('id').eq('evento_id',eventId).eq('tipo','exclusao')
+            .eq('status','pendente').limit(1);
+          if(!active())return;
+          if(queryError)throw queryError;
+          if(existing?.length){
+            message('special-event-message','Já existe um pedido de exclusão pendente para este evento.',true);
+            del.textContent='Exclusão aguardando Nacional';
+            return;
+          }
+          const {error}=await supabase.from('fju_solicitacoes_eventos').insert({
+            tipo:'exclusao',evento_id:eventId,polo_id:String(ev.polo_id),
+            solicitante_id:auth.user.id
+          });
+          if(!active())return;
+          if(error)throw error;
+          message('special-event-message','Solicitação de exclusão enviada para aprovação nacional.');
+          del.textContent='Exclusão aguardando Nacional';
+        }else{
+          const {data,error}=await supabase.from('fju_eventos_especiais')
+            .delete().eq('id',ev.id).select('id');
+          if(!active())return;
+          if(error||!data?.length)throw error||new Error('Nenhum registro excluído.');
+          message('special-event-message','Evento excluído.');
+        }
+        await loadSpecialEvents();
+        if(currentProfile===profile)void refreshAdminPriorities(profile,profileRequest);
+      }catch(error){
+        if(!active())return;
+        message('special-event-message','Não foi possível concluir a exclusão: '+(error?.message||'Falha de conexão.'),true);
+        del.textContent=originalLabel;
+        del.disabled=false;
+      }finally{
+        if(specialEventRemovalsInFlight.get(eventId)===token){
+          specialEventRemovalsInFlight.delete(eventId);
+        }
+      }
+    });
     actions.append(edit,del);card.append(actions);list.append(card);
   }
 }
@@ -1900,12 +1954,13 @@ async function loadEventRequests(events=[],poloNames=new Map(),version=specialEv
  const {data,error}=await supabase.from('fju_solicitacoes_eventos').select('id,tipo,evento_id,polo_id,dados_propostos,status,criado_em').eq('status','pendente').order('criado_em',{ascending:true}).limit(200);
  if(version!==specialEventsLoadVersion||currentProfile!==profile)return;
  list.replaceChildren();
- if(error){panel.classList.remove('hidden');list.textContent='Não foi possível carregar solicitações: '+error.message;el('event-requests-count').textContent='Erro';return;}
+ if(error){panel.classList.remove('hidden');list.textContent='Não foi possível carregar solicitações: '+error.message;el('event-requests-count').textContent='Erro';return null;}
+ const pendingRemovals=new Set((data||[]).filter(req=>req.tipo==='exclusao'&&req.evento_id).map(req=>String(req.evento_id)));
  const pending=(data||[]).length;
  panel.classList.toggle('hidden',pending===0);
  el('event-requests-count').textContent=pending+' pendente'+(pending===1?'':'s');
  el('event-requests-count').classList.toggle('has-pending',pending>0);
- if(!pending)return;
+ if(!pending)return pendingRemovals;
  const eventsById=new Map(events.map(event=>[String(event.id),event]));
  const fmt=iso=>iso?new Date(iso+'T12:00:00Z').toLocaleDateString('pt-BR',{timeZone:'UTC'}):'Data não informada';
  for(const req of data){
@@ -1950,6 +2005,7 @@ async function loadEventRequests(events=[],poloNames=new Map(),version=specialEv
   }
   list.append(card);
  }
+ return pendingRemovals;
 }
 /* Data do evento: mantém ISO no banco usando três seletores que cabem na tela. */
 (function initializeSpecialEventDateParts(){
