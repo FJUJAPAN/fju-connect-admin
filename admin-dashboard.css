@@ -214,3 +214,11 @@ body.fju-admin-shell .fju-daily-button:focus-visible{outline:3px solid #ba9dff;o
 #inscricoes .fju-signup-card>.message{margin:0;font-size:12px;overflow-wrap:anywhere}
 @media(max-width:680px){#inscricoes .fju-signups-toolbar{grid-template-columns:minmax(0,1fr)}#inscricoes #inscricoes-refresh{width:100%}#inscricoes .fju-signups-list{grid-template-columns:minmax(0,1fr)}}
 @media print{#inscricoes .fju-signup-card{box-shadow:none;break-inside:avoid}}
+
+/* FJU JAPAN | Solicitações — paginação por status com contagem real. */
+#autorizacoes .fju-request-more{display:flex;justify-content:center;margin-top:18px}
+#autorizacoes #requests-load-more{min-height:45px;border-radius:12px;padding:11px 20px;background:#e6effc;color:#254c82;border:1px solid #d0def1;font-weight:800;font-size:13px}
+#autorizacoes #requests-load-more[hidden]{display:none!important}
+#autorizacoes #requests-load-more:hover{background:#dce8fa}
+#autorizacoes [data-request-filter][aria-pressed="true"]{outline:2px solid #567cb5;outline-offset:1px}
+@media(max-width:600px){#autorizacoes #requests-load-more{width:100%}}
