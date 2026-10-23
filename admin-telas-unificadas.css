@@ -1,0 +1,10 @@
+/* FJU JAPAN — identidade visual consistente nas telas internas */
+:root{--fju-internal-ink:#142d50;--fju-internal-line:#dfe6f0;--fju-internal-soft:#f5f8fc}
+:is(#jovens,#relatorios,#inscricoes,#autorizacoes,#lideranca,#config){color:var(--fju-internal-ink);max-width:1100px;margin-inline:auto}
+:is(#jovens,#relatorios,#inscricoes,#autorizacoes,#lideranca,#config)>h2{font-size:clamp(22px,3vw,28px);letter-spacing:-.025em;color:var(--fju-internal-ink);margin:5px 0 16px}
+:is(#jovens,#relatorios,#inscricoes,#autorizacoes,#lideranca,#config) .card{background:#fff;border:1px solid var(--fju-internal-line);border-radius:15px;box-shadow:0 4px 18px rgba(18,47,83,.045)}
+:is(#jovens,#relatorios,#inscricoes,#autorizacoes,#lideranca,#config) :is(input,select,textarea){max-width:100%;border-radius:10px;border:1px solid #cbd5e1;background:#fff;color:#172b49}
+:is(#jovens,#relatorios,#inscricoes,#autorizacoes,#lideranca,#config) :is(input,select,textarea,button,a):focus-visible{outline:3px solid #ed536a;outline-offset:2px}
+:is(#jovens,#relatorios,#inscricoes,#autorizacoes,#lideranca,#config) .fju-back-dashboard{display:inline-flex;align-items:center;gap:7px;margin:0 0 16px;padding:11px 15px;border:1px solid #cad7e7;border-radius:11px;background:#fff;color:#16385d;font-weight:800;font-size:14px;box-shadow:0 2px 8px rgba(15,40,75,.04)}
+:is(#jovens,#relatorios,#inscricoes,#autorizacoes,#lideranca,#config) .fju-back-dashboard:hover{background:#f1f6fc}
+@media(max-width:640px){:is(#jovens,#relatorios,#inscricoes,#autorizacoes,#lideranca,#config){min-width:0}:is(#jovens,#relatorios,#inscricoes,#autorizacoes,#lideranca,#config) .card{border-radius:12px}:is(#jovens,#relatorios,#inscricoes,#autorizacoes,#lideranca,#config)>h2{font-size:23px}}
