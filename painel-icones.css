@@ -1,0 +1,11 @@
+/* FJU JAPAN — painel de controle em grade, inspirado no layout clássico de ícones */
+#inicio .fju-actions-title{font-size:19px;margin:22px 0 15px;letter-spacing:.01em}
+#inicio .fju-dashboard-actions{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important;align-items:stretch!important}
+#inicio .fju-dashboard-actions>.fju-action-card{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;gap:8px!important;min-width:0!important;min-height:152px!important;padding:20px 8px 13px!important;text-align:center!important;border-radius:16px!important;background:#fff!important;color:#122947!important;border:1px solid #d8e2ed!important;box-shadow:0 4px 16px #071a3510!important;text-decoration:none!important}
+#inicio .fju-dashboard-actions>.fju-action-card:focus-visible{outline:3px solid #e51f3d!important;outline-offset:3px}
+#inicio .fju-dashboard-actions .fju-action-icon{display:grid!important;place-items:center!important;width:62px!important;height:62px!important;margin:0 auto 5px!important;padding:0!important;border-radius:17px!important;background:#edf3fa!important;color:#123b6c!important;font-size:35px!important;line-height:1!important;flex:none!important}
+#inicio .fju-dashboard-actions>.fju-action-card strong{font-size:13px!important;font-weight:800!important;line-height:1.3!important;color:#0b2747!important;overflow-wrap:anywhere!important}
+#inicio .fju-dashboard-actions>.fju-action-card>span:not(.fju-action-icon){display:none!important}
+#inicio .fju-dashboard-actions .fju-action-arrow{display:none!important}
+@media(min-width:800px){#inicio .fju-dashboard-actions{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:18px!important}#inicio .fju-dashboard-actions>.fju-action-card{min-height:176px!important;padding:24px 12px!important}#inicio .fju-dashboard-actions .fju-action-icon{width:76px!important;height:76px!important;font-size:42px!important}#inicio .fju-dashboard-actions>.fju-action-card strong{font-size:15px!important}}
+@media(max-width:360px){#inicio .fju-dashboard-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
