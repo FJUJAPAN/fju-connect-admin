@@ -1,0 +1,88 @@
+/* FJU JAPAN — Login administrativo profissional e responsivo.
+   Sem alterar autenticação, permissões Supabase ou sessão de usuário. */
+body.fju-admin-shell #auth.fju-login-shell{
+ max-width:1050px;width:100%;margin:clamp(18px,3.4vw,43px) auto 26px;
+ padding:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+ border-radius:24px;overflow:hidden;background:#fff;border:1px solid #dbe5f3;
+ box-shadow:0 16px 55px rgba(13,37,74,.12)
+}
+body.fju-admin-shell #auth.fju-login-shell.hidden{display:none!important}
+#auth .fju-login-intro{
+ position:relative;isolation:isolate;overflow:hidden;
+ display:flex;flex-direction:column;justify-content:center;gap:15px;
+ padding:clamp(28px,4.4vw,56px);color:#fff;
+ background:radial-gradient(circle at 90% 12%,rgba(147,119,214,.24),transparent 210px),linear-gradient(150deg,#091b36,#143867 75%,#1e477b)
+}
+#auth .fju-login-intro:after{
+ content:"";position:absolute;z-index:-1;width:360px;height:360px;border:1px solid #ffffff17;
+ border-radius:100%;right:-150px;bottom:-180px;box-shadow:0 0 0 55px #ffffff09,0 0 0 110px #ffffff05;pointer-events:none
+}
+#auth .fju-login-overline{font-size:11px;letter-spacing:.2em;color:#c3d7fa;font-weight:850}
+#auth .fju-login-symbol{font-size:clamp(50px,6vw,83px);font-weight:900;letter-spacing:-.09em;line-height:1;color:#fff}
+#auth .fju-login-symbol span{color:#f27c9c}
+#auth .fju-login-intro h2{max-width:350px;font-size:clamp(29px,3.2vw,39px);line-height:1.12;letter-spacing:-.055em;color:#fff;margin:1px 0}
+#auth .fju-login-intro>p{max-width:400px;font-size:14px;line-height:1.7;color:#dbe9fb;margin:0}
+#auth .fju-login-mini-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:10px}
+#auth .fju-login-mini-grid>div{display:flex;align-items:center;gap:6px;min-width:0;border:1px solid #ffffff28;border-radius:12px;padding:10px 8px;background:#ffffff0f}
+#auth .fju-login-mini-grid span{font-size:18px}
+#auth .fju-login-mini-grid strong{font-size:11px;line-height:1.2;color:#f4f7ff}
+#auth .fju-login-intro-footer{font-size:11px;color:#bbd1f0;line-height:1.5;margin-top:18px}
+#auth .fju-login-form-panel{min-width:0;padding:clamp(22px,4.4vw,54px);display:flex;flex-direction:column;justify-content:center}
+#auth .fju-login-eyebrow,#recovery .fju-login-eyebrow{font-size:10px;letter-spacing:.15em;font-weight:850;color:#49679c}
+#auth .fju-login-form-head h2{font-size:clamp(25px,3vw,31px);letter-spacing:-.045em;margin:8px 0;color:#19325a}
+#auth .fju-login-form-head p{color:#6a7890;font-size:13px;line-height:1.55;margin:0 0 19px}
+#auth .fju-login-form-panel form label{font-size:12px;color:#405678;font-weight:750;margin:12px 0 7px}
+#auth .fju-login-form-panel input{
+ width:100%;min-height:48px;padding:12px 13px;border:1px solid #c3d1e5;
+ border-radius:11px;background:#fafcff;color:#182d51;font-size:16px
+}
+#auth .fju-login-form-panel input:focus-visible,#recovery input:focus-visible{outline:3px solid #92b2ed;outline-offset:1px;border-color:#5e8acb}
+#auth .fju-login-password{position:relative}
+#auth .fju-login-password input{padding-right:91px}
+#auth .fju-toggle-password{
+ position:absolute;right:5px;top:5px;min-height:38px;padding:7px 12px;border-radius:8px;
+ background:#eaf1fc;color:#315589;font-size:12px;font-weight:750
+}
+#auth .fju-login-submit,#recovery .fju-login-submit{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;
+ width:100%;min-height:50px;padding:12px 17px;background:#224d85;color:#fff;
+ border-radius:12px;font-size:14px;font-weight:850
+}
+#auth .fju-login-submit:hover,#recovery .fju-login-submit:hover{background:#173d70}
+#auth #login-form>p{margin:22px 0 12px}
+#auth .fju-recovery-request{align-self:flex-start;padding:8px 2px;background:transparent!important;color:#2c5792;font-size:12px;font-weight:750}
+#auth .fju-recovery-request:hover{text-decoration:underline}
+#auth .fju-phone-login{border-top:1px solid #e6edf5;margin:18px 0 0;padding:15px 0 0}
+#auth .fju-phone-login summary{cursor:pointer;font-size:12px;color:#445e85;font-weight:750;padding:6px 0}
+#auth .fju-phone-login summary:focus-visible{outline:3px solid #92b2ed;outline-offset:2px;border-radius:5px}
+#auth .fju-phone-login form{padding:5px 0}
+#auth .fju-phone-login form>p{margin:12px 0}
+#auth .fju-phone-login form button{min-height:44px;font-size:13px}
+#auth .fju-phone-login .muted{font-size:11px;line-height:1.6}
+#auth .fju-login-security-note{font-size:11px;color:#6b7c96;line-height:1.55;margin:14px 0 0}
+#auth .message:not(:empty),#recovery .message:not(:empty){padding:11px 12px;border-radius:10px;background:#f3f7fe;line-height:1.55;font-size:12px;overflow-wrap:anywhere}
+body.fju-admin-shell #recovery.fju-recovery-shell{
+ max-width:510px;padding:clamp(24px,4vw,38px);margin:35px auto 30px;
+ border:1px solid #dfe7f3;border-radius:20px;background:#fff;
+ box-shadow:0 13px 38px rgba(13,37,74,.10)
+}
+#recovery h2{margin:9px 0;font-size:26px;color:#1d355c;letter-spacing:-.04em}
+#recovery .fju-recovery-description{font-size:13px;color:#64758e;line-height:1.55;margin-bottom:18px}
+#recovery label{margin:13px 0 7px;color:#455c7d;font-weight:750}
+#recovery input{font-size:16px;min-height:48px;border-radius:11px;background:#fafcff}
+#recovery form>p{margin:19px 0 0}
+@media(max-width:780px){
+ body.fju-admin-shell #auth.fju-login-shell{grid-template-columns:minmax(0,1fr);max-width:500px;margin:15px auto 25px}
+ #auth .fju-login-intro{padding:20px 22px;gap:8px}
+ #auth .fju-login-symbol{font-size:42px}
+ #auth .fju-login-intro h2{font-size:24px;max-width:none}
+ #auth .fju-login-intro>p{font-size:12px}
+ #auth .fju-login-mini-grid,#auth .fju-login-intro-footer{display:none}
+ #auth .fju-login-form-panel{padding:23px 22px 26px}
+}
+@media(max-width:390px){
+ #auth .fju-login-form-panel{padding:20px 17px}
+ #auth .fju-login-form-head h2{font-size:24px}
+}
+@media(prefers-reduced-motion:reduce){#auth .fju-login-submit,#auth .fju-toggle-password{transition:none}}
+@media print{body.fju-admin-shell #auth,body.fju-admin-shell #recovery{display:none!important}}

@@ -254,12 +254,73 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023f">
 <link rel="stylesheet" href="./admin-reports.css?v=20261023a">
 <link rel="stylesheet" href="./admin-settings.css?v=20261023a">
+<link rel="stylesheet" href="./admin-login.css?v=20261023a">
 </head>
 <body class="fju-admin-shell">
 <header class="fju-admin-header"><div class="fju-admin-header-inner"><a class="fju-admin-brand" href="https://fjujapan.github.io/fju-connect/" aria-label="FJU Connect JAPAN — site oficial"><span class="fju-admin-mark" aria-hidden="true">FJU<span>.</span></span><span class="fju-admin-brand-copy"><strong>CONNECT</strong><small>JAPAN</small></span></a><div class="fju-admin-header-tools"><span class="fju-admin-context">ÁREA ADMINISTRATIVA</span><a class="fju-admin-site-link" href="https://fjujapan.github.io/fju-connect/">↗ Site FJU</a></div></div></header>
 <main class="wrap">
-<section id="auth" class="panel auth"><h2>Entrar</h2><form id="login-form"><label for="email">E-mail</label><input id="email" type="email" autocomplete="username" required><label for="password">Senha</label><input id="password" type="password" autocomplete="current-password" required><p><button type="submit">Entrar</button></p></form><button class="secondary" id="forgot">Enviar recuperação de senha</button><details id="phone-login" style="margin:16px 0"><summary style="cursor:pointer;font-weight:700">Entrar com telefone e código SMS</summary><form id="phone-login-form" style="margin-top:12px"><label for="phone-login-number">Número do celular no Japão</label><input id="phone-login-number" type="tel" inputmode="tel" autocomplete="tel" placeholder="09012345678" required><p><button type="submit">Enviar código SMS</button></p></form><form id="phone-code-form" class="hidden"><label for="phone-login-code">Código recebido por SMS</label><input id="phone-login-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{4,8}" required><p><button type="submit">Confirmar código</button></p></form><p id="phone-login-message" class="message" role="status" aria-live="polite"></p><p class="muted">Disponível somente para telefone previamente vinculado à conta autorizada. O provedor SMS deve estar configurado no Supabase.</p></details><p id="auth-message" class="message" role="status" aria-live="polite"></p></section>
-<section id="recovery" class="panel auth hidden"><h2>Definir nova senha</h2><form id="recovery-form"><label for="new-password">Nova senha (mínimo de 8 caracteres)</label><input id="new-password" type="password" minlength="8" autocomplete="new-password" required><label for="confirm-password">Confirmar nova senha</label><input id="confirm-password" type="password" minlength="8" autocomplete="new-password" required><p><button type="submit">Salvar nova senha</button></p></form><p id="recovery-message" class="message" role="status" aria-live="polite"></p></section>
+<section id="auth" class="panel auth fju-login-shell">
+  <div class="fju-login-intro">
+    <span class="fju-login-overline">FJU CONNECT JAPAN</span>
+    <div class="fju-login-symbol" aria-hidden="true">FJU<span>.</span></div>
+    <h2>Um só lugar para cuidar da FJU.</h2>
+    <p>Painel exclusivo da liderança FJU JAPAN: gestão de jovens, relatórios, inscrições e acompanhamento dos polos.</p>
+    <div class="fju-login-mini-grid" aria-label="Ferramentas do painel">
+      <div><span aria-hidden="true">👥</span><strong>Jovens</strong></div>
+      <div><span aria-hidden="true">📊</span><strong>Relatórios</strong></div>
+      <div><span aria-hidden="true">✅</span><strong>Solicitações</strong></div>
+    </div>
+    <div class="fju-login-intro-footer">Nacional e coordenadores locais · Acesso individual autorizado</div>
+  </div>
+  <div class="fju-login-form-panel">
+    <div class="fju-login-form-head">
+      <span class="fju-login-eyebrow">ÁREA RESTRITA</span>
+      <h2>Entrar no painel</h2>
+      <p>Utilize a conta autorizada para o seu perfil de liderança.</p>
+    </div>
+    <form id="login-form">
+      <label for="email">E-mail</label>
+      <input id="email" type="email" autocomplete="username" inputmode="email" placeholder="seuemail@exemplo.com" required>
+      <label for="password">Senha</label>
+      <div class="fju-login-password">
+        <input id="password" type="password" autocomplete="current-password" required>
+        <button id="fju-toggle-password" type="button" class="fju-toggle-password" aria-label="Mostrar senha" aria-pressed="false">Mostrar</button>
+      </div>
+      <p><button type="submit" class="fju-login-submit">Entrar no painel <span aria-hidden="true">→</span></button></p>
+    </form>
+    <button class="secondary fju-recovery-request" id="forgot" type="button">Esqueci minha senha</button>
+    <details id="phone-login" class="fju-phone-login">
+      <summary>Entrar com telefone e código SMS</summary>
+      <form id="phone-login-form">
+        <label for="phone-login-number">Número do celular no Japão</label>
+        <input id="phone-login-number" type="tel" inputmode="tel" autocomplete="tel" placeholder="09012345678" required>
+        <p><button type="submit">Enviar código SMS</button></p>
+      </form>
+      <form id="phone-code-form" class="hidden">
+        <label for="phone-login-code">Código recebido por SMS</label>
+        <input id="phone-login-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{4,8}" required>
+        <p><button type="submit">Confirmar código</button></p>
+      </form>
+      <p id="phone-login-message" class="message" role="status" aria-live="polite"></p>
+      <p class="muted">Disponível apenas se o telefone já estiver vinculado à conta autorizada e o serviço de SMS estiver configurado.</p>
+    </details>
+    <p id="auth-message" class="message" role="status" aria-live="polite"></p>
+    <p class="fju-login-security-note">🔒 As permissões de cada igreja são verificadas após o login.</p>
+  </div>
+</section>
+<section id="recovery" class="panel auth hidden fju-recovery-shell">
+  <span class="fju-login-eyebrow">FJU CONNECT JAPAN · SEGURANÇA</span>
+  <h2>Definir nova senha</h2>
+  <p class="fju-recovery-description">Crie uma senha com pelo menos 8 caracteres para acessar novamente o painel.</p>
+  <form id="recovery-form">
+    <label for="new-password">Nova senha</label>
+    <input id="new-password" type="password" minlength="8" autocomplete="new-password" required>
+    <label for="confirm-password">Confirmar nova senha</label>
+    <input id="confirm-password" type="password" minlength="8" autocomplete="new-password" required>
+    <p><button type="submit" class="fju-login-submit">Salvar nova senha</button></p>
+  </form>
+  <p id="recovery-message" class="message" role="status" aria-live="polite"></p>
+</section>
 <div id="app" class="hidden"><div class="topline"><p id="identity" class="muted"></p><div class="actions"><button id="pending-bell" type="button" class="secondary" aria-label="Verificar pendências do relatório" title="Pendências do relatório">🔔 <span id="pending-bell-count" hidden>1</span></button><a href="https://fjujapan.github.io/fju-connect/" style="color:#253b75;font-weight:650;font-size:13px">← Site FJU</a><button id="logout" class="secondary">Sair</button></div></div><div class="notice"><strong>Ambiente em validação.</strong> Login, fichas, autorizações, relatórios e impressão disponíveis para testes. Antes de cadastrar dados reais, confirme as permissões de acesso por igreja e a proteção das fotos.</div>
 
 <div class="fju-admin-workspace" id="fju-admin-workspace">
@@ -1694,6 +1755,14 @@ el('enable-notifications').addEventListener('click',async()=>{
 });
 updateNotificationPermissionUI();
 async function refresh(){if(recoveryMode){show('recovery');return}const {data:{user},error}=await supabase.auth.getUser();if(error||!user){show('auth');return}try{await loadProfile(user)}catch(e){show('auth');message('auth-message',e.message,true)}}
+document.getElementById('fju-toggle-password').addEventListener('click',()=>{
+  const field=el('password'),toggle=el('fju-toggle-password');
+  const visible=field.type==='password';
+  field.type=visible?'text':'password';
+  toggle.textContent=visible?'Ocultar':'Mostrar';
+  toggle.setAttribute('aria-label',visible?'Ocultar senha':'Mostrar senha');
+  toggle.setAttribute('aria-pressed',String(visible));
+});
 el('login-form').addEventListener('submit',async e=>{e.preventDefault();message('auth-message','Entrando...');const {error}=await supabase.auth.signInWithPassword({email:el('email').value.trim(),password:el('password').value});if(error){message('auth-message','Não foi possível entrar: '+error.message,true);return}await refresh()});
 el('forgot').addEventListener('click',async()=>{const email=el('email').value.trim();if(!email){message('auth-message','Digite seu e-mail acima para receber a recuperação.',true);return}const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});message('auth-message',error?'Não foi possível solicitar a recuperação: '+error.message:'Se a conta estiver cadastrada, enviaremos instruções ao e-mail.',!!error)});
 el('recovery-form').addEventListener('submit',async e=>{e.preventDefault();const pass=el('new-password').value;if(pass.length<8||pass!==el('confirm-password').value){message('recovery-message','As senhas precisam ser iguais e ter pelo menos 8 caracteres.',true);return}const {error}=await supabase.auth.updateUser({password:pass});if(error){message('recovery-message',error.message,true);return}recoveryMode=false;history.replaceState({},'',location.pathname);message('auth-message','Senha atualizada. Você já pode entrar.');await supabase.auth.signOut();show('auth')});
