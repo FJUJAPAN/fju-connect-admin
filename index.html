@@ -1006,7 +1006,7 @@ el('youth-add-toggle').addEventListener('click',()=>{
   setYouthFormOpen(open,false,open);
 });
 el('youth-form-close').addEventListener('click',()=>{resetYouth();setYouthFormOpen(false);});
-function resetYouth(){el('youth-photo').disabled=false;if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}el('youth-form').reset();setYouthBirth('');refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
+function resetYouth(){++youthPhotoLoadVersion;el('youth-photo').disabled=false;if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}el('youth-form').reset();setYouthBirth('');refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
 async function initializeYouth(){
   const profile=currentProfile;
   if(!profile)return;
@@ -1028,16 +1028,20 @@ async function initializeYouth(){
   el('youth-list-polo-wrap').classList.toggle('hidden',profile.papel==='coordenador');
   resetYouth();setYouthFormOpen(false);await loadYouth();
 }
+let youthPhotoLoadVersion=0;
 async function loadYouthPhoto(id){
+  const photoLoad=++youthPhotoLoadVersion,profile=currentProfile;
+  const stillCurrent=()=>photoLoad===youthPhotoLoadVersion&&currentProfile===profile&&el('youth-id').value===id;
   const preview=el('youth-photo-preview');preview.classList.add('hidden');preview.removeAttribute('src');
   if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}
   const {data,error}=await supabase.storage.from('fju-fotos').list(id,{limit:20});
+  if(!stillCurrent())return;
   if(error){youthMessage('Ficha aberta, mas não foi possível consultar a foto: '+error.message,true);return;}
   const file=(data||[]).find(f=>/^perfil\.(jpg|png|webp)$/.test(f.name));
   if(!file)return;
   const result=await supabase.storage.from('fju-fotos').download(id+'/'+file.name);
+  if(!stillCurrent())return;
   if(result.error){youthMessage('Foto indisponível: '+result.error.message,true);return;}
-  if(el('youth-id').value!==id)return;
   photoUrl=URL.createObjectURL(result.data);preview.src=photoUrl;preview.classList.remove('hidden');
 }
 async function compactarFoto100KB(file){
@@ -1540,7 +1544,22 @@ el('youth-form').addEventListener('submit',async e=>{
     categoria:el('youth-rank').value==='Inconstante'?'inconstante':'firme'
   };
   if(!el('youth-rank').value){youthMessage('Selecione a patente do jovem.',true);return;}
-  if(!payload.nome_completo){youthMessage('Informe um nome fictício.',true);return;}
+  if(!payload.nome_completo){youthMessage('Informe o nome completo do jovem.',true);return;}
+  // Processar a foto antes da gravação evita deixar fichas incompletas por
+  // formato inválido ou erro de compressão (limite de 100 KB).
+  const file=el('youth-photo').files?.[0]||null;
+  let compactada=null;
+  if(file){
+    const supported=['image/jpeg','image/png','image/webp'].includes(file.type);
+    if(!supported||file.size>5*1024*1024){
+      youthMessage('Foto inválida. Escolha JPG, PNG ou WebP de até 5 MB.',true);
+      return;
+    }
+    youthMessage('Preparando foto privada de até 100 KB...');
+    try{compactada=await compactarFoto100KB(file);}
+    catch(e){if(!stillCurrent())return;youthMessage('Não foi possível preparar a foto: '+e.message,true);return;}
+    if(!stillCurrent())return;
+  }
   youthMessage('Salvando...');
   const id=el('youth-id').value;
   if(id&&profile.papel==='coordenador'){
@@ -1558,29 +1577,35 @@ el('youth-form').addEventListener('submit',async e=>{
     const {error}=await supabase.from('fju_solicitacoes').insert({jovem_id:id,polo_id:original.polo_id,tipo:(Object.keys(changes).every(k=>['patente','categoria'].includes(k))?'patente':'edicao'),justificativa:'Campos: '+Object.keys(changes).join(', '),dados_propostos:changes,solicitante_id:user?.id});
     if(!stillCurrent())return;
     if(error){youthMessage('Não foi possível enviar a solicitação: '+error.message,true);return;}
-    resetYouth();setYouthFormOpen(false);youthMessage(changes.patente==='coordenador'?'Pedido de patente Coordenador e acesso administrativo enviado ao Nacional. A conta foi identificada automaticamente.':'Solicitação enviada. A ficha original não foi alterada.');return;
+    resetYouth();setYouthFormOpen(false);youthMessage(changes.patente==='coordenador'?'Pedido de patente Coordenador e acesso administrativo enviado ao Nacional. A conta foi identificada automaticamente.':'Solicitação enviada. A ficha original não foi alterada.');
+    void refreshAdminPriorities(profile,profileRequest);
+    return;
   }
   const result=id?await supabase.from('fju_jovens').update(payload).eq('id',id).select('id').single():await supabase.from('fju_jovens').insert(payload).select('id').single();
   if(!stillCurrent())return;
   const {error}=result;
   if(error){youthMessage('Não foi possível salvar: '+error.message,true);return;}
-  const file=el('youth-photo').files?.[0];
-  if(file){
-    const extension={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[file.type];
-    if(!extension||file.size>5*1024*1024){youthMessage('Ficha salva, mas foto inválida. Escolha JPG, PNG ou WebP de até 5 MB.',true);return;}
+  let photoWarning='';
+  if(compactada){
     youthMessage('Ficha salva. Enviando foto privada...');
-    let compactada;
-    try{compactada=await compactarFoto100KB(file);}
-    catch(e){if(!stillCurrent())return;youthMessage('Ficha salva, mas a foto não pôde ser comprimida: '+e.message,true);return;}
-    if(!stillCurrent())return;
     const path=result.data.id+'/perfil.jpg';
-    const uploaded=await supabase.storage.from('fju-fotos').upload(path,compactada,{contentType:'image/jpeg',upsert:true});
-    if(!stillCurrent())return;
-    if(uploaded.error){youthMessage('Ficha salva, mas não foi possível enviar a foto: '+uploaded.error.message,true);await loadYouth();return;}
+    try{
+      const uploaded=await supabase.storage.from('fju-fotos').upload(path,compactada,{contentType:'image/jpeg',upsert:true});
+      if(!stillCurrent())return;
+      if(uploaded.error)photoWarning='A ficha foi salva, mas a foto não foi enviada: '+uploaded.error.message;
+    }catch(e){
+      if(!stillCurrent())return;
+      photoWarning='A ficha foi salva, mas a foto não foi enviada: '+(e?.message||'Falha de conexão.');
+    }
   }
-  resetYouth();setYouthFormOpen(false);await loadYouth();
   if(!stillCurrent())return;
-  youthMessage(file?'Ficha e foto de teste salvas com sucesso.':'Ficha de teste salva com sucesso.');
+  // Após salvar, a lista acompanha a igreja efetivamente gravada.
+  if(profile.papel==='nacional')el('youth-list-polo').value=polo_id;
+  el('youth-search').value='';
+  resetYouth();setYouthFormOpen(false);
+  await loadYouth();
+  if(!stillCurrent())return;
+  youthMessage(photoWarning||(file?'Ficha e foto salvas com sucesso.':'Ficha salva com sucesso.'),Boolean(photoWarning));
   void loadDashboard(profile,profileRequest);
   }finally{
     if(submitVersion===youthSubmitVersion){
@@ -1589,7 +1614,7 @@ el('youth-form').addEventListener('submit',async e=>{
     }
   }
 });
-el('youth-photo').addEventListener('change',e=>{const file=e.target.files?.[0];const preview=el('youth-photo-preview');if(!file){preview.classList.add('hidden');return;}if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){youthMessage('Escolha uma imagem JPG, PNG ou WebP de até 5 MB.',true);e.target.value='';return;}if(photoUrl)URL.revokeObjectURL(photoUrl);photoUrl=URL.createObjectURL(file);preview.src=photoUrl;preview.classList.remove('hidden');});
+el('youth-photo').addEventListener('change',e=>{++youthPhotoLoadVersion;const file=e.target.files?.[0];const preview=el('youth-photo-preview');if(!file){preview.classList.add('hidden');return;}if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){youthMessage('Escolha uma imagem JPG, PNG ou WebP de até 5 MB.',true);e.target.value='';return;}if(photoUrl)URL.revokeObjectURL(photoUrl);photoUrl=URL.createObjectURL(file);preview.src=photoUrl;preview.classList.remove('hidden');});
 el('youth-clear').onclick=resetYouth;
 el('youth-refresh').onclick=loadYouth;
 let youthSearchTimer=null;
