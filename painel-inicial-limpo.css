@@ -1,0 +1,5 @@
+/* FJU JAPAN | Home administrativa simples: uma grade, sem duplicações */
+#inicio>h2,#inicio>.fju-overview-intro,#inicio>.fju-today-section,#inicio>.fju-priority-heading,#inicio>.fju-priority-grid,#inicio>.fju-overview-stats,#inicio>.fju-overview-metrics,#inicio>.fju-overview-cards,#inicio>.fju-stats-grid,#inicio>.fju-dashboard-stats,#inicio>.fju-summary-grid,#inicio>#fju-my-page,#inicio>#dashboard-note,#inicio>#leader-home{display:none!important}
+#inicio .fju-actions-title{margin:8px 0 16px!important;font-size:22px!important;color:#142d50!important}
+#inicio .fju-dashboard-actions{margin:0 0 22px!important}
+#inicio{padding-top:12px!important}
