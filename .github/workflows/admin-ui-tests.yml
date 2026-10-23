@@ -19,4 +19,4 @@ jobs:
       - name: Instalar dependências de testes
         run: npm ci
       - name: Conferir navegação administrativa
-        run: node --test tests/interface-admin.test.mjs tests/inscricoes-session.test.mjs tests/decisoes-admin.test.mjs tests/paginacao-solicitacoes.test.mjs tests/fichas-sessao.test.mjs tests/fichas-fotos.test.mjs tests/exclusao-jovem.test.mjs tests/relatorios-nacional.test.mjs tests/relatorio-semanal-submit.test.mjs
+        run: node --test tests/interface-admin.test.mjs tests/inscricoes-session.test.mjs tests/decisoes-admin.test.mjs tests/paginacao-solicitacoes.test.mjs tests/fichas-sessao.test.mjs tests/fichas-fotos.test.mjs tests/exclusao-jovem.test.mjs tests/relatorios-nacional.test.mjs tests/relatorio-semanal-submit.test.mjs tests/eventos-aprovacoes.test.mjs
