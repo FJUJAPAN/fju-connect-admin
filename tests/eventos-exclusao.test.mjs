@@ -24,7 +24,10 @@ function fixture(role='coordenador',pending=[],eventPolo='polo-A'){
      if(table==='fju_polos')return {select:async()=>({data:[{id:'polo-A',nome:'Hamamatsu'},{id:'polo-B',nome:'Toyohashi'}],error:null})};
      if(table==='fju_eventos_especiais'){
        return {
-         select:()=>({order:()=>({limit:async()=>({data:[ev],error:null})})}),
+         select:()=>({order:()=>({limit:()=>({
+           eq:()=>Promise.resolve({data:[ev],error:null}),
+           then:(resolve,reject)=>Promise.resolve({data:[ev],error:null}).then(resolve,reject)
+         })})}),
          delete:()=>({eq:(col,id)=>{
            calls.push({method:'delete',table,id,col});return {select:()=>save.promise};
          }})
