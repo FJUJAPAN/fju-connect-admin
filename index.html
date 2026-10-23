@@ -251,7 +251,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 }
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
-<link rel="stylesheet" href="./admin-dashboard.css?v=20261023e">
+<link rel="stylesheet" href="./admin-dashboard.css?v=20261023f">
 </head>
 <body class="fju-admin-shell">
 <header class="fju-admin-header"><div class="fju-admin-header-inner"><a class="fju-admin-brand" href="https://fjujapan.github.io/fju-connect/" aria-label="FJU Connect JAPAN — site oficial"><span class="fju-admin-mark" aria-hidden="true">FJU<span>.</span></span><span class="fju-admin-brand-copy"><strong>CONNECT</strong><small>JAPAN</small></span></a><div class="fju-admin-header-tools"><span class="fju-admin-context">ÁREA ADMINISTRATIVA</span><a class="fju-admin-site-link" href="https://fjujapan.github.io/fju-connect/">↗ Site FJU</a></div></div></header>
@@ -355,7 +355,11 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <div class="youth-list-controls"><div><label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite o nome do jovem" type="search" autocomplete="off"></div><button type="button" id="youth-refresh" class="secondary">Atualizar</button></div>
 <div id="youth-detail" class="panel hidden" style="margin:0 0 14px;border:1px solid #dce3ef"></div><div id="youth-list" aria-label="Fichas salvas"></div>
 </section>
-<section id="inscricoes" class="panel hidden"><h2>Novos cadastros de jovens</h2><p class="muted">Solicitações feitas pelos jovens no site. Cada coordenador vê somente o seu polo. A ficha oficial não é criada automaticamente.</p><div class="actions"><button type="button" id="inscricoes-refresh" class="secondary">Atualizar solicitações</button><strong id="inscricoes-count" aria-live="polite"></strong></div><p id="inscricoes-message" class="message" role="status"></p><div id="inscricoes-list" class="report-list"></div></section><section id="autorizacoes" class="panel hidden"><h2>Autorizações de fichas</h2>
+<section id="inscricoes" class="panel hidden"><h2>Novos cadastros de jovens</h2>
+<div class="fju-signups-title"><div><small>FJU JAPAN · INSCRIÇÕES</small><h3>Jovens aguardando análise</h3><p>Confira os dados antes de criar uma ficha oficial.</p></div><strong id="inscricoes-count" aria-live="polite">—</strong></div>
+<div class="fju-signups-toolbar"><div><label for="inscricoes-search">Buscar jovem ou projeto</label><input id="inscricoes-search" type="search" autocomplete="off" placeholder="Nome, projeto ou nacionalidade"></div><button type="button" id="inscricoes-refresh" class="secondary">↻ Atualizar</button></div>
+<p id="inscricoes-visible-count" class="muted" aria-live="polite"></p><p id="inscricoes-message" class="message" role="status"></p>
+<div id="inscricoes-list" class="fju-signups-list"></div></section><section id="autorizacoes" class="panel hidden"><h2>Autorizações de fichas</h2>
 <div class="fju-requests-landing">
   <span class="fju-requests-kicker" id="fju-requests-kicker">CENTRAL DE SOLICITAÇÕES</span>
   <h3 id="fju-requests-title">Solicitações e autorizações</h3>
@@ -1632,6 +1636,14 @@ el('login-form').addEventListener('submit',async e=>{e.preventDefault();message(
 el('forgot').addEventListener('click',async()=>{const email=el('email').value.trim();if(!email){message('auth-message','Digite seu e-mail acima para receber a recuperação.',true);return}const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});message('auth-message',error?'Não foi possível solicitar a recuperação: '+error.message:'Se a conta estiver cadastrada, enviaremos instruções ao e-mail.',!!error)});
 el('recovery-form').addEventListener('submit',async e=>{e.preventDefault();const pass=el('new-password').value;if(pass.length<8||pass!==el('confirm-password').value){message('recovery-message','As senhas precisam ser iguais e ter pelo menos 8 caracteres.',true);return}const {error}=await supabase.auth.updateUser({password:pass});if(error){message('recovery-message',error.message,true);return}recoveryMode=false;history.replaceState({},'',location.pathname);message('auth-message','Senha atualizada. Você já pode entrar.');await supabase.auth.signOut();show('auth')});
 el('logout').addEventListener('click',async()=>{++profileRequest;resetYouthSession();coordinatorCards.clear();await supabase.auth.signOut();show('auth')});
+function filterSignups(){
+ const query=String(el('inscricoes-search').value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+ let visible=0;
+ const cards=[...el('inscricoes-list').querySelectorAll('.fju-signup-card')];
+ for(const card of cards){card.hidden=!!(query&&!card.dataset.search.includes(query));if(!card.hidden)visible++;}
+ el('inscricoes-visible-count').textContent=query?visible+' de '+cards.length+' encontrados':'';
+}
+el('inscricoes-search').addEventListener('input',filterSignups);
 async function loadYouthSignups(){
  const status=el('inscricoes-message'),list=el('inscricoes-list'),count=el('inscricoes-count');
  if(!currentProfile){status.textContent='Entre com uma conta autorizada.';return;}
@@ -1643,25 +1655,31 @@ async function loadYouthSignups(){
  count.textContent=rows.length+' pendente(s)';
  status.textContent=rows.length?'Confira as solicitações abaixo.':'Nenhuma inscrição pendente para seu polo.';
  for(const item of rows){
-  const card=document.createElement('article');card.className='report-card';
-  const name=document.createElement('strong');name.className='report-card-title';name.textContent=item.nome||'Nome não informado';
-  const meta=document.createElement('p');meta.className='muted';
+  const card=document.createElement('article');card.className='report-card fju-signup-card';
+  card.dataset.search=String([item.nome,item.nacionalidade_iso2,(item.projetos_solicitados||[]).join(' ')].join(' ')).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const name=document.createElement('strong');name.className='report-card-title fju-signup-name';name.textContent=item.nome||'Nome não informado';
+  const meta=document.createElement('p');meta.className='muted fju-signup-date';
   meta.textContent='Recebido em '+(item.criado_em?new Date(item.criado_em).toLocaleString('pt-BR',{timeZone:'Asia/Tokyo'}):'data indisponível');
-  const projects=document.createElement('p');projects.textContent='Projetos solicitados: '+(item.projetos_solicitados?.join(', ')||'Nenhum');
-  const details=document.createElement('p');details.className='muted';
+  const projects=document.createElement('div');projects.className='fju-signup-projects';
+  const projectsLabel=document.createElement('span');projectsLabel.textContent='PROJETOS SELECIONADOS';projects.append(projectsLabel);
+  const pills=document.createElement('div');pills.className='fju-signup-pills';
+  for(const project of (item.projetos_solicitados?.length?item.projetos_solicitados:['Nenhum'])){const pill=document.createElement('span');pill.textContent=project;pills.append(pill);}
+  projects.append(pills);
+  const details=document.createElement('p');details.className='muted fju-signup-details';
   const birth=item.nascimento?item.nascimento.split('-').reverse().join('/'):'Não informado';
   details.textContent='Nascimento: '+birth+' · Telefone: '+(item.telefone||'Não informado')+' · Nacionalidade: '+(item.nacionalidade_iso2||'Não informada');
   const photo=document.createElement('img');
-  photo.alt='Foto cadastrada por '+(item.nome||'jovem');photo.loading='lazy';
-  photo.style.cssText='display:none;width:100px;height:120px;object-fit:cover;border-radius:12px;border:1px solid #c9d3e6;margin:8px 0';
+  photo.alt='Foto cadastrada por '+(item.nome||'jovem');photo.loading='lazy';photo.className='fju-signup-photo';
+  photo.style.cssText='display:none;width:80px;height:96px;object-fit:cover;border-radius:14px;border:1px solid #d7e3f3';
   void (async()=>{
     try{
       const {data:link,error:photoError}=await supabase.storage.from('fju-inscricoes-fotos').createSignedUrl(item.usuario_id+'/perfil.jpg',300);
       if(!photoError&&link?.signedUrl&&card.isConnected){photo.src=link.signedUrl;photo.style.display='block';}
     }catch(_){}
   })();
-  const controls=document.createElement('div');controls.className='actions';
-  const rank=document.createElement('select');rank.setAttribute('aria-label','Patente inicial de '+(item.nome||'jovem'));
+  const controls=document.createElement('div');controls.className='fju-signup-controls';
+  const rankLabel=document.createElement('label');rankLabel.textContent='Patente inicial';
+  const rank=document.createElement('select');rank.id='fju-signup-rank-'+item.id;rankLabel.htmlFor=rank.id;rank.setAttribute('aria-label','Patente inicial de '+(item.nome||'jovem'));
   for(const value of ['Inconstante','Firme','CPO','Colaborador','Obreiro','Coordenador']){const opt=document.createElement('option');opt.value=value;opt.textContent=value;rank.append(opt);}
   const approve=document.createElement('button');approve.type='button';approve.textContent='Aceitar e criar ficha';
   const reject=document.createElement('button');reject.type='button';reject.className='secondary';reject.textContent='Rejeitar';
@@ -1692,8 +1710,19 @@ async function loadYouthSignups(){
     if(error){feedback.textContent='Não foi possível rejeitar: '+error.message;approve.disabled=false;reject.disabled=false;return;}
     await loadYouthSignups();
   });
-  controls.append(rank,approve,reject);card.append(name,meta,projects,details,photo,controls,feedback);list.append(card);
+  const head=document.createElement('div');head.className='fju-signup-head';
+  const avatar=document.createElement('div');avatar.className='fju-signup-avatar';
+  const initials=document.createElement('span');initials.textContent=String(item.nome||'?').trim().split(/\s+/).slice(0,2).map(part=>part[0]||'').join('').toUpperCase();
+  avatar.append(initials,photo);
+  photo.addEventListener('load',()=>{initials.hidden=true;});
+  photo.addEventListener('error',()=>{initials.hidden=false;photo.style.display='none';});
+  const identity=document.createElement('div');identity.className='fju-signup-identity';
+  const badge=document.createElement('span');badge.className='fju-signup-badge';badge.textContent='● Aguardando análise';
+  identity.append(badge,name,meta);head.append(avatar,identity);
+  const actionRow=document.createElement('div');actionRow.className='fju-signup-action-row';actionRow.append(approve,reject);
+  controls.append(rankLabel,rank,actionRow);card.append(head,details,projects,controls,feedback);list.append(card);
  }
+ filterSignups();
 }
 el('inscricoes-refresh').addEventListener('click',()=>void loadYouthSignups());
 
