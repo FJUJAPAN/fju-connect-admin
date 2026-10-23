@@ -1,0 +1,61 @@
+/* FJU JAPAN | Configurações administrativas em painéis intuitivos.
+   Estilos isolados: preserva IDs, callbacks de push e RLS. */
+#config .fju-settings-hero{
+ padding:21px 23px;border-radius:18px;margin:0 0 17px;
+ background:linear-gradient(120deg,#162e55,#2a4e7f);border:1px solid #41668f;color:white;
+ box-shadow:0 7px 18px rgba(21,48,83,.1)
+}
+#config .fju-settings-eyebrow{font-size:10px;font-weight:850;letter-spacing:.15em;color:#c3d9f8}
+#config .fju-settings-hero h3{font-size:clamp(21px,2.5vw,28px);letter-spacing:-.035em;color:#fff;margin:8px 0}
+#config .fju-settings-hero p{font-size:13px;line-height:1.55;color:#dce9f9;margin:0}
+#config .fju-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+#config .fju-settings-section{
+ padding:18px;min-width:0;background:#fff;border:1px solid #dfe7f4;
+ border-radius:17px;box-shadow:0 5px 18px rgba(19,45,89,.06)
+}
+#config .fju-settings-section-security{grid-column:1/-1}
+#config .fju-settings-section-heading{display:flex;align-items:flex-start;gap:11px;margin-bottom:15px}
+#config .fju-settings-icon{
+ width:42px;height:42px;flex:0 0 42px;border-radius:13px;
+ display:grid;place-items:center;background:#eaf1fd;font-size:21px
+}
+#config .fju-settings-section-heading h3{font-size:17px;margin:2px 0 5px;color:#1c355f}
+#config .fju-settings-section-heading p{font-size:12px;color:#64768e;line-height:1.4;margin:0}
+#config .fju-settings-account{margin:0 0 16px;display:grid;gap:0}
+#config .fju-settings-account>div{padding:11px 0;border-bottom:1px solid #ebeff6;min-width:0}
+#config .fju-settings-account dt{font-size:11px;font-weight:750;color:#6a7d96;margin-bottom:4px}
+#config .fju-settings-account dd{
+ font-size:13px;line-height:1.45;color:#1d385f;font-weight:700;margin:0;overflow-wrap:anywhere
+}
+#config .fju-settings-secondary{
+ display:inline-flex;gap:9px;align-items:center;justify-content:center;min-height:43px;
+ width:100%;background:#eaf1fc;color:#26497e;border:1px solid #d4dff0;border-radius:11px;
+ padding:10px 12px;font-size:12px;font-weight:800
+}
+#config .fju-settings-secondary:hover{background:#dce8f9}
+#config .fju-settings-notification-status{
+ padding:11px 13px;border:1px solid #dce7f6;border-radius:12px;
+ background:#f4f8ff;color:#344f76;font-size:12px;line-height:1.55;margin:0 0 13px
+}
+#config .fju-settings-buttons{display:flex;flex-wrap:wrap;gap:8px}
+#config .fju-settings-buttons button{flex:1 1 170px;min-height:44px;border-radius:11px;font-size:12px}
+#config .fju-settings-buttons button[hidden]{display:none!important}
+#config .fju-settings-note{font-size:12px;color:#5c718f;line-height:1.6;margin:14px 0}
+#config .fju-settings-footnote{
+ padding:12px 13px;border-left:3px solid #779cd0;background:#f5f8fe;border-radius:8px;
+ font-size:12px;line-height:1.55;color:#4b6486
+}
+#config #role-detail{font-size:13px;line-height:1.6;color:#263f67;font-weight:750;margin:7px 0 9px}
+#config .fju-settings-section-security .fju-settings-secondary{max-width:320px}
+#config .fju-settings-section :is(button,a,input):focus-visible{outline:3px solid #869fe5;outline-offset:3px}
+@media(max-width:730px){
+ #config .fju-settings-hero{padding:17px}
+ #config .fju-settings-grid{grid-template-columns:minmax(0,1fr)}
+ #config .fju-settings-section-security{grid-column:auto}
+ #config .fju-settings-section{padding:15px}
+ #config .fju-settings-section-security .fju-settings-secondary{max-width:none}
+}
+@media print{
+ #config .fju-settings-hero,#config .fju-settings-section{box-shadow:none}
+ #config .fju-settings-buttons,#config .fju-settings-secondary{display:none!important}
+}

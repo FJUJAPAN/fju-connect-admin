@@ -253,6 +253,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023f">
 <link rel="stylesheet" href="./admin-reports.css?v=20261023a">
+<link rel="stylesheet" href="./admin-settings.css?v=20261023a">
 </head>
 <body class="fju-admin-shell">
 <header class="fju-admin-header"><div class="fju-admin-header-inner"><a class="fju-admin-brand" href="https://fjujapan.github.io/fju-connect/" aria-label="FJU Connect JAPAN — site oficial"><span class="fju-admin-mark" aria-hidden="true">FJU<span>.</span></span><span class="fju-admin-brand-copy"><strong>CONNECT</strong><small>JAPAN</small></span></a><div class="fju-admin-header-tools"><span class="fju-admin-context">ÁREA ADMINISTRATIVA</span><a class="fju-admin-site-link" href="https://fjujapan.github.io/fju-connect/">↗ Site FJU</a></div></div></header>
@@ -487,8 +488,43 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
   <div id="leader-directory" class="leader-directory"></div>
 </div>
 </section>
-<section id="config" class="panel hidden"><div id="notification-settings" class="panel" style="margin-bottom:14px"><h3 style="margin:0 0 8px">🔔 Notificações de relatórios</h3><p id="notification-status" class="muted" role="status" aria-live="polite">Verificando disponibilidade...</p><button type="button" id="enable-notifications">Ativar notificações neste aparelho</button> <button type="button" class="secondary" id="register-device" hidden>Registrar este aparelho</button> <button type="button" class="secondary" id="unlink-device" hidden>Desvincular este aparelho</button> <button type="button" class="secondary" id="test-push" hidden>Enviar notificação de teste</button><p class="muted" style="font-size:12px">Esta etapa autoriza notificações no aparelho. Os lembretes automáticos serão ativados após a configuração do serviço de envio.</p></div>
-<h2>Configuração</h2><p id="role-detail"></p><p class="muted">As regras de acesso efetivas são aplicadas no banco pelo RLS. A interface não substitui essas políticas.</p></section></div></div></div>
+<section id="config" class="panel hidden">
+<h2>Configurações</h2>
+<div class="fju-settings-hero">
+  <span class="fju-settings-eyebrow" id="fju-settings-eyebrow">FJU JAPAN · CONFIGURAÇÕES</span>
+  <h3 id="fju-settings-title">Configurações do painel</h3>
+  <p>Consulte sua conta, gerencie notificações deste aparelho e entenda seus acessos.</p>
+</div>
+<div class="fju-settings-grid">
+  <section class="fju-settings-section" aria-labelledby="fju-settings-account-heading">
+    <div class="fju-settings-section-heading"><span aria-hidden="true" class="fju-settings-icon">👤</span><div><h3 id="fju-settings-account-heading">Minha conta</h3><p>Informações da sessão autorizada.</p></div></div>
+    <dl class="fju-settings-account">
+      <div><dt>E-mail da conta</dt><dd id="fju-settings-email">—</dd></div>
+      <div><dt>Nível de acesso</dt><dd id="fju-settings-role">—</dd></div>
+      <div><dt>Igreja / abrangência</dt><dd id="fju-settings-polo">—</dd></div>
+    </dl>
+    <button type="button" id="fju-settings-open-profile" class="fju-settings-secondary">Abrir meu perfil de liderança <span aria-hidden="true">→</span></button>
+  </section>
+  <section id="notification-settings" class="fju-settings-section" aria-labelledby="fju-settings-notify-heading">
+    <div class="fju-settings-section-heading"><span aria-hidden="true" class="fju-settings-icon">🔔</span><div><h3 id="fju-settings-notify-heading">Notificações do aparelho</h3><p>Autorize lembretes e vincule o navegador usado.</p></div></div>
+    <p id="notification-status" class="fju-settings-notification-status" role="status" aria-live="polite">Verificando disponibilidade...</p>
+    <div class="fju-settings-buttons">
+      <button type="button" id="enable-notifications">Ativar notificações neste aparelho</button>
+      <button type="button" class="secondary" id="register-device" hidden>Registrar este aparelho</button>
+      <button type="button" class="secondary" id="unlink-device" hidden>Desvincular este aparelho</button>
+      <button type="button" class="secondary" id="test-push" hidden>Enviar notificação de teste</button>
+    </div>
+    <p class="fju-settings-note">A permissão e o registro do dispositivo são etapas diferentes. A entrega de lembretes depende da configuração do serviço de envio.</p>
+  </section>
+  <section class="fju-settings-section fju-settings-section-security" aria-labelledby="fju-settings-security-heading">
+    <div class="fju-settings-section-heading"><span aria-hidden="true" class="fju-settings-icon">🔒</span><div><h3 id="fju-settings-security-heading">Acesso e segurança</h3><p>O que sua conta pode administrar.</p></div></div>
+    <p id="role-detail"></p>
+    <p id="fju-settings-access-description" class="fju-settings-note">As permissões dependem do perfil autenticado.</p>
+    <p class="fju-settings-footnote">O acesso é aplicado pelas políticas de segurança do Supabase. O painel apenas apresenta as ferramentas autorizadas.</p>
+    <button type="button" id="fju-settings-open-requests" class="fju-settings-secondary">Consultar minhas solicitações <span aria-hidden="true">→</span></button>
+  </section>
+</div>
+</section></div></div></div>
 </main><div id="print-area" class="hidden"></div><footer>FJU Connect JAPAN · Teste de autenticação</footer>
 <script type="module">
 import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -771,6 +807,7 @@ async function loadProfile(user){
   if(requestId!==profileRequest)return;
   const role=data.papel==='nacional'?'Administrador Nacional':'Coordenador Local';
   el('identity').textContent=`Conectado: ${user.email} · ${role}${poloNome?' · FJU '+poloNome:''}`;
+  el('fju-settings-email').textContent=user.email||'E-mail indisponível';
   el('role-detail').textContent=data.papel==='nacional'?'Perfil: Administrador Nacional — visão de todos os polos autorizados.':`Perfil: Coordenador Local — FJU ${poloNome}.`;
   el('dashboard-note').textContent=`${data.papel==='nacional'?'Visão nacional':'Visão do polo FJU '+poloNome}. Contagens fornecidas pelo Supabase com as políticas RLS da conta autenticada. Pendências locais ainda não calculadas.`;
   currentProfile=data;
@@ -1843,6 +1880,14 @@ document.querySelectorAll('.fju-daily-button[data-action-tab]').forEach(button=>
 });
 function updateAdminDashboardRole(profile,poloNome){
   const national=profile.papel==='nacional';
+  el('fju-settings-eyebrow').textContent=national?'ADMINISTRAÇÃO NACIONAL · CONFIGURAÇÕES':'COORDENAÇÃO LOCAL · CONFIGURAÇÕES';
+  el('fju-settings-title').textContent=national?'Configurações do Nacional':'Configurações da FJU '+poloNome;
+  el('fju-settings-role').textContent=national?'Administrador Nacional':'Coordenador Local';
+  el('fju-settings-polo').textContent=national?'Todas as igrejas autorizadas':'FJU '+poloNome;
+  el('fju-settings-access-description').textContent=national
+    ?'Você acompanha os polos e decide as solicitações de alteração, patente e acesso administrativo, conforme as políticas autorizadas.'
+    :'Você atua somente no polo vinculado. Alterações protegidas e acessos administrativos dependem da aprovação Nacional.';
+  el('fju-settings-open-requests').firstChild.textContent=national?'Abrir aprovações nacionais ':'Acompanhar minhas solicitações ';
   el('leader-banner-eyebrow').textContent=national?'ADMINISTRAÇÃO NACIONAL · LIDERANÇA':'COORDENAÇÃO LOCAL · LIDERANÇA';
   el('leader-banner-title').textContent=national?'Liderança FJU JAPAN':'Minha liderança · FJU '+poloNome;
   el('leader-banner-description').textContent=national
@@ -1912,6 +1957,12 @@ document.querySelectorAll('[data-request-jump]').forEach(button=>{
       target.scrollIntoView({behavior:'auto',block:'start'});
     }
   });
+});
+document.getElementById('fju-settings-open-profile').addEventListener('click',()=>{
+  document.querySelector('#main-nav [data-tab="lideranca"]')?.click();
+});
+document.getElementById('fju-settings-open-requests').addEventListener('click',()=>{
+  document.querySelector('#main-nav [data-tab="autorizacoes"]')?.click();
 });
 document.querySelectorAll('#main-nav [data-tab]').forEach(button=>button.addEventListener('click',()=>activateMainTab(button)));
 document.getElementById('weekly-status-card')?.addEventListener('click',()=>document.querySelector('#main-nav [data-tab="relatorios"]')?.click());
