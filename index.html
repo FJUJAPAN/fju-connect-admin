@@ -499,7 +499,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
 <div><label for="weekly-aguas">Batizados nas águas nesta semana</label><select id="weekly-aguas" class="weekly-quantity" required></select></div>
 <div><label for="weekly-total">Total único da semana (sem repetir)</label><select id="weekly-total" class="weekly-quantity" required></select></div>
 </div>
-<p><button type="submit" class="weekly-submit">Salvar relatório semanal</button></p>
+<p><button type="submit" id="weekly-report-submit" class="weekly-submit">Salvar relatório semanal</button></p>
 <p id="weekly-report-message" class="message" role="status" aria-live="polite"></p>
 </form>
 </div>
@@ -886,6 +886,10 @@ let currentPoloNome='';
    Respostas de consultas pendentes não poderão popular a próxima sessão. */
 function clearAdminPrivateSession(){
   ++profileRequest;
+  ++weeklyReportSubmitVersion;
+  weeklyReportSubmitting=false;
+  setWeeklyReportSubmitting(false);
+  el('weekly-report-message').textContent='';
   ++nationalReportLoadVersion;
   el('national-report-list').replaceChildren();
   el('national-report-summary').replaceChildren();
@@ -1740,22 +1744,64 @@ document.querySelector('[data-tab="relatorios"]')?.addEventListener('click',()=>
  refreshButton();
 })();
 
+// FJU JAPAN | Somente uma gravação de relatório por vez e nenhuma resposta de sessão antiga.
+let weeklyReportSubmitVersion=0;
+let weeklyReportSubmitting=false;
+function setWeeklyReportSubmitting(saving){
+  const form=el('weekly-report-form'),button=el('weekly-report-submit');
+  form.setAttribute('aria-busy',String(Boolean(saving)));
+  button.disabled=Boolean(saving);
+  button.textContent=saving?'Salvando relatório…':'Salvar relatório semanal';
+}
 el('weekly-report-form').addEventListener('submit',async e=>{
-  e.preventDefault();if(!currentProfile)return;
+  e.preventDefault();
+  const profile=currentProfile;
+  if(!profile||weeklyReportSubmitting)return;
   const date=el('weekly-report-date').value;
-  const poloId=currentProfile.papel==='nacional'?el('weekly-polo').value:currentProfile.polo_id;
+  const poloId=profile.papel==='nacional'?el('weekly-polo').value:profile.polo_id;
   if(!poloId){message('weekly-report-message','Selecione a igreja antes de salvar.',true);return;}
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||new Date(date+'T12:00:00Z').getUTCDay()!==0){message('weekly-report-message','Selecione uma data de domingo para este relatório.',true);return;}
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||new Date(date+'T12:00:00Z').getUTCDay()!==0){
+    message('weekly-report-message','Selecione uma data de domingo para este relatório.',true);return;
+  }
   if(date>previousSundayISO()){message('weekly-report-message','O relatório desta semana será liberado no domingo (horário do Japão).',true);return;}
   const ids=['weekly-firmes','weekly-novos','weekly-afastados','weekly-domingo','weekly-encontro','weekly-espirito','weekly-aguas','weekly-total'];
-  const values=ids.map(id=>Number(el(id).value));
-  if(!date||values.some(v=>!Number.isInteger(v)||v<0)){message('weekly-report-message','Preencha todos os campos com números inteiros iguais ou maiores que zero.',true);return;}
-  const user=(await supabase.auth.getUser()).data.user;
-  const payload={polo_id:poloId,semana_domingo:date,jovens_firmes:values[0],jovens_novos:values[1],jovens_afastados:values[2],presenca_domingo_930:values[3],presenca_encontro_fju:values[4],batizados_espirito_santo:values[5],batizados_aguas:values[6],total_jovens_unicos:values[7],criado_por:user?.id||null};
-  message('weekly-report-message','Salvando relatório...');
-  const {error}=await supabase.from('fju_relatorios_semanais').upsert(payload,{onConflict:'polo_id,semana_domingo'});
-  if(error){message('weekly-report-message','Não foi possível salvar: '+error.message,true);return;}
-  message('weekly-report-message','Relatório semanal salvo com sucesso.');
+  const rawValues=ids.map(id=>el(id).value);
+  if(rawValues.some(value=>!String(value).trim())){
+    message('weekly-report-message','Preencha todos os campos numéricos do relatório.',true);return;
+  }
+  const values=rawValues.map(Number);
+  if(values.some(v=>!Number.isInteger(v)||v<0)){
+    message('weekly-report-message','Preencha todos os campos com números inteiros iguais ou maiores que zero.',true);return;
+  }
+  const version=++weeklyReportSubmitVersion;
+  weeklyReportSubmitting=true;setWeeklyReportSubmitting(true);
+  const stillCurrent=()=>weeklyReportSubmitVersion===version&&currentProfile===profile;
+  try{
+    message('weekly-report-message','Salvando relatório...');
+    const {data:auth,error:authError}=await supabase.auth.getUser();
+    if(!stillCurrent())return;
+    if(authError||!auth?.user?.id)throw new Error('Sessão expirada. Entre novamente.');
+    const payload={
+      polo_id:poloId,semana_domingo:date,jovens_firmes:values[0],jovens_novos:values[1],
+      jovens_afastados:values[2],presenca_domingo_930:values[3],presenca_encontro_fju:values[4],
+      batizados_espirito_santo:values[5],batizados_aguas:values[6],
+      total_jovens_unicos:values[7],criado_por:auth.user.id
+    };
+    const {error}=await supabase.from('fju_relatorios_semanais')
+      .upsert(payload,{onConflict:'polo_id,semana_domingo'});
+    if(!stillCurrent())return;
+    if(error)throw error;
+    message('weekly-report-message','Relatório semanal salvo com sucesso.');
+    if(profile.papel==='nacional')void loadNationalReportOverview();
+    else void loadDashboard(profile,profileRequest);
+  }catch(error){
+    if(stillCurrent())message('weekly-report-message','Não foi possível salvar: '+(error?.message||'Falha de conexão.'),true);
+  }finally{
+    if(version===weeklyReportSubmitVersion){
+      weeklyReportSubmitting=false;
+      setWeeklyReportSubmitting(false);
+    }
+  }
 });
 document.querySelectorAll('[data-report-tab]').forEach(btn=>btn.addEventListener('click',()=>{
   document.querySelectorAll('[data-report-tab]').forEach(b=>b.classList.toggle('active',b===btn));
