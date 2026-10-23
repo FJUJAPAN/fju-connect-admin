@@ -886,6 +886,12 @@ let currentPoloNome='';
    Respostas de consultas pendentes não poderão popular a próxima sessão. */
 function clearAdminPrivateSession(){
   ++profileRequest;
+  ++specialEventsLoadVersion;
+  el('special-event-list').replaceChildren();
+  el('event-requests-list').replaceChildren();
+  el('special-event-count').textContent='0';
+  el('event-requests-count').textContent='0 pendentes';
+  el('special-event-message').textContent='';
   ++weeklyReportSubmitVersion;
   weeklyReportSubmitting=false;
   setWeeklyReportSubmitting(false);
@@ -1823,23 +1829,30 @@ async function setupSpecialEventPolo(){
     const option=document.createElement('option');option.value=String(currentProfile.polo_id);option.textContent='Minha igreja';select.append(option);
   }
 }
+let specialEventsLoadVersion=0;
 async function loadSpecialEvents(){
-  const list=el('special-event-list');list.textContent='Carregando eventos...';el('special-event-submit').textContent=currentProfile?.papel==='coordenador'?'Solicitar inclusão':el('special-event-edit-id').value?'Salvar alterações':'Salvar evento especial';
+  const profile=currentProfile,version=++specialEventsLoadVersion;
+  const list=el('special-event-list');
+  if(!profile){list.replaceChildren();return;}
+  list.textContent='Carregando eventos...';
+  el('special-event-submit').textContent=profile.papel==='coordenador'?'Solicitar inclusão':el('special-event-edit-id').value?'Salvar alterações':'Salvar evento especial';
   let q=supabase.from('fju_eventos_especiais').select('id,polo_id,nome_evento,data_evento,total_jovens,created_at').order('data_evento',{ascending:false}).limit(100);
-  if(currentProfile?.papel==='coordenador')q=q.eq('polo_id',currentProfile.polo_id);
-  const [{data:events,error},{data:polos,poloError}]=await Promise.all([q,supabase.from('fju_polos').select('id,nome')]);
+  if(profile.papel==='coordenador')q=q.eq('polo_id',profile.polo_id);
+  const [{data:events,error},{data:polos,error:poloError}]=await Promise.all([q,supabase.from('fju_polos').select('id,nome')]);
+  if(version!==specialEventsLoadVersion||currentProfile!==profile)return;
   if(error||poloError){list.textContent='Não foi possível carregar eventos: '+(error?.message||poloError?.message);return;}
-  const names=new Map((polos||[]).map(p=>[p.id,p.nome]));
+  const names=new Map((polos||[]).map(p=>[String(p.id),p.nome]));
   list.replaceChildren();list.className='report-list';
   el('special-event-count').textContent=String((events||[]).length);
-  await loadEventRequests(events||[],names);
+  await loadEventRequests(events||[],names,version,profile);
+  if(version!==specialEventsLoadVersion||currentProfile!==profile)return;
   if(!events?.length){list.textContent='Nenhum evento especial registrado ainda.';return;}
   for(const ev of events){
     const card=document.createElement('article');card.className='report-card';
     const head=document.createElement('div');head.className='report-card-head';
     const titleWrap=document.createElement('div');
     const title=document.createElement('div');title.className='report-card-title';title.textContent=ev.nome_evento;
-    const subtitle=document.createElement('div');subtitle.className='report-card-subtitle';subtitle.textContent=(names.get(ev.polo_id)||'Polo não identificado')+' · '+new Date(ev.data_evento+'T12:00:00').toLocaleDateString('ja-JP');
+    const subtitle=document.createElement('div');subtitle.className='report-card-subtitle';subtitle.textContent=(names.get(String(ev.polo_id))||'Polo não identificado')+' · '+new Date(ev.data_evento+'T12:00:00').toLocaleDateString('ja-JP');
     titleWrap.append(title,subtitle);
     const badge=document.createElement('span');badge.className='report-badge';badge.textContent='Evento especial';
     head.append(titleWrap,badge);
@@ -1875,10 +1888,11 @@ async function loadSpecialEvents(){
     actions.append(edit,del);card.append(actions);list.append(card);
   }
 }
-async function loadEventRequests(events=[],poloNames=new Map()){
- const list=el('event-requests-list');if(!list||!currentProfile)return;
+async function loadEventRequests(events=[],poloNames=new Map(),version=specialEventsLoadVersion,profile=currentProfile){
+ const list=el('event-requests-list');if(!list||!profile)return;
  const panel=el('event-requests-panel');
  const {data,error}=await supabase.from('fju_solicitacoes_eventos').select('id,tipo,evento_id,polo_id,dados_propostos,status,criado_em').eq('status','pendente').order('criado_em',{ascending:true}).limit(200);
+ if(version!==specialEventsLoadVersion||currentProfile!==profile)return;
  list.replaceChildren();
  if(error){panel.classList.remove('hidden');list.textContent='Não foi possível carregar solicitações: '+error.message;el('event-requests-count').textContent='Erro';return;}
  const pending=(data||[]).length;
@@ -1894,22 +1908,39 @@ async function loadEventRequests(events=[],poloNames=new Map()){
   const detail=req.tipo==='inclusao'?req.dados_propostos:original;
   const title=document.createElement('strong');title.textContent=(req.tipo==='inclusao'?'Incluir':'Excluir')+' · '+(detail?.nome_evento||'Evento indisponível');
   const meta=document.createElement('div');meta.className='muted';
-  meta.textContent=(poloNames.get(req.polo_id)||'Igreja não identificada')+' · '+req.status;
+  meta.textContent=(poloNames.get(String(req.polo_id))||'Igreja não identificada')+' · '+req.status;
   const details=document.createElement('div');details.className='muted';details.textContent=(detail?.data_evento?fmt(detail.data_evento)+' · ':'')+(detail?.total_jovens!=null?detail.total_jovens+' jovens':'');
   card.append(title,meta,details);
-  if(currentProfile.papel==='nacional'&&req.status==='pendente'){
+  if(profile.papel==='nacional'&&req.status==='pendente'){
    const actions=document.createElement('div');actions.className='actions';
-   for(const [approve,label] of [[true,'Aprovar'],[false,'Rejeitar']]){
-    const btn=document.createElement('button');btn.type='button';btn.className=approve?'':'secondary';btn.textContent=label;
-    btn.addEventListener('click',async()=>{
+   const feedback=document.createElement('p');feedback.className='message';
+   feedback.setAttribute('role','status');feedback.setAttribute('aria-live','polite');
+   const accept=document.createElement('button');accept.type='button';accept.textContent='Aprovar';
+   const reject=document.createElement('button');reject.type='button';reject.className='secondary';reject.textContent='Rejeitar';
+   let submitting=false;
+   async function decide(approve){
+     if(submitting||currentProfile!==profile||!card.isConnected)return;
+     const label=approve?'Aprovar':'Rejeitar';
      if(!confirm(label+' a solicitação de '+(req.tipo==='inclusao'?'inclusão':'exclusão')+' de '+(detail?.nome_evento||'evento')+'?'))return;
-     btn.disabled=true;
-     const {error}=await supabase.rpc('fju_decidir_solicitacao_evento',{p_id:req.id,p_aprovar:approve});
-     message('special-event-message',error?'Não foi possível decidir: '+error.message:'Solicitação '+(approve?'aprovada.':'rejeitada.'),!!error);
-     if(error){btn.disabled=false;return;}
-     await loadSpecialEvents();
-    });actions.append(btn);
-   }card.append(actions);
+     submitting=true;accept.disabled=true;reject.disabled=true;
+     feedback.textContent='Registrando decisão…';
+     try{
+       const {error}=await supabase.rpc('fju_decidir_solicitacao_evento',{p_id:req.id,p_aprovar:approve});
+       if(currentProfile!==profile||version!==specialEventsLoadVersion||!card.isConnected)return;
+       if(error)throw error;
+       message('special-event-message','Solicitação '+(approve?'aprovada.':'rejeitada.'),false);
+       await loadSpecialEvents();
+       if(currentProfile===profile)void refreshAdminPriorities(profile,profileRequest);
+     }catch(error){
+       if(currentProfile!==profile||version!==specialEventsLoadVersion||!card.isConnected)return;
+       feedback.textContent='Não foi possível decidir: '+(error?.message||'Falha de conexão.');
+       feedback.classList.add('error');
+       accept.disabled=false;reject.disabled=false;
+     }finally{submitting=false;}
+   }
+   accept.addEventListener('click',()=>void decide(true));
+   reject.addEventListener('click',()=>void decide(false));
+   actions.append(accept,reject);card.append(actions,feedback);
   }
   list.append(card);
  }
