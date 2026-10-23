@@ -178,3 +178,39 @@ body.fju-admin-shell .fju-daily-button:focus-visible{outline:3px solid #ba9dff;o
  #autorizacoes .fju-request-actions{justify-content:flex-start}
 }
 @media print{#autorizacoes .fju-requests-jump,#autorizacoes .fju-request-actions{display:none!important}}
+
+/* FJU JAPAN | Cards para analisar inscrições de jovens. */
+#inscricoes .fju-signups-title{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:17px;border-radius:16px;background:linear-gradient(110deg,#183962,#254e80);color:#fff}
+#inscricoes .fju-signups-title small{font-size:10px;letter-spacing:.15em;color:#c3d7fa;font-weight:800}
+#inscricoes .fju-signups-title h3{font-size:18px;color:#fff;margin:5px 0}
+#inscricoes .fju-signups-title p{font-size:12px;color:#dce8fa;margin:0}
+#inscricoes #inscricoes-count{border-radius:99px;padding:9px 12px;background:#ffffff20;color:#fff;font-size:12px}
+#inscricoes .fju-signups-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;margin-top:17px}
+#inscricoes .fju-signups-toolbar>div{min-width:0}
+#inscricoes .fju-signups-toolbar label{margin:0 0 6px;font-size:12px}
+#inscricoes .fju-signups-toolbar input{min-height:44px;font-size:16px}
+#inscricoes #inscricoes-refresh{min-height:44px}
+#inscricoes .fju-signups-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,335px),1fr));gap:13px;margin-top:15px}
+#inscricoes .fju-signup-card{min-width:0;display:flex;flex-direction:column;gap:12px;border:1px solid #dfe7f5;border-radius:18px;background:#fff;padding:16px;margin:0;box-shadow:0 7px 20px #12305a0b}
+#inscricoes .fju-signup-card[hidden]{display:none!important}
+#inscricoes .fju-signup-head{display:flex;align-items:center;gap:13px}
+#inscricoes .fju-signup-avatar{display:grid;place-items:center;flex:0 0 80px;width:80px;height:96px;border-radius:14px;background:linear-gradient(140deg,#e1ebf9,#b9cdea);color:#294c81;font-weight:850;font-size:23px;overflow:hidden}
+#inscricoes .fju-signup-avatar img,#inscricoes .fju-signup-avatar span{grid-area:1/1}
+#inscricoes .fju-signup-avatar span[hidden]{display:none}
+#inscricoes .fju-signup-identity{min-width:0;display:flex;flex-direction:column;gap:5px}
+#inscricoes .fju-signup-badge{align-self:flex-start;border-radius:50px;background:#fff0d0;color:#885c0f;padding:4px 8px;font-size:10px;font-weight:800}
+#inscricoes .fju-signup-name{font-size:17px;line-height:1.25;color:#20375b;overflow-wrap:anywhere}
+#inscricoes .fju-signup-date{margin:0;font-size:11px}
+#inscricoes .fju-signup-details{font-size:12px;line-height:1.65;margin:0;padding:10px;background:#f5f8fd;border-radius:11px;overflow-wrap:anywhere}
+#inscricoes .fju-signup-projects>span{font-size:10px;font-weight:800;letter-spacing:.07em;color:#587092}
+#inscricoes .fju-signup-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+#inscricoes .fju-signup-pills span{font-size:11px;font-weight:700;color:#355c93;border-radius:99px;padding:5px 9px;background:#e9f0fb}
+#inscricoes .fju-signup-controls{display:flex;flex-direction:column;gap:7px;margin-top:auto;padding-top:13px;border-top:1px solid #e8eef7}
+#inscricoes .fju-signup-controls label{margin:0;font-size:12px}
+#inscricoes .fju-signup-controls select{min-height:44px;font-size:16px}
+#inscricoes .fju-signup-action-row{display:flex;gap:8px;margin-top:5px}
+#inscricoes .fju-signup-action-row button{flex:1;min-height:44px;padding:9px 10px;font-size:12px}
+#inscricoes .fju-signup-action-row button:first-child{background:#225995}
+#inscricoes .fju-signup-card>.message{margin:0;font-size:12px;overflow-wrap:anywhere}
+@media(max-width:680px){#inscricoes .fju-signups-toolbar{grid-template-columns:minmax(0,1fr)}#inscricoes #inscricoes-refresh{width:100%}#inscricoes .fju-signups-list{grid-template-columns:minmax(0,1fr)}}
+@media print{#inscricoes .fju-signup-card{box-shadow:none;break-inside:avoid}}
