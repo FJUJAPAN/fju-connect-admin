@@ -1,0 +1,22 @@
+/* FJU JAPAN — refinamento responsivo do painel administrativo */
+html{overflow-x:clip}body{min-width:0;overflow-x:clip}
+.fju-dashboard-actions{min-width:0}
+.fju-dashboard-actions .fju-action-card{min-width:0;max-width:100%;overflow-wrap:anywhere}
+.fju-dashboard-actions .fju-action-card strong{line-height:1.25}
+:is(#jovens,#relatorios,#inscricoes,#autorizacoes,#lideranca,#config) :is(input,select,textarea){width:100%;min-width:0;box-sizing:border-box}
+:is(#jovens,#relatorios,#inscricoes,#autorizacoes,#lideranca,#config) :is(table){max-width:100%}
+:is(#jovens,#relatorios,#inscricoes,#autorizacoes,#lideranca,#config) :is(.card,.panel){min-width:0}
+@media(max-width:640px){
+.fju-dashboard-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.fju-dashboard-actions .fju-action-card{padding:14px 6px;min-height:108px;gap:6px}
+.fju-dashboard-actions .fju-action-card strong{font-size:12px;text-align:center}
+.fju-dashboard-actions .fju-action-card .fju-action-icon{flex-shrink:0}
+.fju-content-toolbar{min-width:0;gap:8px}
+.fju-content-toolbar>div{min-width:0}
+.fju-content-toolbar h2{overflow-wrap:anywhere}
+:is(#jovens,#relatorios,#inscricoes,#autorizacoes,#lideranca,#config){padding-inline:0}
+:is(#jovens,#relatorios,#inscricoes,#autorizacoes,#lideranca,#config) :is(button,input,select,textarea){font-size:16px}
+:is(#jovens,#relatorios,#inscricoes,#autorizacoes,#lideranca,#config) .fju-back-dashboard{font-size:14px;min-height:44px}
+:is(#jovens,#relatorios,#inscricoes,#autorizacoes,#lideranca,#config) :is(.card){padding:14px}
+}
+@media(max-width:350px){.fju-dashboard-actions{gap:7px}.fju-dashboard-actions .fju-action-card{padding-inline:4px}.fju-dashboard-actions .fju-action-card strong{font-size:11px}}
