@@ -17,3 +17,9 @@
 .fju-content-toolbar #fju-dashboard-heading{font-size:21px;overflow-wrap:anywhere}
 .fju-content-toolbar .fju-menu-toggle{padding:10px 12px;font-size:13px}
 }
+
+/* Identidade oficial FJU JAPAN — mesma altura e cor do portal público. */
+body.fju-admin-shell>header.fju-admin-header{background:rgba(8,20,42,.96);border-bottom:1px solid rgba(255,255,255,.12);min-height:72px}
+.fju-admin-header .fju-admin-official-logo{display:block;width:110px;height:55px;max-width:100%;object-fit:contain;object-position:left center}
+.fju-admin-header .fju-admin-brand{display:inline-flex;align-items:center;min-width:110px;line-height:0}
+@media(max-width:700px){body.fju-admin-shell>header.fju-admin-header{min-height:64px}.fju-admin-header .fju-admin-official-logo{width:100px;height:48px}.fju-admin-header .fju-admin-brand{min-width:100px}}
