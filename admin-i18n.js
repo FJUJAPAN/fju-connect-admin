@@ -89,6 +89,7 @@
     'Painel Nacional FJU JAPAN':['FJU JAPAN 全国管理','FJU JAPAN National Panel']
   };
   const reverse=new Map();
+  const sources=new WeakMap();
   for(const [pt,[ja,en]] of Object.entries(words)){
     for(const variant of [pt,ja,en])if(!reverse.has(variant))reverse.set(variant,pt);
   }
@@ -102,8 +103,11 @@
     const input=node.nodeValue;
     const match=/^(\s*)([\s\S]*?)(\s*)$/.exec(input);
     if(!match)return;
-    const canonical=reverse.get(match[2]);
+    const previous=sources.get(node);
+    const known=previous&&[previous,...words[previous]].includes(match[2]);
+    const canonical=known?previous:reverse.get(match[2]);
     if(!canonical)return;
+    sources.set(node,canonical);
     const translated=language==='pt'?canonical:words[canonical][language==='ja'?0:1];
     const next=match[1]+translated+match[3];
     if(next!==input)node.nodeValue=next;
