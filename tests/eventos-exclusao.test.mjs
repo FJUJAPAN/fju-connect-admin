@@ -60,6 +60,7 @@ function fixture(role='coordenador',pending=[],eventPolo='polo-A'){
    'const message=(id,text,error)=>window.__messages.push({id,text,error});'+
    'const refreshAdminPriorities=()=>window.__priority.push("update");'+
    'const loadEventRequests=async()=>new Set(window.__pending);'+
+   'const specialEventListText=index=>["Carregando eventos...","Não foi possível carregar eventos: ","Nenhum evento especial registrado ainda.","Polo não identificado","Evento especial","jovens participantes","Total informado pelo polo"][index];'+
    snippet+
    '\nwindow.__load=loadSpecialEvents;'+
    'window.__logout=()=>{currentProfile=null;++specialEventsLoadVersion;specialEventRemovalsInFlight.clear()};');
