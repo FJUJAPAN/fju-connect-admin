@@ -55,6 +55,23 @@ test('Aprovação de evento bloqueia os dois botões e faz somente uma RPC',asyn
    assert.deepEqual(f.refreshes,['events','priorities']);
  }finally{f.cleanup();}
 });
+test('Confirmação de aprovação usa o nome do evento e cancelar não envia RPC',async()=>{
+ const f=fixture();
+ try{
+   await render(f);
+   const questions=[];
+   f.w.confirm=question=>{questions.push(question);return false;};
+   const buttons=[...f.doc.querySelectorAll('#event-requests-list .actions button')];
+   buttons[0].click();
+   assert.deepEqual(questions,['Aprovar a solicitação de inclusão de Evento Teste?']);
+   assert.equal(f.calls.length,0);
+   assert.equal(buttons[0].disabled,false);
+   assert.equal(buttons[1].disabled,false);
+   buttons[1].click();
+   assert.deepEqual(questions,['Aprovar a solicitação de inclusão de Evento Teste?','Rejeitar a solicitação de inclusão de Evento Teste?']);
+   assert.equal(f.calls.length,0);
+ }finally{f.cleanup();}
+});
 test('Erro no Supabase libera aprovação e rejeição para tentar novamente',async()=>{
  const f=fixture();
  try{
