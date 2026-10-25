@@ -665,6 +665,8 @@ const SUPABASE_URL='https://hmacroktklgwkofxsygv.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_mdkfafhpqtthwzU8Hf7u9A_rErx3MFJ';
 const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const el=id=>document.getElementById(id);
+// Initialize session state before the first language render.
+let currentProfile=null;
 const adminLanguageSelect=el('fju-admin-language-select');
 const adminLanguageLabel=el('fju-admin-language-label');
 const adminLanguageFeedback=el('fju-admin-language-feedback');
@@ -953,7 +955,7 @@ const show=(id)=>{
 };
 const message=(id,msg,error=false)=>{el(id).textContent=msg;el(id).className='message '+(error?'error':'success')};
 let recoveryMode=false;
-let profileRequest=0; let currentProfile=null; let youthRows=[]; let photoUrl=null;
+let profileRequest=0; let youthRows=[]; let photoUrl=null;
 let youthInitialization=Promise.resolve();
 async function countRows(table,profile=null){
   let query=supabase.from(table).select('id',{count:'exact',head:true});
