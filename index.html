@@ -706,6 +706,19 @@ const adminDecisionI18n={
 };
 function adminDecisionCopy(){return adminDecisionI18n[adminLanguageSelect?.value]||adminDecisionI18n.pt;}
 
+
+const adminWeeklyFieldLabels={"pt":["Igreja do relatório","Semana do relatório (domingo)","Jovens firmes durante a semana","Jovens novos durante a semana","Jovens afastados durante a semana","Presença domingo 9h30","Presença no Encontro FJU","Batizados com o Espírito Santo nesta semana","Batizados nas águas nesta semana","Total único da semana (sem repetir)"],"ja":["報告する教会","報告週（日曜日）","今週の堅固な青年","今週の新しい青年","今週の離れた青年","日曜日9時30分の出席者","FJUミーティングの出席者","今週聖霊のバプテスマを受けた青年","今週水のバプテスマを受けた青年","今週の実人数（重複なし）"],"en":["Reporting church","Report week (Sunday)","Firm youth this week","New youth this week","Youth who left this week","Sunday 9:30 AM attendance","FJU Meeting attendance","Baptized with the Holy Spirit this week","Water baptisms this week","Unique total this week (no duplicates)"]};
+const adminWeeklyExtraLabels={"pt":["Selecione a igreja","Selecionar domingo ▾","Salvar relatório semanal","Selecione o domingo correspondente à semana."],"ja":["教会を選択","日曜日を選択 ▾","週間レポートを保存","該当する週の日曜日を選択してください。"],"en":["Select church","Select Sunday ▾","Save weekly report","Select the Sunday for the reporting week."]};
+function translateAdminWeeklyFields(language){
+ const labels=adminWeeklyFieldLabels[language]||adminWeeklyFieldLabels.pt;
+ const extra=adminWeeklyExtraLabels[language]||adminWeeklyExtraLabels.pt;
+ const ids=["weekly-polo","weekly-date-button","weekly-firmes","weekly-novos","weekly-afastados","weekly-domingo","weekly-encontro","weekly-espirito","weekly-aguas","weekly-total"];
+ ids.forEach((id,i)=>{const label=document.querySelector('label[for="'+id+'"]');if(label)label.textContent=labels[i];});
+ const church=document.querySelector('#weekly-polo option[value=""]');if(church)church.textContent=extra[0];
+ const date=el('weekly-date-button');if(date&&['Selecionar domingo ▾','日曜日を選択 ▾','Select Sunday ▾'].includes(date.textContent.trim()))date.textContent=extra[1];
+ const submit=el('weekly-report-submit');if(submit&&['Salvar relatório semanal','週間レポートを保存','Save weekly report'].includes(submit.textContent.trim()))submit.textContent=extra[2];
+ const hint=document.querySelector('#weekly-calendar-days + small, #weekly-calendar > small');if(hint)hint.textContent=extra[3];
+}
 const adminReportHeadings={"pt":["Relatórios","FJU JAPAN · RELATÓRIOS","Acompanhamento de relatórios","Selecione uma área abaixo para acompanhar os números ou registrar uma atividade.","Relatório semanal","Evento especial","Relatórios semanais por igreja","Semana do relatório","Atualizar painel","Imprimir relatório nacional A4","Relatórios das igrejas","Situação do envio","Igreja / polo","Ver resumo nacional e gráficos","Preencher relatório semanal"],"ja":["レポート","FJU JAPAN · レポート","レポートの管理","下の項目を選択して、数値の確認や活動の登録を行ってください。","週間レポート","特別イベント","教会別週間レポート","報告週","画面を更新","全国レポートをA4で印刷","各教会のレポート","提出状況","教会","全国集計とグラフを表示","週間レポートを入力"],"en":["Reports","FJU JAPAN · REPORTS","Report overview","Choose a section below to review figures or record an activity.","Weekly report","Special event","Weekly reports by church","Report week","Refresh dashboard","Print national report A4","Church reports","Submission status","Church","View national summary and charts","Complete weekly report"]};
 function translateAdminReportHeadings(language){
  const values=adminReportHeadings[language]||adminReportHeadings.pt;
@@ -798,7 +811,7 @@ const adminLanguageCopy={
 };
 function setAdminLanguage(value){
  const l=['pt','ja','en'].includes(value)?value:'pt';
- adminLanguageSelect.value=l;adminLanguageLabel.textContent=adminLanguageCopy[l].label;translateAdminNavigation(l);translateAdminCards(l);translateAdminLogin(l);translateAdminYouthForm(l);translateAdminYouthExtra(l);translateAdminRequests(l);translateAdminReportHeadings(l);
+ adminLanguageSelect.value=l;adminLanguageLabel.textContent=adminLanguageCopy[l].label;translateAdminNavigation(l);translateAdminCards(l);translateAdminLogin(l);translateAdminYouthForm(l);translateAdminYouthExtra(l);translateAdminRequests(l);translateAdminReportHeadings(l);translateAdminWeeklyFields(l);
  document.documentElement.lang=l==='ja'?'ja':l==='en'?'en':'pt-BR';
  try{localStorage.setItem('fju_lang',l);localStorage.setItem('fju_language',l);localStorage.setItem('fju-connect-lang',l);}catch(_){}
 }
