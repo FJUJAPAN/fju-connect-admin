@@ -337,6 +337,21 @@ test('Transição app 4/5: painel cabe na largura da tela',()=>{
 test('Transição app 5/5: menu destaca seção ativa',()=>{
  assert.match(html,/#main-nav\.tabs button\.active\{font-weight:750\}/);
 });
+test('Formulários app 1/5: campos têm altura mínima de toque',()=>{
+ assert.match(html,/#app input:not\(\[type="checkbox"\]\):not\(\[type="radio"\]\),#app select,#app textarea\{min-height:44px;max-width:100%\}/);
+});
+test('Formulários app 2/5: texto longo pode aumentar campo verticalmente',()=>{
+ assert.match(html,/#app textarea\{resize:vertical\}/);
+});
+test('Formulários app 3/5: ações não extrapolam o espaço horizontal',()=>{
+ assert.match(html,/#app \.actions\{min-width:0;gap:10px\}/);
+});
+test('Formulários app 4/5: botões exibem textos longos sem corte',()=>{
+ assert.match(html,/#app \.actions button\{max-width:100%;white-space:normal;overflow-wrap:anywhere\}/);
+});
+test('Formulários app 5/5: cards se ajustam à largura estreita',()=>{
+ assert.match(html,/#app \.grid\{grid-template-columns:repeat\(auto-fit,minmax\(min\(100%,180px\),1fr\)\)\}/);
+});
 test('Erro no Supabase libera aprovação e rejeição para tentar novamente',async()=>{
  const f=fixture();
  try{
