@@ -238,7 +238,8 @@ function evaluateProfileLanguage(metadata,stored={},blocked=false){
   w.__metadata=metadata;
   w.__storage=stored;
   w.__blocked=blocked;
-  w.eval('var localStorage={getItem(key){if(window.__blocked)throw Error("Storage blocked");return window.__storage[key]||null;}};var chosen="";function setAdminLanguage(lang){chosen=lang;}'+source+'}\nwindow.__loadLanguage=loadProfile;');
+  Object.defineProperty(w,'localStorage',{configurable:true,value:{getItem(key){if(blocked)throw Error('Storage blocked');return stored[key]||null;}}});
+  w.eval('var chosen="";function setAdminLanguage(lang){chosen=lang;}'+source+'}\nwindow.__loadLanguage=loadProfile;');
   return w.__loadLanguage({user_metadata:metadata}).then(()=>w.eval('chosen')).finally(()=>dom.window.close());
  }catch(e){dom.window.close();throw e;}
 }
