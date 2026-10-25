@@ -876,7 +876,9 @@ function setAdminLanguage(value){
  document.documentElement.lang=l==='ja'?'ja':l==='en'?'en':'pt-BR';
  try{localStorage.setItem('fju_lang',l);localStorage.setItem('fju_language',l);localStorage.setItem('fju-connect-lang',l);}catch(_){}
 }
-setAdminLanguage(localStorage.getItem('fju_lang')||localStorage.getItem('fju-connect-lang')||'pt');
+let initialAdminLanguage='pt';
+try{initialAdminLanguage=localStorage.getItem('fju_lang')||localStorage.getItem('fju-connect-lang')||'pt';}catch(_){}
+setAdminLanguage(initialAdminLanguage);
 adminLanguageSelect.addEventListener('change',async()=>{
  const value=adminLanguageSelect.value;
  let previousLanguage='pt';
