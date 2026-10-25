@@ -740,6 +740,9 @@ function translateReportGuidance(language){
  const selectors=["#national-report-panel > p.muted","#national-weekly-controls > p.muted","#weekly-entry-wrap .fju-report-entry-heading p","#weekly-entry-wrap .fju-report-deadline","#national-report-analytics .report-section-title:nth-of-type(2) + p"];
  selectors.forEach((selector,index)=>{const node=document.querySelector(selector);if(node)node.textContent=labels[index];});
 }
+
+const nationalReportStatusI18n={"pt":["Consultando polos e relatórios...","Nenhum relatório registrado para "," polo(s) exibido(s)"],"ja":["教会とレポートを読み込み中…","この日付のレポートはありません: "," 教会を表示中"],"en":["Loading churches and reports...","No report recorded for "," church(es) displayed"]};
+function nationalReportStatus(index){const lang=typeof adminLanguageSelect!=='undefined'&&adminLanguageSelect?.value||'pt';return (nationalReportStatusI18n[lang]||nationalReportStatusI18n.pt)[index];}
 const adminReportHeadings={"pt":["Relatórios","FJU JAPAN · RELATÓRIOS","Acompanhamento de relatórios","Selecione uma área abaixo para acompanhar os números ou registrar uma atividade.","Relatório semanal","Evento especial","Relatórios semanais por igreja","Semana do relatório","Atualizar painel","Imprimir relatório nacional A4","Relatórios das igrejas","Situação do envio","Igreja / polo","Ver resumo nacional e gráficos","Preencher relatório semanal"],"ja":["レポート","FJU JAPAN · レポート","レポートの管理","下の項目を選択して、数値の確認や活動の登録を行ってください。","週間レポート","特別イベント","教会別週間レポート","報告週","画面を更新","全国レポートをA4で印刷","各教会のレポート","提出状況","教会","全国集計とグラフを表示","週間レポートを入力"],"en":["Reports","FJU JAPAN · REPORTS","Report overview","Choose a section below to review figures or record an activity.","Weekly report","Special event","Weekly reports by church","Report week","Refresh dashboard","Print national report A4","Church reports","Submission status","Church","View national summary and charts","Complete weekly report"]};
 function translateAdminReportHeadings(language){
  const values=adminReportHeadings[language]||adminReportHeadings.pt;
@@ -962,7 +965,7 @@ async function loadNationalReportOverview(){
   const selectedDate=dateInput.value;
   updateNationalWeekRange(selectedDate);
   const isActive=()=>version===nationalReportLoadVersion&&currentProfile===profile&&dateInput.value===selectedDate;
-  const list=el('national-report-list');list.textContent='Consultando polos e relatórios...';
+  const list=el('national-report-list');list.textContent=nationalReportStatus(0);
   // Consulta oito semanas, inclusive a selecionada, para evitar o limite
   // dos 1.000 relatórios mais recentes ocultando semanas antigas.
   const weeks=Array.from({length:8},(_,i)=>{
@@ -1052,7 +1055,7 @@ async function loadNationalReportOverview(){
       const metrics=document.createElement('div');metrics.className='report-metrics';
       const addMetric=(label,value)=>{const m=document.createElement('div');m.className='report-metric';const l=document.createElement('span');l.textContent=label;const v=document.createElement('b');v.textContent=String(Number(value)||0);m.append(l,v);metrics.append(m);};
       addMetric('Total único',r.total_jovens_unicos);addMetric('Firmes',r.jovens_firmes);addMetric('Novos',r.jovens_novos);addMetric('Afastados',r.jovens_afastados);addMetric('Domingo 9h30',r.presenca_domingo_930);addMetric('Encontro FJU',r.presenca_encontro_fju);addMetric('Batizados Espírito Santo',r.batizados_espirito_santo);addMetric('Batizados nas águas',r.batizados_aguas);details.append(metrics);
-    }else{const p=document.createElement('p');p.className='muted';p.textContent='Nenhum relatório registrado para '+selectedDate+'.';details.append(p);}
+    }else{const p=document.createElement('p');p.className='muted';p.textContent=nationalReportStatus(1)+selectedDate+'.';details.append(p);}
     row.append(details);list.append(row);
   }
   applyNationalFilters();
@@ -1064,7 +1067,7 @@ function applyNationalFilters(){
     const show=(status==='todos'||(status==='enviado'&&row.dataset.status!=='pendente')||row.dataset.status===status)&&(!polo||row.dataset.polo===polo);
     row.hidden=!show;row.style.display=show?'':'none';if(show)count++;
   }
-  el('national-filter-count').textContent=count+' polo(s) exibido(s)';
+  el('national-filter-count').textContent=count+nationalReportStatus(2);
 }
 el('national-status-filter').addEventListener('change',applyNationalFilters);
 el('national-polo-filter').addEventListener('change',applyNationalFilters);
