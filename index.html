@@ -743,6 +743,9 @@ function translateReportGuidance(language){
 
 const nationalReportStatusI18n={"pt":["Consultando polos e relatórios...","Nenhum relatório registrado para "," polo(s) exibido(s)"],"ja":["教会とレポートを読み込み中…","この日付のレポートはありません: "," 教会を表示中"],"en":["Loading churches and reports...","No report recorded for "," church(es) displayed"]};
 function nationalReportStatus(index){const lang=typeof adminLanguageSelect!=='undefined'&&adminLanguageSelect?.value||'pt';return (nationalReportStatusI18n[lang]||nationalReportStatusI18n.pt)[index];}
+
+const weeklySubmitMessageI18n={"pt":["Selecione a igreja antes de salvar.","Selecione uma data de domingo para este relatório.","O relatório desta semana será liberado no domingo (horário do Japão).","Preencha todos os campos numéricos do relatório.","Preencha todos os campos com números inteiros iguais ou maiores que zero.","Salvando relatório...","Relatório semanal salvo com sucesso.","Não foi possível salvar: ","Falha de conexão."],"ja":["保存する前に教会を選択してください。","このレポートの日曜日の日付を選択してください。","今週のレポートは日曜日（日本時間）に入力できます。","レポートの数値項目をすべて入力してください。","すべての項目に0以上の整数を入力してください。","レポートを保存中…","週間レポートを保存しました。","保存できませんでした: ","接続エラー。"],"en":["Select a church before saving.","Select a Sunday date for this report.","This week's report becomes available on Sunday (Japan time).","Complete all numeric report fields.","Enter whole numbers of zero or greater in every field.","Saving report...","Weekly report saved successfully.","Could not save: ","Connection failed."]};
+function weeklySubmitText(index){const lang=typeof adminLanguageSelect!=='undefined'&&adminLanguageSelect?.value||'pt';return (weeklySubmitMessageI18n[lang]||weeklySubmitMessageI18n.pt)[index];}
 const adminReportHeadings={"pt":["Relatórios","FJU JAPAN · RELATÓRIOS","Acompanhamento de relatórios","Selecione uma área abaixo para acompanhar os números ou registrar uma atividade.","Relatório semanal","Evento especial","Relatórios semanais por igreja","Semana do relatório","Atualizar painel","Imprimir relatório nacional A4","Relatórios das igrejas","Situação do envio","Igreja / polo","Ver resumo nacional e gráficos","Preencher relatório semanal"],"ja":["レポート","FJU JAPAN · レポート","レポートの管理","下の項目を選択して、数値の確認や活動の登録を行ってください。","週間レポート","特別イベント","教会別週間レポート","報告週","画面を更新","全国レポートをA4で印刷","各教会のレポート","提出状況","教会","全国集計とグラフを表示","週間レポートを入力"],"en":["Reports","FJU JAPAN · REPORTS","Report overview","Choose a section below to review figures or record an activity.","Weekly report","Special event","Weekly reports by church","Report week","Refresh dashboard","Print national report A4","Church reports","Submission status","Church","View national summary and charts","Complete weekly report"]};
 function translateAdminReportHeadings(language){
  const values=adminReportHeadings[language]||adminReportHeadings.pt;
@@ -2030,25 +2033,25 @@ el('weekly-report-form').addEventListener('submit',async e=>{
   if(!profile||weeklyReportSubmitting)return;
   const date=el('weekly-report-date').value;
   const poloId=profile.papel==='nacional'?el('weekly-polo').value:profile.polo_id;
-  if(!poloId){message('weekly-report-message','Selecione a igreja antes de salvar.',true);return;}
+  if(!poloId){message('weekly-report-message',weeklySubmitText(0),true);return;}
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||new Date(date+'T12:00:00Z').getUTCDay()!==0){
-    message('weekly-report-message','Selecione uma data de domingo para este relatório.',true);return;
+    message('weekly-report-message',weeklySubmitText(1),true);return;
   }
-  if(date>previousSundayISO()){message('weekly-report-message','O relatório desta semana será liberado no domingo (horário do Japão).',true);return;}
+  if(date>previousSundayISO()){message('weekly-report-message',weeklySubmitText(2),true);return;}
   const ids=['weekly-firmes','weekly-novos','weekly-afastados','weekly-domingo','weekly-encontro','weekly-espirito','weekly-aguas','weekly-total'];
   const rawValues=ids.map(id=>el(id).value);
   if(rawValues.some(value=>!String(value).trim())){
-    message('weekly-report-message','Preencha todos os campos numéricos do relatório.',true);return;
+    message('weekly-report-message',weeklySubmitText(3),true);return;
   }
   const values=rawValues.map(Number);
   if(values.some(v=>!Number.isInteger(v)||v<0)){
-    message('weekly-report-message','Preencha todos os campos com números inteiros iguais ou maiores que zero.',true);return;
+    message('weekly-report-message',weeklySubmitText(4),true);return;
   }
   const version=++weeklyReportSubmitVersion;
   weeklyReportSubmitting=true;setWeeklyReportSubmitting(true);
   const stillCurrent=()=>weeklyReportSubmitVersion===version&&currentProfile===profile;
   try{
-    message('weekly-report-message','Salvando relatório...');
+    message('weekly-report-message',weeklySubmitText(5));
     const {data:auth,error:authError}=await supabase.auth.getUser();
     if(!stillCurrent())return;
     if(authError||!auth?.user?.id)throw new Error('Sessão expirada. Entre novamente.');
@@ -2062,11 +2065,11 @@ el('weekly-report-form').addEventListener('submit',async e=>{
       .upsert(payload,{onConflict:'polo_id,semana_domingo'});
     if(!stillCurrent())return;
     if(error)throw error;
-    message('weekly-report-message','Relatório semanal salvo com sucesso.');
+    message('weekly-report-message',weeklySubmitText(6));
     if(profile.papel==='nacional')void loadNationalReportOverview();
     else void loadDashboard(profile,profileRequest);
   }catch(error){
-    if(stillCurrent())message('weekly-report-message','Não foi possível salvar: '+(error?.message||'Falha de conexão.'),true);
+    if(stillCurrent())message('weekly-report-message',weeklySubmitText(7)+(error?.message||weeklySubmitText(8)),true);
   }finally{
     if(version===weeklyReportSubmitVersion){
       weeklyReportSubmitting=false;
