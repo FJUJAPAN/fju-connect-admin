@@ -352,6 +352,21 @@ test('Formulários app 4/5: botões exibem textos longos sem corte',()=>{
 test('Formulários app 5/5: cards se ajustam à largura estreita',()=>{
  assert.match(html,/#app \.grid\{grid-template-columns:repeat\(auto-fit,minmax\(min\(100%,180px\),1fr\)\)\}/);
 });
+test('Login 1/5: evita envio duplicado enquanto autentica',()=>{
+ assert.match(html,/if\(adminLoginInProgress\)return/);
+});
+test('Login 2/5: valida email e senha antes de autenticar',()=>{
+ assert.match(html,/if\(!email\|\|!password\)\{message\('auth-message'/);
+});
+test('Login 3/5: mostra falhas inesperadas da rede',()=>{
+ assert.match(html,/Erro de conexão ao entrar:/);
+});
+test('Login 4/5: reativa botão mesmo em falha',()=>{
+ assert.match(html,/finally\{adminLoginInProgress=false;if\(submit\)submit.disabled=false;\}/);
+});
+test('Login 5/5: atualização automática não apaga login preenchido',()=>{
+ assert.match(html,/if\(!loginVisible\|\|!formHasData\)location.reload\(\)/);
+});
 test('Erro no Supabase libera aprovação e rejeição para tentar novamente',async()=>{
  const f=fixture();
  try{
