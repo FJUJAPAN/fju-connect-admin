@@ -776,6 +776,8 @@ function translateSpecialEventSection(language){
  const list=document.querySelector('#special-event-list');if(list&&['Carregando eventos...','イベントを読み込み中…','Loading events...'].includes(list.textContent.trim()))list.textContent=labels[4];
  ['special-event-day','special-event-month','special-event-year'].forEach((id,i)=>{const node=document.getElementById(id);if(node)node.setAttribute('aria-label',labels[5+i]);});
 }
+const specialEventListI18n={"pt":["Carregando eventos...","Não foi possível carregar eventos: ","Nenhum evento especial registrado ainda.","Polo não identificado","Evento especial","jovens participantes","Total informado pelo polo"],"ja":["イベントを読み込み中…","イベントを読み込めませんでした: ","登録された特別イベントはまだありません。","教会が見つかりません","特別イベント","参加した青年","教会から報告された合計"],"en":["Loading events...","Could not load events: ","No special events registered yet.","Church not identified","Special event","youth participants","Total reported by church"]};
+function specialEventListText(index){const lang=typeof adminLanguageSelect!=='undefined'&&adminLanguageSelect?.value||'pt';return (specialEventListI18n[lang]||specialEventListI18n.pt)[index];}
 const adminReportHeadings={"pt":["Relatórios","FJU JAPAN · RELATÓRIOS","Acompanhamento de relatórios","Selecione uma área abaixo para acompanhar os números ou registrar uma atividade.","Relatório semanal","Evento especial","Relatórios semanais por igreja","Semana do relatório","Atualizar painel","Imprimir relatório nacional A4","Relatórios das igrejas","Situação do envio","Igreja / polo","Ver resumo nacional e gráficos","Preencher relatório semanal"],"ja":["レポート","FJU JAPAN · レポート","レポートの管理","下の項目を選択して、数値の確認や活動の登録を行ってください。","週間レポート","特別イベント","教会別週間レポート","報告週","画面を更新","全国レポートをA4で印刷","各教会のレポート","提出状況","教会","全国集計とグラフを表示","週間レポートを入力"],"en":["Reports","FJU JAPAN · REPORTS","Report overview","Choose a section below to review figures or record an activity.","Weekly report","Special event","Weekly reports by church","Report week","Refresh dashboard","Print national report A4","Church reports","Submission status","Church","View national summary and charts","Complete weekly report"]};
 function translateAdminReportHeadings(language){
  const values=adminReportHeadings[language]||adminReportHeadings.pt;
@@ -2133,31 +2135,31 @@ async function loadSpecialEvents(){
   const profile=currentProfile,version=++specialEventsLoadVersion;
   const list=el('special-event-list');
   if(!profile){list.replaceChildren();return;}
-  list.textContent='Carregando eventos...';
+  list.textContent=specialEventListText(0);
   if(!specialEventSubmitting)el('special-event-submit').textContent=profile.papel==='coordenador'?'Solicitar inclusão':el('special-event-edit-id').value?'Salvar alterações':'Salvar evento especial';
   let q=supabase.from('fju_eventos_especiais').select('id,polo_id,nome_evento,data_evento,total_jovens,created_at').order('data_evento',{ascending:false}).limit(100);
   if(profile.papel==='coordenador')q=q.eq('polo_id',profile.polo_id);
   const [{data:events,error},{data:polos,error:poloError}]=await Promise.all([q,supabase.from('fju_polos').select('id,nome')]);
   if(version!==specialEventsLoadVersion||currentProfile!==profile)return;
-  if(error||poloError){list.textContent='Não foi possível carregar eventos: '+(error?.message||poloError?.message);return;}
+  if(error||poloError){list.textContent=specialEventListText(1)+(error?.message||poloError?.message);return;}
   const names=new Map((polos||[]).map(p=>[String(p.id),p.nome]));
   list.replaceChildren();list.className='report-list';
   el('special-event-count').textContent=String((events||[]).length);
   const pendingEventRemovals=await loadEventRequests(events||[],names,version,profile);
   if(version!==specialEventsLoadVersion||currentProfile!==profile)return;
-  if(!events?.length){list.textContent='Nenhum evento especial registrado ainda.';return;}
+  if(!events?.length){list.textContent=specialEventListText(2);return;}
   for(const ev of events){
     const card=document.createElement('article');card.className='report-card';
     const head=document.createElement('div');head.className='report-card-head';
     const titleWrap=document.createElement('div');
     const title=document.createElement('div');title.className='report-card-title';title.textContent=ev.nome_evento;
-    const subtitle=document.createElement('div');subtitle.className='report-card-subtitle';subtitle.textContent=(names.get(String(ev.polo_id))||'Polo não identificado')+' · '+new Date(ev.data_evento+'T12:00:00').toLocaleDateString('ja-JP');
+    const subtitle=document.createElement('div');subtitle.className='report-card-subtitle';subtitle.textContent=(names.get(String(ev.polo_id))||specialEventListText(3))+' · '+new Date(ev.data_evento+'T12:00:00').toLocaleDateString('ja-JP');
     titleWrap.append(title,subtitle);
-    const badge=document.createElement('span');badge.className='report-badge';badge.textContent='Evento especial';
+    const badge=document.createElement('span');badge.className='report-badge';badge.textContent=specialEventListText(4);
     head.append(titleWrap,badge);
     const total=document.createElement('div');total.className='report-event-total';
     const count=document.createElement('b');count.textContent=Number(ev.total_jovens||0).toLocaleString('ja-JP');
-    const label=document.createElement('div');label.innerHTML='<strong>jovens participantes</strong><div class="report-card-subtitle">Total informado pelo polo</div>';
+    const label=document.createElement('div');{const strong=document.createElement('strong');strong.textContent=specialEventListText(5);const caption=document.createElement('div');caption.className='report-card-subtitle';caption.textContent=specialEventListText(6);label.append(strong,caption);}
     total.append(count,label);card.append(head,total);
     const actions=document.createElement('div');actions.className='actions';
     const edit=document.createElement('button');edit.type='button';edit.className='secondary';edit.textContent='Editar';
