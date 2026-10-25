@@ -881,8 +881,7 @@ try{initialAdminLanguage=localStorage.getItem('fju_lang')||localStorage.getItem(
 setAdminLanguage(initialAdminLanguage);
 adminLanguageSelect.addEventListener('change',async()=>{
  const value=adminLanguageSelect.value;
- let previousLanguage='pt';
- try{previousLanguage=localStorage.getItem('fju_lang')||'pt';}catch(_){}
+ const previousLanguage=['pt','ja','en'].find(lang=>document.documentElement.lang===(lang==='pt'?'pt-BR':lang))||'pt';
  adminLanguageSelect.disabled=true;adminLanguageFeedback.textContent='';
  try{const {error}=await supabase.auth.updateUser({data:{preferred_language:value}});if(error)throw error;setAdminLanguage(value);adminLanguageFeedback.textContent=adminLanguageCopy[value].saved;if(currentProfile)void loadSpecialEvents();}
  catch(e){setAdminLanguage(previousLanguage);adminLanguageFeedback.textContent=adminLanguageCopy[previousLanguage]?.error||adminLanguageCopy.pt.error;}
