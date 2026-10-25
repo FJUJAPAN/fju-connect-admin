@@ -48,7 +48,7 @@ export function setupAdministrativeAccess({supabase,getProfile,getLanguage=()=> 
             button.type='button';
             button.addEventListener('click',async()=>{
               if(approve.disabled||reject.disabled||current!==version||getProfile()!==profile||!card.isConnected)return;
-              if(!confirm((approved?t().confirmApprove:t().confirmReject)+row.nome_completo+' ('+row.email+')+t().churchSuffix+row.polo_nome+'?'))return;
+              if(!confirm((approved?t().confirmApprove:t().confirmReject)+row.nome_completo+' ('+row.email+')'+t().churchSuffix+row.polo_nome+'?'))return;
               approve.disabled=true;reject.disabled=true;feedback.textContent=t().saving;
               try{
                 const {error}=linked
