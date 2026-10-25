@@ -258,6 +258,23 @@ test('Pacote perfil 4/5: armazenamento secundário é usado quando principal est
 test('Pacote perfil 5/5: armazenamento bloqueado mantém fallback português',async()=>{
  assert.equal(await evaluateProfileLanguage({}, {},true),'pt');
 });
+test('Mobile 1/5: zoom por gesto não é bloqueado no iPhone',()=>{
+ const viewport=html.match(/<meta name="viewport" content="([^"]+)"/)?.[1];
+ assert.ok(viewport?.includes('viewport-fit=cover'));
+ assert.doesNotMatch(viewport,/maximum-scale|user-scalable=no/);
+});
+test('Mobile 2/5: campos de texto usam 16px para evitar zoom automático',()=>{
+ assert.match(html,/@media \(max-width: 767px\)\{[\s\S]*?input:not\(\[type="checkbox"\]\):not\(\[type="radio"\]\),select,textarea\{font-size:16px\}/);
+});
+test('Mobile 3/5: botões têm área de toque de pelo menos 44px',()=>{
+ assert.match(html,/button,\.tabs button\{min-height:44px\}/);
+});
+test('Mobile 4/5: foco do teclado permanece visível',()=>{
+ assert.match(html,/:focus-visible\{outline:3px solid/);
+});
+test('Mobile 5/5: movimento reduzido respeita preferência do usuário',()=>{
+ assert.match(html,/@media \(prefers-reduced-motion: reduce\)\{html:focus-within\{scroll-behavior:auto\}\}/);
+});
 test('Erro no Supabase libera aprovação e rejeição para tentar novamente',async()=>{
  const f=fixture();
  try{
