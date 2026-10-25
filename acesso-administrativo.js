@@ -67,18 +67,24 @@ export function setupAdministrativeAccess({supabase,getProfile,getLanguage=()=> 
       }
     }catch(error){if(current===version&&getProfile()===profile)status.textContent=errorText(error);}
   }
+  const coordinatorCopy = {
+    pt: ['Conta vinculada e acesso administrativo','Solicitar acesso administrativo','Identificando conta vinculada…'],
+    ja: ['連携アカウントと管理者アクセス','管理者アクセスを申請','連携アカウントを確認中…'],
+    en: ['Linked account and admin access','Request admin access','Checking linked account…']
+  };
+  const coordinatorLabel = index => (coordinatorCopy[getLanguage()] || coordinatorCopy.pt)[index];
   function appendRequest(panel,youth){
     const profile=getProfile();
     if(!profile||!['coordenador','nacional'].includes(profile.papel))return;
     const box=element('div',null,'stat');box.style.marginTop='12px';
-    box.append(element('strong','Conta vinculada e acesso administrativo'));
+    box.append(element('strong',coordinatorLabel(0)));
     box.append(element('p','O coordenador solicita; somente o Nacional aprova. O acesso será limitado ao mesmo polo desta ficha. A patente, sozinha, não libera o painel.','muted'));
     const isCoordinator=String(youth.patente||'').toLowerCase()==='coordenador';
     if(!isCoordinator){
       box.append(element('p','Ao solicitar a mudança de patente para Coordenador, o acesso será incluído automaticamente no mesmo pedido ao Nacional.','muted'));
     }
-    const account=element('p','Identificando conta vinculada…','muted');
-    const button=element('button','Solicitar acesso administrativo');button.type='button';button.disabled=true;button.hidden=!isCoordinator;
+    const account=element('p',coordinatorLabel(2),'muted');
+    const button=element('button',coordinatorLabel(1));button.type='button';button.disabled=true;button.hidden=!isCoordinator;
     const feedback=element('p',null,'message');feedback.setAttribute('role','status');
     box.append(account,button,feedback);panel.append(box);
     void (async()=>{
