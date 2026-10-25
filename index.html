@@ -628,6 +628,28 @@ const el=id=>document.getElementById(id);
 const adminLanguageSelect=el('fju-admin-language-select');
 const adminLanguageLabel=el('fju-admin-language-label');
 const adminLanguageFeedback=el('fju-admin-language-feedback');
+
+const adminNavTranslations={
+ pt:{dashboard:'Painel de controle',management:'GERENCIAMENTO',overview:'Visão geral',area:'ÁREA ADMINISTRATIVA',logout:'Sair',authorized:'SESSÃO AUTORIZADA',tabs:{inicio:'Início',jovens:'Jovens',relatorios:'Relatórios',inscricoes:'Inscrições',autorizacoes:'Autorizações',lideranca:'Liderança',config:'Configurações'}},
+ ja:{dashboard:'管理パネル',management:'管理メニュー',overview:'概要',area:'管理エリア',logout:'ログアウト',authorized:'ログイン中',tabs:{inicio:'ホーム',jovens:'青年',relatorios:'報告',inscricoes:'新規登録',autorizacoes:'承認',lideranca:'リーダー',config:'設定'}},
+ en:{dashboard:'Dashboard',management:'MANAGEMENT',overview:'Overview',area:'ADMINISTRATION',logout:'Log out',authorized:'SIGNED IN',tabs:{inicio:'Home',jovens:'Youth',relatorios:'Reports',inscricoes:'Registrations',autorizacoes:'Approvals',lideranca:'Leadership',config:'Settings'}}
+};
+function translateAdminNavigation(lang){
+ const t=adminNavTranslations[lang]||adminNavTranslations.pt;
+ const update=(selector,value)=>{const node=document.querySelector(selector);if(node)node.textContent=value;};
+ update('.fju-sidebar-heading strong',t.dashboard);
+ update('.fju-sidebar-group',t.management);
+ update('#fju-dashboard-context',t.area);
+ update('.fju-session-eyebrow',t.authorized);
+ const heading=el('fju-dashboard-heading');if(heading&&Object.values(adminNavTranslations).some(dict=>dict.overview===heading.textContent.trim()))heading.textContent=t.overview;
+ const logout=el('logout');if(logout){for(const node of logout.childNodes){if(node.nodeType===Node.TEXT_NODE){node.textContent=t.logout+' ';break;}}}
+ document.querySelectorAll('#main-nav [data-tab]').forEach(button=>{
+ const translated=t.tabs[button.dataset.tab];if(!translated)return;
+ let textNode=[...button.childNodes].find(node=>node.nodeType===Node.TEXT_NODE&&node.textContent.trim());
+ if(textNode)textNode.textContent=' '+translated+' ';
+ else{const label=button.querySelector('.fju-nav-label');if(label)label.textContent=translated;}
+ });
+}
 const adminLanguageCopy={
  pt:{label:'Idioma preferido',saved:'Idioma salvo no perfil.',error:'Erro ao salvar idioma.'},
  ja:{label:'表示言語',saved:'言語設定を保存しました。',error:'言語を保存できませんでした。'},
@@ -635,7 +657,7 @@ const adminLanguageCopy={
 };
 function setAdminLanguage(value){
  const l=['pt','ja','en'].includes(value)?value:'pt';
- adminLanguageSelect.value=l;adminLanguageLabel.textContent=adminLanguageCopy[l].label;
+ adminLanguageSelect.value=l;adminLanguageLabel.textContent=adminLanguageCopy[l].label;translateAdminNavigation(l);
  document.documentElement.lang=l==='ja'?'ja':l==='en'?'en':'pt-BR';
  try{localStorage.setItem('fju_lang',l);localStorage.setItem('fju_language',l);localStorage.setItem('fju-connect-lang',l);}catch(_){}
 }
