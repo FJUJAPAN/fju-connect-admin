@@ -117,6 +117,18 @@ test('Solicitações respeitam idioma selecionado e usam português como alterna
   assert.equal(w.__status(24),'pt-BR');
  }finally{dom.window.close();}
 });
+test('Troca de idioma atualiza eventos somente após salvar preferência',()=>{
+ const start=html.indexOf("adminLanguageSelect.addEventListener('change'");
+ const end=html.indexOf('const administrativeAccess=',start);
+ assert.ok(start>=0&&end>start,'Controle de idioma não encontrado');
+ const handler=html.slice(start,end);
+ assert.match(handler,/supabase\.auth\.updateUser\(\{data:\{preferred_language:value\}\}\)/);
+ assert.match(handler,/if\(error\)throw error;setAdminLanguage\(value\);/);
+ assert.match(handler,/if\(currentProfile\)void loadSpecialEvents\(\)/);
+ const success=handler.indexOf('if(currentProfile)void loadSpecialEvents()');
+ const failure=handler.indexOf('catch(e)');
+ assert.ok(success>0&&failure>success,'Atualização de eventos deve ocorrer apenas no caminho de sucesso');
+});
 test('Erro no Supabase libera aprovação e rejeição para tentar novamente',async()=>{
  const f=fixture();
  try{
