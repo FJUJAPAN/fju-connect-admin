@@ -96,6 +96,27 @@ test('Confirmações têm frases naturais em português, japonês e inglês',()=
   assert.equal(actual[lang][26],dictionary[lang].reject);
  }
 });
+test('Solicitações respeitam idioma selecionado e usam português como alternativa',()=>{
+ const start=html.indexOf('const specialEventRequestsStatusI18n=');
+ const end=html.indexOf('const adminReportHeadings=',start);
+ assert.ok(start>=0&&end>start,'Traduções das solicitações não encontradas');
+ const dom=new JSDOM('',{runScripts:'outside-only'});
+ try{
+  const w=dom.window;
+  w.eval('var adminLanguageSelect={value:"ja"};'+html.slice(start,end)+'window.__status=specialEventRequestsStatus;');
+  assert.equal(w.__status(9),'承認');
+  assert.equal(w.__status(10),'却下');
+  assert.equal(w.__status(22),'承認待ち');
+  assert.equal(w.__status(24),'ja-JP');
+  w.adminLanguageSelect.value='en';
+  assert.equal(w.__status(9),'Approve');
+  assert.equal(w.__status(22),'pending');
+  assert.equal(w.__status(24),'en-US');
+  w.adminLanguageSelect.value='xx';
+  assert.equal(w.__status(9),'Aprovar');
+  assert.equal(w.__status(24),'pt-BR');
+ }finally{dom.window.close();}
+});
 test('Erro no Supabase libera aprovação e rejeição para tentar novamente',async()=>{
  const f=fixture();
  try{
