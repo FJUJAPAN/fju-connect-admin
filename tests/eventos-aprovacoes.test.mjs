@@ -258,10 +258,11 @@ test('Pacote perfil 4/5: armazenamento secundário é usado quando principal est
 test('Pacote perfil 5/5: armazenamento bloqueado mantém fallback português',async()=>{
  assert.equal(await evaluateProfileLanguage({}, {},true),'pt');
 });
-test('Mobile 1/5: zoom por gesto não é bloqueado no iPhone',()=>{
+test('Mobile 1/5: tela mantém comportamento de app sem zoom por gesto',()=>{
  const viewport=html.match(/<meta name="viewport" content="([^"]+)"/)?.[1];
  assert.ok(viewport?.includes('viewport-fit=cover'));
- assert.doesNotMatch(viewport,/maximum-scale|user-scalable=no/);
+ assert.match(viewport,/maximum-scale=1/);
+ assert.match(viewport,/user-scalable=no/);
 });
 test('Mobile 2/5: campos de texto usam 16px para evitar zoom automático',()=>{
  assert.match(html,/@media \(max-width: 767px\)\{[\s\S]*?input:not\(\[type="checkbox"\]\):not\(\[type="radio"\]\),select,textarea\{font-size:16px\}/);
