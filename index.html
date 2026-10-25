@@ -250,6 +250,12 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
   #main-nav.tabs button{transition:none}
 }
 
+/* Comportamento de aplicativo: evita saltos, brilho de toque e cortes no iPhone. */
+html{min-height:100%;overscroll-behavior-y:none;scroll-padding-top:90px}
+body.fju-admin-shell{min-height:100dvh;overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent}
+.fju-admin-shell button,.fju-admin-shell a,.fju-admin-shell select{-webkit-tap-highlight-color:transparent}
+.fju-admin-shell .wrap{padding-bottom:max(24px,env(safe-area-inset-bottom))}
+.fju-admin-shell .panel,.fju-admin-shell .stat{min-width:0;overflow-wrap:anywhere}
 /* Acessibilidade e uso confortável do painel no iPhone e em telas pequenas. */
 @media (max-width: 767px){
   input:not([type="checkbox"]):not([type="radio"]),select,textarea{font-size:16px}

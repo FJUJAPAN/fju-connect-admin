@@ -276,6 +276,22 @@ test('Mobile 4/5: foco do teclado permanece visível',()=>{
 test('Mobile 5/5: movimento reduzido respeita preferência do usuário',()=>{
  assert.match(html,/@media \(prefers-reduced-motion: reduce\)\{html:focus-within\{scroll-behavior:auto\}\}/);
 });
+test('App mobile 1/5: reduz overscroll vertical no painel',()=>{
+ assert.match(html,/html\{min-height:100%;overscroll-behavior-y:none/);
+ assert.match(html,/body\.fju-admin-shell\{min-height:100dvh;overscroll-behavior-y:none/);
+});
+test('App mobile 2/5: elimina destaque visual de toque em links e botões',()=>{
+ assert.match(html,/\.fju-admin-shell button,\.fju-admin-shell a,\.fju-admin-shell select\{-webkit-tap-highlight-color:transparent\}/);
+});
+test('App mobile 3/5: respeita a área inferior segura do iPhone',()=>{
+ assert.match(html,/padding-bottom:max\(24px,env\(safe-area-inset-bottom\)\)/);
+});
+test('App mobile 4/5: cards suportam textos longos sem ampliar a página',()=>{
+ assert.match(html,/\.fju-admin-shell \.panel,\.fju-admin-shell \.stat\{min-width:0;overflow-wrap:anywhere\}/);
+});
+test('App mobile 5/5: âncoras respeitam a altura do cabeçalho',()=>{
+ assert.match(html,/scroll-padding-top:90px/);
+});
 test('Erro no Supabase libera aprovação e rejeição para tentar novamente',async()=>{
  const f=fixture();
  try{
