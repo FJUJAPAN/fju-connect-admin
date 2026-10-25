@@ -33,6 +33,7 @@ function fixture(){
   w.__filters=0;
   w.eval('var currentProfile=window.__profile; var supabase=window.__db;'+
     'const el=id=>document.getElementById(id);'+
+    'const nationalReportStatus=index=>["Consultando polos e relatórios...","Nenhum relatório registrado para "," polo(s) exibido(s)"][index];'+
     'const previousSundayISO=()=>"2026-10-18";'+
     'const normalizeReportSunday=value=>value||"2026-10-18";'+
     'const updateNationalWeekRange=()=>{};'+
