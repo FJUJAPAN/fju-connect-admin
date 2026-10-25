@@ -744,7 +744,7 @@ function translateReportGuidance(language){
 const nationalReportStatusI18n={"pt":["Consultando polos e relatórios...","Nenhum relatório registrado para "," polo(s) exibido(s)"],"ja":["教会とレポートを読み込み中…","この日付のレポートはありません: "," 教会を表示中"],"en":["Loading churches and reports...","No report recorded for "," church(es) displayed"]};
 function nationalReportStatus(index){const lang=typeof adminLanguageSelect!=='undefined'&&adminLanguageSelect?.value||'pt';return (nationalReportStatusI18n[lang]||nationalReportStatusI18n.pt)[index];}
 
-const weeklySubmitMessageI18n={"pt":["Selecione a igreja antes de salvar.","Selecione uma data de domingo para este relatório.","O relatório desta semana será liberado no domingo (horário do Japão).","Preencha todos os campos numéricos do relatório.","Preencha todos os campos com números inteiros iguais ou maiores que zero.","Salvando relatório...","Relatório semanal salvo com sucesso.","Não foi possível salvar: ","Falha de conexão."],"ja":["保存する前に教会を選択してください。","このレポートの日曜日の日付を選択してください。","今週のレポートは日曜日（日本時間）に入力できます。","レポートの数値項目をすべて入力してください。","すべての項目に0以上の整数を入力してください。","レポートを保存中…","週間レポートを保存しました。","保存できませんでした: ","接続エラー。"],"en":["Select a church before saving.","Select a Sunday date for this report.","This week's report becomes available on Sunday (Japan time).","Complete all numeric report fields.","Enter whole numbers of zero or greater in every field.","Saving report...","Weekly report saved successfully.","Could not save: ","Connection failed."]};
+const weeklySubmitMessageI18n={"pt":["Selecione a igreja antes de salvar.","Selecione uma data de domingo para este relatório.","O relatório desta semana será liberado no domingo (horário do Japão).","Preencha todos os campos numéricos do relatório.","Preencha todos os campos com números inteiros iguais ou maiores que zero.","Salvando relatório...","Relatório semanal salvo com sucesso.","Não foi possível salvar: ","Falha de conexão.","Já existe um pedido de exclusão pendente para este evento.","Solicitação de exclusão enviada para aprovação nacional.","Evento excluído."],"ja":["保存する前に教会を選択してください。","このレポートの日曜日の日付を選択してください。","今週のレポートは日曜日（日本時間）に入力できます。","レポートの数値項目をすべて入力してください。","すべての項目に0以上の整数を入力してください。","レポートを保存中…","週間レポートを保存しました。","保存できませんでした: ","接続エラー。","このイベントには既に削除申請が保留中です。","削除申請を全国管理者の承認待ちとして送信しました。","イベントを削除しました。"],"en":["Select a church before saving.","Select a Sunday date for this report.","This week's report becomes available on Sunday (Japan time).","Complete all numeric report fields.","Enter whole numbers of zero or greater in every field.","Saving report...","Weekly report saved successfully.","Could not save: ","Connection failed.","A deletion request is already pending for this event.","Deletion request sent for national approval.","Event deleted."]};
 function weeklySubmitText(index){const lang=typeof adminLanguageSelect!=='undefined'&&adminLanguageSelect?.value||'pt';return (weeklySubmitMessageI18n[lang]||weeklySubmitMessageI18n.pt)[index];}
 
 const specialEventFormI18n={"pt":["Igreja responsável pelo evento","Nome do evento / movimento","Data do evento","Total de jovens no evento","Registre o movimento realizado pelo polo e o total de jovens participantes.","Solicitações pendentes","Eventos registrados"],"ja":["イベント担当教会","イベント・活動名","イベントの日付","参加した青年の合計","教会が実施した活動と参加した青年の人数を記録してください。","承認待ちの申請","登録済みイベント"],"en":["Church responsible for event","Event / activity name","Event date","Total youth at event","Record the church activity and the number of youth participants.","Pending requests","Registered events"]};
@@ -2208,7 +2208,7 @@ async function loadSpecialEvents(){
           if(!active())return;
           if(queryError)throw queryError;
           if(existing?.length){
-            message('special-event-message','Já existe um pedido de exclusão pendente para este evento.',true);
+            message('special-event-message',specialEventListText(22),true);
             del.textContent=specialEventListText(13);
             return;
           }
@@ -2218,14 +2218,14 @@ async function loadSpecialEvents(){
           });
           if(!active())return;
           if(error)throw error;
-          message('special-event-message','Solicitação de exclusão enviada para aprovação nacional.');
+          message('special-event-message',specialEventListText(23));
           del.textContent=specialEventListText(13);
         }else{
           const {data,error}=await supabase.from('fju_eventos_especiais')
             .delete().eq('id',ev.id).select('id');
           if(!active())return;
           if(error||!data?.length)throw error||new Error('Nenhum registro excluído.');
-          message('special-event-message','Evento excluído.');
+          message('special-event-message',specialEventListText(24));
         }
         await loadSpecialEvents();
         if(currentProfile===profile)void refreshAdminPriorities(profile,profileRequest);
