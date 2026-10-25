@@ -180,6 +180,53 @@ test('Idioma anterior é detectado corretamente em português, japonês e inglê
   }
  }finally{dom.window.close();}
 });
+test('Pacote 1/5: todas as traduções de solicitações têm índices completos',()=>{
+ const start=html.indexOf('const specialEventRequestsStatusI18n=');
+ const end=html.indexOf('function specialEventRequestsStatus(',start);
+ const dict=JSON.parse(html.slice(start,end).split('=',2)[1].trim().replace(/;$/,''));
+ for(const lang of ['pt','ja','en']){
+  assert.equal(dict[lang].length,27,lang);
+  for(const [i,label] of dict[lang].entries())assert.ok(typeof label==='string'&&label.length>0,lang+' '+i);
+ }
+});
+test('Pacote 2/5: datas seguem formato regional e mostram ausência traduzida',()=>{
+ const start=html.indexOf('const specialEventRequestsStatusI18n=');
+ const end=html.indexOf('function specialEventRequestsStatus(',start);
+ const dict=JSON.parse(html.slice(start,end).split('=',2)[1].trim().replace(/;$/,''));
+ for(const [lang,locale,missing] of [['pt','pt-BR','Data não informada'],['ja','ja-JP','日付未入力'],['en','en-US','Date not provided']]){
+  assert.equal(dict[lang][24],locale);
+  assert.equal(dict[lang][23],missing);
+  assert.ok(new Date('2026-10-25T12:00:00Z').toLocaleDateString(locale,{timeZone:'UTC'}).includes('2026')||locale==='en-US');
+ }
+});
+test('Pacote 3/5: ações e estados de eventos estão traduzidos',()=>{
+ const start=html.indexOf('const specialEventRequestsStatusI18n=');
+ const end=html.indexOf('function specialEventRequestsStatus(',start);
+ const dict=JSON.parse(html.slice(start,end).split('=',2)[1].trim().replace(/;$/,''));
+ assert.deepEqual([dict.pt[9],dict.pt[10],dict.pt[22]],['Aprovar','Rejeitar','pendente']);
+ assert.deepEqual([dict.ja[9],dict.ja[10],dict.ja[22]],['承認','却下','承認待ち']);
+ assert.deepEqual([dict.en[9],dict.en[10],dict.en[22]],['Approve','Reject','pending']);
+});
+test('Pacote 4/5: confirmação de inclusão e exclusão preserva o nome do evento',()=>{
+ const start=html.indexOf('const specialEventRequestsStatusI18n=');
+ const end=html.indexOf('function specialEventRequestsStatus(',start);
+ const dict=JSON.parse(html.slice(start,end).split('=',2)[1].trim().replace(/;$/,''));
+ for(const lang of ['pt','ja','en'])for(const action of [25,26])for(const kind of [17,18]){
+  const phrase=dict[lang][action].replace('{type}',dict[lang][kind]).replace('{event}','Festival FJU');
+  assert.ok(phrase.includes('Festival FJU'));
+  assert.ok(!phrase.includes('{type}')&&!phrase.includes('{event}'));
+ }
+});
+test('Pacote 5/5: erros e respostas de aprovação têm traduções independentes',()=>{
+ const start=html.indexOf('const specialEventRequestsStatusI18n=');
+ const end=html.indexOf('function specialEventRequestsStatus(',start);
+ const dict=JSON.parse(html.slice(start,end).split('=',2)[1].trim().replace(/;$/,''));
+ for(const lang of ['pt','ja','en']){
+  assert.notEqual(dict[lang][12],dict[lang][13]);
+  assert.notEqual(dict[lang][14],dict[lang][15]);
+  assert.ok(dict[lang][11].length>3);
+ }
+});
 test('Erro no Supabase libera aprovação e rejeição para tentar novamente',async()=>{
  const f=fixture();
  try{
