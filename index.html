@@ -1247,7 +1247,11 @@ async function loadDashboard(profile,requestId){
 }
 
 async function loadProfile(user){
-  setAdminLanguage(user.user_metadata?.preferred_language||localStorage.getItem('fju_lang')||localStorage.getItem('fju-connect-lang')||'pt');
+  let profileLanguage=user.user_metadata?.preferred_language||'pt';
+  if(!user.user_metadata?.preferred_language){
+    try{profileLanguage=localStorage.getItem('fju_lang')||localStorage.getItem('fju-connect-lang')||'pt';}catch(_){}
+  }
+  setAdminLanguage(profileLanguage);
   const initialRequest=profileRequest;
   const {data,error}=await supabase.from('fju_perfis').select('papel,polo_id,ativo').eq('usuario_id',user.id).maybeSingle();
   if(initialRequest!==profileRequest)return;
