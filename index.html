@@ -266,6 +266,14 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
  #app .grid,#app .report-metrics{min-width:0}
  #main-nav.tabs button.active{font-weight:750}
 }
+/* Formulários e ações confortáveis no celular, sem alterar permissões. */
+@media screen and (max-width:700px){
+ #app input:not([type="checkbox"]):not([type="radio"]),#app select,#app textarea{min-height:44px;max-width:100%}
+ #app textarea{resize:vertical}
+ #app .actions{min-width:0;gap:10px}
+ #app .actions button{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+ #app .grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))}
+}
 /* Comportamento de aplicativo: evita saltos, brilho de toque e cortes no iPhone. */
 html{min-height:100%;overscroll-behavior-y:none;scroll-padding-top:90px}
 body.fju-admin-shell{min-height:100dvh;overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent}
