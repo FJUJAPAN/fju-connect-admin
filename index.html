@@ -2595,7 +2595,24 @@ document.getElementById('fju-toggle-password').addEventListener('click',()=>{
   toggle.setAttribute('aria-label',visible?'Ocultar senha':'Mostrar senha');
   toggle.setAttribute('aria-pressed',String(visible));
 });
-el('login-form').addEventListener('submit',async e=>{e.preventDefault();message('auth-message','Entrando...');const {error}=await supabase.auth.signInWithPassword({email:el('email').value.trim(),password:el('password').value});if(error){message('auth-message','Não foi possível entrar: '+error.message,true);return}await refresh()});
+let adminLoginInProgress=false;
+el('login-form').addEventListener('submit',async e=>{
+ e.preventDefault();
+ if(adminLoginInProgress)return;
+ const email=el('email').value.trim(),password=el('password').value;
+ if(!email||!password){message('auth-message','Informe o e-mail e a senha.',true);return;}
+ adminLoginInProgress=true;
+ const submit=el('login-form').querySelector('[type="submit"]');
+ if(submit)submit.disabled=true;
+ message('auth-message','Verificando sua conta...');
+ try{
+  const {error}=await supabase.auth.signInWithPassword({email,password});
+  if(error){message('auth-message','Não foi possível entrar: '+error.message,true);return;}
+  await refresh();
+  if(el('app').classList.contains('hidden')&&!el('auth-message').textContent.trim())message('auth-message','Não foi possível abrir o painel. Tente novamente.',true);
+ }catch(error){message('auth-message','Erro de conexão ao entrar: '+(error?.message||'Tente novamente.'),true);}
+ finally{adminLoginInProgress=false;if(submit)submit.disabled=false;}
+});
 el('forgot').addEventListener('click',async()=>{const email=el('email').value.trim();if(!email){message('auth-message','Digite seu e-mail acima para receber a recuperação.',true);return}const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});message('auth-message',error?'Não foi possível solicitar a recuperação: '+error.message:'Se a conta estiver cadastrada, enviaremos instruções ao e-mail.',!!error)});
 el('recovery-form').addEventListener('submit',async e=>{e.preventDefault();const pass=el('new-password').value;if(pass.length<8||pass!==el('confirm-password').value){message('recovery-message','As senhas precisam ser iguais e ter pelo menos 8 caracteres.',true);return}const {error}=await supabase.auth.updateUser({password:pass});if(error){message('recovery-message',error.message,true);return}recoveryMode=false;history.replaceState({},'',location.pathname);message('auth-message','Senha atualizada. Você já pode entrar.');await supabase.auth.signOut();show('auth')});
 el('logout').addEventListener('click',async()=>{clearAdminPrivateSession();await supabase.auth.signOut();show('auth')});
@@ -2930,7 +2947,12 @@ await refresh();
 if('serviceWorker' in navigator){
   let updating=false;
   navigator.serviceWorker.addEventListener('controllerchange',()=>{
-    if(!updating){updating=true;location.reload();}
+    if(!updating){
+      updating=true;
+      const loginVisible=!document.getElementById('auth')?.classList.contains('hidden');
+      const formHasData=Boolean(document.getElementById('email')?.value||document.getElementById('password')?.value);
+      if(!loginVisible||!formHasData)location.reload();
+    }
   });
   async function checkPwaVersion(){
     try{
