@@ -47,7 +47,7 @@ function fixture(rows,opts={}){
    'const el=id=>document.getElementById(id);'+
    'const message=()=>{};'+
    'const refreshAdminPriorities=()=>{};'+
-   'const specialEventRequestsStatus=index=>["Não foi possível carregar solicitações: ","Erro"," pendente"," pendentes","Incluir","Excluir","Evento indisponível","Igreja não identificada"," jovens"][index];'+
+   'const specialEventRequestsStatus=index=>["Não foi possível carregar solicitações: ","Erro"," pendente"," pendentes","Incluir","Excluir","Evento indisponível","Igreja não identificada"," jovens","Aprovar","Rejeitar","Registrando decisão…"][index];'+
  'const loadSpecialEvents=async()=>{};'+
    source+'\nwindow.__load=loadEventRequests;window.__logout=()=>{currentProfile=null;++specialEventsLoadVersion};');
  return {dom,w,d,pending,queries,profile,close:()=>dom.window.close()};
