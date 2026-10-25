@@ -804,7 +804,7 @@ adminLanguageSelect.addEventListener('change',async()=>{
 });
 
 const administrativeAccess=setupAdministrativeAccess({
-  supabase,getProfile:()=>currentProfile,
+  supabase,getProfile:()=>currentProfile,getLanguage:()=>adminLanguageSelect?.value||'pt',
   onDecision:()=>{
     if(!currentProfile)return;
     const profile=currentProfile;
