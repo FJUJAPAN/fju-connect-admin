@@ -152,6 +152,16 @@ test('Idioma inicial tolera armazenamento local bloqueado',()=>{
   assert.equal(w.__chosen,'pt');
  }finally{dom.window.close();}
 });
+test('Carregamento do perfil prioriza idioma salvo e tolera armazenamento bloqueado',()=>{
+ const start=html.indexOf('async function loadProfile(user){');
+ const end=html.indexOf("const initialRequest=profileRequest;",start);
+ assert.ok(start>=0&&end>start);
+ const source=html.slice(start,end);
+ assert.match(source,/user\.user_metadata\?\.preferred_language/);
+ assert.match(source,/try\{profileLanguage=localStorage\.getItem/);
+ assert.match(source,/catch\(_\)\{\}/);
+ assert.match(source,/setAdminLanguage\(profileLanguage\)/);
+});
 test('Erro no Supabase libera aprovação e rejeição para tentar novamente',async()=>{
  const f=fixture();
  try{
