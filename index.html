@@ -250,6 +250,13 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
   #main-nav.tabs button{transition:none}
 }
 
+/* Barra inferior estável: área segura, teclado e telas estreitas. */
+@media screen and (max-width:700px){
+ #main-nav.tabs{box-sizing:border-box;padding-left:max(9px,env(safe-area-inset-left));padding-right:max(9px,env(safe-area-inset-right));}
+ #main-nav.tabs button{touch-action:manipulation;-webkit-user-select:none;user-select:none}
+ #main-nav.tabs .fju-nav-label-mobile{overflow:hidden;text-overflow:ellipsis}
+ #app{min-width:0;overflow-wrap:break-word}
+}
 /* Comportamento de aplicativo: evita saltos, brilho de toque e cortes no iPhone. */
 html{min-height:100%;overscroll-behavior-y:none;scroll-padding-top:90px}
 body.fju-admin-shell{min-height:100dvh;overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent}
