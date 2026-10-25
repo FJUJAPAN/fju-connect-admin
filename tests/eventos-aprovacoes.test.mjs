@@ -163,6 +163,23 @@ test('Carregamento do perfil prioriza idioma salvo e tolera armazenamento bloque
  assert.match(source,/catch\(_\)\{\}/);
  assert.match(source,/setAdminLanguage\(profileLanguage\)/);
 });
+test('Idioma anterior é detectado corretamente em português, japonês e inglês',()=>{
+ const start=html.indexOf("adminLanguageSelect.addEventListener('change'");
+ const end=html.indexOf('const administrativeAccess=',start);
+ assert.ok(start>=0&&end>start);
+ const handler=html.slice(start,end);
+ const match=handler.match(/const previousLanguage=([^;]+);/);
+ assert.ok(match,'Expressão para detectar idioma anterior não encontrada');
+ const dom=new JSDOM('',{runScripts:'outside-only'});
+ try{
+  const w=dom.window;
+  for(const [htmlLang,expected] of [['pt-BR','pt'],['ja','ja'],['en','en'],['fr','pt']]){
+   w.document.documentElement.lang=htmlLang;
+   w.eval('window.__previous='+match[1]+';');
+   assert.equal(w.__previous,expected);
+  }
+ }finally{dom.window.close();}
+});
 test('Erro no Supabase libera aprovação e rejeição para tentar novamente',async()=>{
  const f=fixture();
  try{
