@@ -705,6 +705,13 @@ const adminDecisionI18n={
  en:{approve:'Approve request',approveAccess:'Approve rank and access',deny:'Reject',confirmApprove:'Approve this request? The youth record will update automatically.',confirmDeny:'Reject this request? The youth record will remain unchanged.',confirmAccess:'Approve Coordinator rank and grant dashboard access to {email} at {polo}?',approving:'Approving request…',denying:'Rejecting request…',approved:'Approved successfully.',denied:'Request rejected.',failed:'Could not complete: '}
 };
 function adminDecisionCopy(){return adminDecisionI18n[adminLanguageSelect?.value]||adminDecisionI18n.pt;}
+
+const adminReportHeadings={"pt":["Relatórios","FJU JAPAN · RELATÓRIOS","Acompanhamento de relatórios","Selecione uma área abaixo para acompanhar os números ou registrar uma atividade.","Relatório semanal","Evento especial","Relatórios semanais por igreja","Semana do relatório","Atualizar painel","Imprimir relatório nacional A4","Relatórios das igrejas","Situação do envio","Igreja / polo","Ver resumo nacional e gráficos","Preencher relatório semanal"],"ja":["レポート","FJU JAPAN · レポート","レポートの管理","下の項目を選択して、数値の確認や活動の登録を行ってください。","週間レポート","特別イベント","教会別週間レポート","報告週","画面を更新","全国レポートをA4で印刷","各教会のレポート","提出状況","教会","全国集計とグラフを表示","週間レポートを入力"],"en":["Reports","FJU JAPAN · REPORTS","Report overview","Choose a section below to review figures or record an activity.","Weekly report","Special event","Weekly reports by church","Report week","Refresh dashboard","Print national report A4","Church reports","Submission status","Church","View national summary and charts","Complete weekly report"]};
+function translateAdminReportHeadings(language){
+ const values=adminReportHeadings[language]||adminReportHeadings.pt;
+ const selectors=["#relatorios > h2","#fju-reports-eyebrow","#fju-reports-title","#fju-reports-description","[data-report-tab=\"semanal\"]","[data-report-tab=\"especial\"]","#national-report-panel > h3","label[for=\"national-week-button\"]","#national-report-refresh","#print-national-report","#national-report-panel .report-section-title","label[for=\"national-status-filter\"]","label[for=\"national-polo-filter\"]","#national-report-analytics > summary","#weekly-entry-wrap .fju-report-entry-heading h3"];
+ selectors.forEach((selector,index)=>{const node=document.querySelector(selector);if(node)node.textContent=values[index];});
+}
 const adminRequestsI18n={
  pt:{heading:'Autorizações de fichas',kicker:'CENTRAL DE SOLICITAÇÕES',title:'Solicitações e autorizações',intro:'Acompanhe os pedidos de alteração de fichas e de acesso administrativo.',fichas:'Alterações de fichas',acessos:'Acesso administrativo',fichasIntro:'Pedidos de edição, patente e exclusão.',acessosIntro:'Pedidos vinculados à ficha e à função de coordenador.',refresh:'Atualizar solicitações',accessRefresh:'Atualizar pedidos de acesso',more:'Carregar mais 25 solicitações',filters:['Pendentes','Aprovadas','Rejeitadas','Todas']},
  ja:{heading:'青年名簿の承認',kicker:'申請センター',title:'申請と承認',intro:'青年名簿の変更申請と管理者アクセス申請を確認できます。',fichas:'青年名簿の変更',acessos:'管理者アクセス',fichasIntro:'編集・階級変更・削除の申請',acessosIntro:'青年名簿とコーディネーターの役割に関する申請',refresh:'申請を更新',accessRefresh:'アクセス申請を更新',more:'さらに25件読み込む',filters:['保留中','承認済み','却下','すべて']},
@@ -791,7 +798,7 @@ const adminLanguageCopy={
 };
 function setAdminLanguage(value){
  const l=['pt','ja','en'].includes(value)?value:'pt';
- adminLanguageSelect.value=l;adminLanguageLabel.textContent=adminLanguageCopy[l].label;translateAdminNavigation(l);translateAdminCards(l);translateAdminLogin(l);translateAdminYouthForm(l);translateAdminYouthExtra(l);translateAdminRequests(l);
+ adminLanguageSelect.value=l;adminLanguageLabel.textContent=adminLanguageCopy[l].label;translateAdminNavigation(l);translateAdminCards(l);translateAdminLogin(l);translateAdminYouthForm(l);translateAdminYouthExtra(l);translateAdminRequests(l);translateAdminReportHeadings(l);
  document.documentElement.lang=l==='ja'?'ja':l==='en'?'en':'pt-BR';
  try{localStorage.setItem('fju_lang',l);localStorage.setItem('fju_language',l);localStorage.setItem('fju-connect-lang',l);}catch(_){}
 }
