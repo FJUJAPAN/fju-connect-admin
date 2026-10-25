@@ -129,6 +129,16 @@ test('Troca de idioma atualiza eventos somente após salvar preferência',()=>{
  const failure=handler.indexOf('catch(e)');
  assert.ok(success>0&&failure>success,'Atualização de eventos deve ocorrer apenas no caminho de sucesso');
 });
+test('Falha ao salvar idioma restaura preferência anterior sem nova requisição',()=>{
+ const start=html.indexOf("adminLanguageSelect.addEventListener('change'");
+ const end=html.indexOf('const administrativeAccess=',start);
+ assert.ok(start>=0&&end>start);
+ const handler=html.slice(start,end);
+ assert.match(handler,/const previousLanguage=localStorage\.getItem\('fju_lang'\)\|\|'pt'/);
+ assert.match(handler,/catch\(e\)\{setAdminLanguage\(previousLanguage\)/);
+ assert.doesNotMatch(handler,/supabase\.auth\.getUser\(/);
+ assert.match(handler,/finally\{adminLanguageSelect\.disabled=false;\}/);
+});
 test('Erro no Supabase libera aprovação e rejeição para tentar novamente',async()=>{
  const f=fixture();
  try{
