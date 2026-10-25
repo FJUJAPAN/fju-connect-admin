@@ -878,9 +878,11 @@ function setAdminLanguage(value){
 }
 setAdminLanguage(localStorage.getItem('fju_lang')||localStorage.getItem('fju-connect-lang')||'pt');
 adminLanguageSelect.addEventListener('change',async()=>{
- const value=adminLanguageSelect.value;adminLanguageSelect.disabled=true;adminLanguageFeedback.textContent='';
+ const value=adminLanguageSelect.value;
+ const previousLanguage=localStorage.getItem('fju_lang')||'pt';
+ adminLanguageSelect.disabled=true;adminLanguageFeedback.textContent='';
  try{const {error}=await supabase.auth.updateUser({data:{preferred_language:value}});if(error)throw error;setAdminLanguage(value);adminLanguageFeedback.textContent=adminLanguageCopy[value].saved;if(currentProfile)void loadSpecialEvents();}
- catch(e){adminLanguageFeedback.textContent=adminLanguageCopy[value].error;const {data}=await supabase.auth.getUser();setAdminLanguage(data?.user?.user_metadata?.preferred_language||'pt');}
+ catch(e){setAdminLanguage(previousLanguage);adminLanguageFeedback.textContent=adminLanguageCopy[previousLanguage]?.error||adminLanguageCopy.pt.error;}
  finally{adminLanguageSelect.disabled=false;}
 });
 
