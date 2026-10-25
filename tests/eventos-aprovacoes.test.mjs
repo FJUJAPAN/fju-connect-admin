@@ -322,6 +322,21 @@ test('Abas app 4/5: mantém aba selecionada visível no iPhone',()=>{
 test('Abas app 5/5: não reativa zoom com dedos',()=>{
  assert.match(html,/maximum-scale=1,user-scalable=no,viewport-fit=cover/);
 });
+test('Transição app 1/5: painel ativo possui entrada discreta',()=>{
+ assert.match(html,/#app section\.panel:not\(\.hidden\)\{animation:fju-panel-enter \.14s ease-out both\}/);
+});
+test('Transição app 2/5: entrada evita deslocamento de conteúdo',()=>{
+ assert.match(html,/@keyframes fju-panel-enter\{from\{opacity:\.75\}to\{opacity:1\}\}/);
+});
+test('Transição app 3/5: reduz animação quando solicitado',()=>{
+ assert.match(html,/@media \(prefers-reduced-motion:reduce\)\{#app section\.panel:not\(\.hidden\)\{animation:none\}\}/);
+});
+test('Transição app 4/5: painel cabe na largura da tela',()=>{
+ assert.match(html,/#app section\.panel\{max-width:100%;box-sizing:border-box\}/);
+});
+test('Transição app 5/5: menu destaca seção ativa',()=>{
+ assert.match(html,/#main-nav\.tabs button\.active\{font-weight:750\}/);
+});
 test('Erro no Supabase libera aprovação e rejeição para tentar novamente',async()=>{
  const f=fixture();
  try{

@@ -257,6 +257,15 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
  #main-nav.tabs .fju-nav-label-mobile{overflow:hidden;text-overflow:ellipsis}
  #app{min-width:0;overflow-wrap:break-word}
 }
+/* Consistência visual e troca de telas no painel, sem animações bruscas. */
+#app section.panel:not(.hidden){animation:fju-panel-enter .14s ease-out both}
+@keyframes fju-panel-enter{from{opacity:.75}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){#app section.panel:not(.hidden){animation:none}}
+@media screen and (max-width:700px){
+ #app section.panel{max-width:100%;box-sizing:border-box}
+ #app .grid,#app .report-metrics{min-width:0}
+ #main-nav.tabs button.active{font-weight:750}
+}
 /* Comportamento de aplicativo: evita saltos, brilho de toque e cortes no iPhone. */
 html{min-height:100%;overscroll-behavior-y:none;scroll-padding-top:90px}
 body.fju-admin-shell{min-height:100dvh;overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent}
