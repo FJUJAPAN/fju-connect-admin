@@ -755,6 +755,15 @@ function translateSpecialEventForm(language){
  const intro=document.querySelector('#report-special .fju-report-entry-heading p');if(intro)intro.textContent=labels[4];
  const folds=document.querySelectorAll('#report-special .special-event-fold-label');if(folds[0]){const icon=folds[0].querySelector('.special-event-fold-icon');folds[0].textContent='';if(icon)folds[0].append(icon);folds[0].append(document.createTextNode(labels[5]));}if(folds[1]){const icon=folds[1].querySelector('.special-event-fold-icon');folds[1].textContent='';if(icon)folds[1].append(icon);folds[1].append(document.createTextNode(labels[6]));}
 }
+
+const specialEventInputI18n={"pt":["Ex.: Evangelização especial","Dia","Mês","Ano","Salvar evento especial","Cancelar edição"],"ja":["例：特別伝道","日","月","年","特別イベントを保存","編集をキャンセル"],"en":["E.g. Special outreach","Day","Month","Year","Save special event","Cancel editing"]};
+function translateSpecialEventInputs(language){
+ const labels=specialEventInputI18n[language]||specialEventInputI18n.pt;
+ const name=document.getElementById('special-event-name');if(name)name.placeholder=labels[0];
+ const ids=['special-event-day','special-event-month','special-event-year'];ids.forEach((id,i)=>{const node=document.getElementById(id);if(!node)return;const option=node.querySelector('option[value=""]');if(option)option.textContent=labels[i+1];node.setAttribute('aria-label',labels[i+1]);});
+ const submit=document.getElementById('special-event-submit');if(submit&&['Salvar evento especial','特別イベントを保存','Save special event'].includes(submit.textContent.trim()))submit.textContent=labels[4];
+ const cancel=document.getElementById('special-event-cancel');if(cancel)cancel.textContent=labels[5];
+}
 const adminReportHeadings={"pt":["Relatórios","FJU JAPAN · RELATÓRIOS","Acompanhamento de relatórios","Selecione uma área abaixo para acompanhar os números ou registrar uma atividade.","Relatório semanal","Evento especial","Relatórios semanais por igreja","Semana do relatório","Atualizar painel","Imprimir relatório nacional A4","Relatórios das igrejas","Situação do envio","Igreja / polo","Ver resumo nacional e gráficos","Preencher relatório semanal"],"ja":["レポート","FJU JAPAN · レポート","レポートの管理","下の項目を選択して、数値の確認や活動の登録を行ってください。","週間レポート","特別イベント","教会別週間レポート","報告週","画面を更新","全国レポートをA4で印刷","各教会のレポート","提出状況","教会","全国集計とグラフを表示","週間レポートを入力"],"en":["Reports","FJU JAPAN · REPORTS","Report overview","Choose a section below to review figures or record an activity.","Weekly report","Special event","Weekly reports by church","Report week","Refresh dashboard","Print national report A4","Church reports","Submission status","Church","View national summary and charts","Complete weekly report"]};
 function translateAdminReportHeadings(language){
  const values=adminReportHeadings[language]||adminReportHeadings.pt;
@@ -847,7 +856,7 @@ const adminLanguageCopy={
 };
 function setAdminLanguage(value){
  const l=['pt','ja','en'].includes(value)?value:'pt';
- adminLanguageSelect.value=l;adminLanguageLabel.textContent=adminLanguageCopy[l].label;translateAdminNavigation(l);translateAdminCards(l);translateAdminLogin(l);translateAdminYouthForm(l);translateAdminYouthExtra(l);translateAdminRequests(l);translateAdminReportHeadings(l);translateAdminWeeklyFields(l);translateNationalReportFilters(l);translateReportGuidance(l);translateSpecialEventForm(l);
+ adminLanguageSelect.value=l;adminLanguageLabel.textContent=adminLanguageCopy[l].label;translateAdminNavigation(l);translateAdminCards(l);translateAdminLogin(l);translateAdminYouthForm(l);translateAdminYouthExtra(l);translateAdminRequests(l);translateAdminReportHeadings(l);translateAdminWeeklyFields(l);translateNationalReportFilters(l);translateReportGuidance(l);translateSpecialEventForm(l);translateSpecialEventInputs(l);
  document.documentElement.lang=l==='ja'?'ja':l==='en'?'en':'pt-BR';
  try{localStorage.setItem('fju_lang',l);localStorage.setItem('fju_language',l);localStorage.setItem('fju-connect-lang',l);}catch(_){}
 }
