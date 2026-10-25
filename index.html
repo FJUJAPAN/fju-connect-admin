@@ -698,6 +698,13 @@ function translateAdminNavigation(lang){
 
 
 
+
+const adminDecisionI18n={
+ pt:{approve:'Aprovar solicitação',approveAccess:'Aprovar patente e acesso',deny:'Recusar',confirmApprove:'Aprovar esta solicitação? A ficha será atualizada automaticamente.',confirmDeny:'Rejeitar esta solicitação? A ficha não será alterada.',confirmAccess:'Aprovar a patente Coordenador e liberar o painel para {email} no polo {polo}?',approving:'Aprovando solicitação…',denying:'Recusando solicitação…',approved:'Aprovado com sucesso.',denied:'Solicitação recusada.',failed:'Não foi possível concluir: '},
+ ja:{approve:'申請を承認',approveAccess:'階級とアクセスを承認',deny:'却下',confirmApprove:'この申請を承認しますか？青年名簿は自動的に更新されます。',confirmDeny:'この申請を却下しますか？青年名簿は変更されません。',confirmAccess:'{polo}の{email}にコーディネーターの階級と管理画面へのアクセスを許可しますか？',approving:'承認しています…',denying:'却下しています…',approved:'承認しました。',denied:'申請を却下しました。',failed:'処理できませんでした: '},
+ en:{approve:'Approve request',approveAccess:'Approve rank and access',deny:'Reject',confirmApprove:'Approve this request? The youth record will update automatically.',confirmDeny:'Reject this request? The youth record will remain unchanged.',confirmAccess:'Approve Coordinator rank and grant dashboard access to {email} at {polo}?',approving:'Approving request…',denying:'Rejecting request…',approved:'Approved successfully.',denied:'Request rejected.',failed:'Could not complete: '}
+};
+function adminDecisionCopy(){return adminDecisionI18n[adminLanguageSelect?.value]||adminDecisionI18n.pt;}
 const adminRequestsI18n={
  pt:{heading:'Autorizações de fichas',kicker:'CENTRAL DE SOLICITAÇÕES',title:'Solicitações e autorizações',intro:'Acompanhe os pedidos de alteração de fichas e de acesso administrativo.',fichas:'Alterações de fichas',acessos:'Acesso administrativo',fichasIntro:'Pedidos de edição, patente e exclusão.',acessosIntro:'Pedidos vinculados à ficha e à função de coordenador.',refresh:'Atualizar solicitações',accessRefresh:'Atualizar pedidos de acesso',more:'Carregar mais 25 solicitações',filters:['Pendentes','Aprovadas','Rejeitadas','Todas']},
  ja:{heading:'青年名簿の承認',kicker:'申請センター',title:'申請と承認',intro:'青年名簿の変更申請と管理者アクセス申請を確認できます。',fichas:'青年名簿の変更',acessos:'管理者アクセス',fichasIntro:'編集・階級変更・削除の申請',acessosIntro:'青年名簿とコーディネーターの役割に関する申請',refresh:'申請を更新',accessRefresh:'アクセス申請を更新',more:'さらに25件読み込む',filters:['保留中','承認済み','却下','すべて']},
@@ -1718,10 +1725,10 @@ async function loadYouthRequests(){
     }
     if(profile.papel==='nacional'&&r.status==='pendente'&&identificado){
       const approve=document.createElement('button');approve.type='button';
-      approve.textContent=linkedAccess?'Aprovar patente e acesso':'Aprovar solicitação';
+      approve.textContent=linkedAccess?adminDecisionCopy().approveAccess:adminDecisionCopy().approve;
       approve.disabled=!!accessUnknown;
       const deny=document.createElement('button');deny.type='button';
-      deny.className='secondary';deny.textContent='Recusar';
+      deny.className='secondary';deny.textContent=adminDecisionCopy().deny;
       const feedback=document.createElement('p');feedback.className='message';
       feedback.setAttribute('role','status');feedback.setAttribute('aria-live','polite');
       let submitting=false;
@@ -1730,20 +1737,20 @@ async function loadYouthRequests(){
         if(aprovado&&accessUnknown)return;
         const question=aprovado
           ?(linkedAccess
-            ?'Aprovar a patente Coordenador e liberar o painel para '+linkedAccess.email+' no polo '+linkedAccess.polo_nome+'?'
-            :'Aprovar esta solicitação? A ficha será atualizada automaticamente.')
-          :'Rejeitar esta solicitação? A ficha não será alterada.';
+            ?adminDecisionCopy().confirmAccess.replace('{email}',linkedAccess.email).replace('{polo}',linkedAccess.polo_nome)
+            :adminDecisionCopy().confirmApprove)
+          :adminDecisionCopy().confirmDeny;
         if(!confirm(question))return;
         submitting=true;approve.disabled=true;deny.disabled=true;
         feedback.classList.remove('error');
-        feedback.textContent=aprovado?'Aprovando solicitação…':'Recusando solicitação…';
+        feedback.textContent=aprovado?adminDecisionCopy().approving:adminDecisionCopy().denying;
         try{
           const {error}=await supabase.rpc('fju_decidir_solicitacao',{
             p_solicitacao_id:r.id,p_aprovar:aprovado
           });
           if(currentProfile!==profile||!card.isConnected)return;
           if(error)throw error;
-          feedback.textContent=aprovado?'Aprovado com sucesso.':'Solicitação recusada.';
+          feedback.textContent=aprovado?adminDecisionCopy().approved:adminDecisionCopy().denied;
           await loadYouthRequests();
           if(currentProfile!==profile)return;
           void administrativeAccess.refresh();
@@ -1752,7 +1759,7 @@ async function loadYouthRequests(){
         }catch(error){
           if(currentProfile!==profile||!card.isConnected)return;
           feedback.classList.add('error');
-          feedback.textContent='Não foi possível concluir: '+(error?.message||'Tente novamente.');
+          feedback.textContent=adminDecisionCopy().failed+(error?.message||'Tente novamente.');
           approve.disabled=!!accessUnknown;deny.disabled=false;
         }finally{submitting=false;}
       }
