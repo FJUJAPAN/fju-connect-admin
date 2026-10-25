@@ -140,6 +140,18 @@ test('Falha ao salvar idioma restaura preferência anterior sem nova requisiçã
  assert.doesNotMatch(handler,/supabase\.auth\.getUser\(/);
  assert.match(handler,/finally\{adminLanguageSelect\.disabled=false;\}/);
 });
+test('Idioma inicial tolera armazenamento local bloqueado',()=>{
+ const start=html.indexOf("let initialAdminLanguage='pt';");
+ const end=html.indexOf("adminLanguageSelect.addEventListener('change'",start);
+ assert.ok(start>=0&&end>start,'Inicialização segura do idioma não encontrada');
+ const source=html.slice(start,end);
+ const dom=new JSDOM('',{runScripts:'outside-only'});
+ try{
+  const w=dom.window;
+  w.eval('const localStorage={getItem(){throw new Error("Storage blocked")}};var chosen="";function setAdminLanguage(value){chosen=value;}'+source+'window.__chosen=chosen;');
+  assert.equal(w.__chosen,'pt');
+ }finally{dom.window.close();}
+});
 test('Erro no Supabase libera aprovação e rejeição para tentar novamente',async()=>{
  const f=fixture();
  try{
