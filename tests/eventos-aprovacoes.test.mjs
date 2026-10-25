@@ -307,6 +307,21 @@ test('Barra app 4/5: títulos longos da navegação não estouram os botões',()
 test('Barra app 5/5: conteúdo do painel não cria largura extra',()=>{
  assert.match(html,/#app\{min-width:0;overflow-wrap:break-word\}/);
 });
+test('Abas app 1/5: ignora botões inexistentes',()=>{
+ assert.match(html,/if\(!button\|\|button.disabled\|\|button.hidden\)return/);
+});
+test('Abas app 2/5: verifica se a aba possui painel',()=>{
+ assert.match(html,/const targetPanel=sectionId\?el\(sectionId\):null/);
+});
+test('Abas app 3/5: não navega para painel fora da aplicação',()=>{
+ assert.match(html,/if\(!targetPanel\|\|!document.querySelector\('#app'\)\?\.contains\(targetPanel\)\)return/);
+});
+test('Abas app 4/5: mantém aba selecionada visível no iPhone',()=>{
+ assert.match(html,/button.scrollIntoView\(\{behavior:'auto',block:'nearest',inline:'nearest'\}\)/);
+});
+test('Abas app 5/5: não reativa zoom com dedos',()=>{
+ assert.match(html,/maximum-scale=1,user-scalable=no,viewport-fit=cover/);
+});
 test('Erro no Supabase libera aprovação e rejeição para tentar novamente',async()=>{
  const f=fixture();
  try{
