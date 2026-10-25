@@ -733,6 +733,13 @@ function translateNationalReportFilters(language){
  if(titles[0])titles[0].textContent=labels[7];
  if(titles[1])titles[1].textContent=labels[8];
 }
+
+const reportGuidanceI18n={"pt":["Indicadores calculados a partir dos relatórios semanais registrados pelos polos.","Os relatórios são enviados pelos coordenadores. Use o botão abaixo somente quando precisar preencher excepcionalmente.","Os valores correspondem à semana de segunda a domingo.","Prazo de envio: domingo até às 22h (horário do Japão). Após o prazo, o envio será identificado como atrasado.","Total único informado no relatório da semana selecionada."],"ja":["各教会が提出した週間レポートに基づいて集計した指標です。","レポートは各教会のコーディネーターが提出します。例外的に入力する必要がある場合のみ、下のボタンを使用してください。","数値は月曜日から日曜日までの1週間分です。","提出期限：日曜日22時（日本時間）。期限後の提出は遅延として記録されます。","選択した週のレポートに記載された重複なしの合計です。"],"en":["Indicators calculated from weekly reports submitted by churches.","Coordinators submit reports. Use the button below only when an exceptional submission is necessary.","Figures cover Monday through Sunday.","Deadline: Sunday at 10 PM (Japan time). Submissions after the deadline are marked late.","Unique total reported for the selected week."]};
+function translateReportGuidance(language){
+ const labels=reportGuidanceI18n[language]||reportGuidanceI18n.pt;
+ const selectors=["#national-report-panel > p.muted","#national-weekly-controls > p.muted","#weekly-entry-wrap .fju-report-entry-heading p","#weekly-entry-wrap .fju-report-deadline","#national-report-analytics .report-section-title:nth-of-type(2) + p"];
+ selectors.forEach((selector,index)=>{const node=document.querySelector(selector);if(node)node.textContent=labels[index];});
+}
 const adminReportHeadings={"pt":["Relatórios","FJU JAPAN · RELATÓRIOS","Acompanhamento de relatórios","Selecione uma área abaixo para acompanhar os números ou registrar uma atividade.","Relatório semanal","Evento especial","Relatórios semanais por igreja","Semana do relatório","Atualizar painel","Imprimir relatório nacional A4","Relatórios das igrejas","Situação do envio","Igreja / polo","Ver resumo nacional e gráficos","Preencher relatório semanal"],"ja":["レポート","FJU JAPAN · レポート","レポートの管理","下の項目を選択して、数値の確認や活動の登録を行ってください。","週間レポート","特別イベント","教会別週間レポート","報告週","画面を更新","全国レポートをA4で印刷","各教会のレポート","提出状況","教会","全国集計とグラフを表示","週間レポートを入力"],"en":["Reports","FJU JAPAN · REPORTS","Report overview","Choose a section below to review figures or record an activity.","Weekly report","Special event","Weekly reports by church","Report week","Refresh dashboard","Print national report A4","Church reports","Submission status","Church","View national summary and charts","Complete weekly report"]};
 function translateAdminReportHeadings(language){
  const values=adminReportHeadings[language]||adminReportHeadings.pt;
@@ -825,7 +832,7 @@ const adminLanguageCopy={
 };
 function setAdminLanguage(value){
  const l=['pt','ja','en'].includes(value)?value:'pt';
- adminLanguageSelect.value=l;adminLanguageLabel.textContent=adminLanguageCopy[l].label;translateAdminNavigation(l);translateAdminCards(l);translateAdminLogin(l);translateAdminYouthForm(l);translateAdminYouthExtra(l);translateAdminRequests(l);translateAdminReportHeadings(l);translateAdminWeeklyFields(l);translateNationalReportFilters(l);
+ adminLanguageSelect.value=l;adminLanguageLabel.textContent=adminLanguageCopy[l].label;translateAdminNavigation(l);translateAdminCards(l);translateAdminLogin(l);translateAdminYouthForm(l);translateAdminYouthExtra(l);translateAdminRequests(l);translateAdminReportHeadings(l);translateAdminWeeklyFields(l);translateNationalReportFilters(l);translateReportGuidance(l);
  document.documentElement.lang=l==='ja'?'ja':l==='en'?'en':'pt-BR';
  try{localStorage.setItem('fju_lang',l);localStorage.setItem('fju_language',l);localStorage.setItem('fju-connect-lang',l);}catch(_){}
 }
