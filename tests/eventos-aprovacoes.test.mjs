@@ -72,6 +72,30 @@ test('Confirmação de aprovação usa o nome do evento e cancelar não envia RP
    assert.equal(f.calls.length,0);
  }finally{f.cleanup();}
 });
+test('Confirmações têm frases naturais em português, japonês e inglês',()=>{
+ const dictionary={
+  pt:{approve:'Aprovar a solicitação de {type} de {event}?',reject:'Rejeitar a solicitação de {type} de {event}?',add:'inclusão',remove:'exclusão'},
+  ja:{approve:'{event}の{type}申請を承認しますか？',reject:'{event}の{type}申請を却下しますか？',add:'追加',remove:'削除'},
+  en:{approve:'Approve the {type} request for {event}?',reject:'Reject the {type} request for {event}?',add:'addition',remove:'deletion'}
+ };
+ const expected={
+  pt:['Aprovar a solicitação de inclusão de Evento Teste?','Rejeitar a solicitação de exclusão de Evento Teste?'],
+  ja:['Evento Testeの追加申請を承認しますか？','Evento Testeの削除申請を却下しますか？'],
+  en:['Approve the addition request for Evento Teste?','Reject the deletion request for Evento Teste?']
+ };
+ const start=html.indexOf('const specialEventRequestsStatusI18n=');
+ const end=html.indexOf('function specialEventRequestsStatus(',start);
+ assert.ok(start>=0&&end>start,'Dicionário de solicitações não encontrado');
+ const source=html.slice(start,end);
+ const json=source.slice(source.indexOf('=')+1).trim().replace(/;$/,'');
+ const actual=JSON.parse(json);
+ for(const lang of ['pt','ja','en']){
+  const messages=[actual[lang][25].replace('{type}',actual[lang][17]).replace('{event}','Evento Teste'),actual[lang][26].replace('{type}',actual[lang][18]).replace('{event}','Evento Teste')];
+  assert.deepEqual(messages,expected[lang]);
+  assert.equal(actual[lang][25],dictionary[lang].approve);
+  assert.equal(actual[lang][26],dictionary[lang].reject);
+ }
+});
 test('Erro no Supabase libera aprovação e rejeição para tentar novamente',async()=>{
  const f=fixture();
  try{
