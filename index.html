@@ -695,6 +695,28 @@ function translateAdminNavigation(lang){
  });
 }
 
+
+const adminYouthFormI18n={
+ pt:{title:'Fichas dos jovens',add:'Adicionar jovem',newForm:'Nova ficha',close:'Fechar',polo:'Polo',name:'Nome completo',birth:'Nascimento',day:'Dia',month:'Mês',year:'Ano',phone:'Telefone',country:'Nacionalidade',languages:'Idiomas que fala (selecione um ou mais)',pickLanguages:'Selecionar idiomas'},
+ ja:{title:'青年名簿',add:'青年を追加',newForm:'新規登録',close:'閉じる',polo:'教会',name:'氏名',birth:'生年月日',day:'日',month:'月',year:'年',phone:'電話番号',country:'国籍',languages:'話せる言語（複数選択可）',pickLanguages:'言語を選択'},
+ en:{title:'Youth records',add:'Add youth',newForm:'New record',close:'Close',polo:'Church',name:'Full name',birth:'Date of birth',day:'Day',month:'Month',year:'Year',phone:'Phone',country:'Nationality',languages:'Languages spoken (select all that apply)',pickLanguages:'Select languages'}
+};
+function translateAdminYouthForm(language){
+ const t=adminYouthFormI18n[language]||adminYouthFormI18n.pt;
+ const put=(selector,value)=>{const n=document.querySelector(selector);if(n)n.textContent=value;};
+ put('#jovens .youth-page-header h2',t.title);
+ put('#youth-add-toggle-label',t.add);
+ const formTitle=el('youth-form-title');if(formTitle&&['Nova ficha','新規登録','New record'].includes(formTitle.textContent.trim()))formTitle.textContent=t.newForm;
+ put('#youth-form-close',t.close);
+ for(const [id,key] of [['youth-polo','polo'],['youth-name','name'],['youth-birth-label','birth'],['youth-phone','phone'],['youth-country','country']]){
+ const selector=id==='youth-birth-label'?'#'+id:'label[for="'+id+'"]';put(selector,t[key]);
+ }
+ put('#youth-form label:not([for]):has(+ #youth-languages-picker)',t.languages);
+ for(const [id,key] of [['youth-birth-day','day'],['youth-birth-month','month'],['youth-birth-year','year']]){
+ const select=el(id);if(select){select.setAttribute('aria-label',t[key]+(language==='ja'?'（生年月日）':' of birth'));const empty=select.querySelector('option[value=""]');if(empty)empty.textContent=t[key];}
+ }
+ const summary=el('youth-languages-summary');if(summary&&['Selecionar idiomas','言語を選択','Select languages'].includes(summary.textContent.trim()))summary.textContent=t.pickLanguages;
+}
 const adminLoginTranslations={
  pt:{headline:'Um só lugar para cuidar da FJU.',intro:'Painel exclusivo da liderança FJU JAPAN: gestão de jovens, relatórios, inscrições e acompanhamento dos polos.',youth:'Jovens',reports:'Relatórios',requests:'Solicitações',footer:'Nacional e coordenadores locais · Acesso individual autorizado',restricted:'ÁREA RESTRITA',login:'Entrar no painel',instruction:'Utilize a conta autorizada para o seu perfil de liderança.',password:'Senha',show:'Mostrar',forgot:'Esqueci minha senha',security:'🔒 As permissões de cada igreja são verificadas após o login.'},
  ja:{headline:'FJUの管理を一か所で。',intro:'FJU JAPANリーダー専用パネル。青年、報告、登録申請、各教会の活動を管理できます。',youth:'青年',reports:'報告',requests:'申請',footer:'全国管理者・各教会のコーディネーター · 承認済みアカウント専用',restricted:'管理者専用',login:'管理パネルにログイン',instruction:'承認済みのリーダーアカウントでログインしてください。',password:'パスワード',show:'表示',forgot:'パスワードを忘れた場合',security:'🔒 ログイン後、教会ごとのアクセス権限を確認します。'},
@@ -721,7 +743,7 @@ const adminLanguageCopy={
 };
 function setAdminLanguage(value){
  const l=['pt','ja','en'].includes(value)?value:'pt';
- adminLanguageSelect.value=l;adminLanguageLabel.textContent=adminLanguageCopy[l].label;translateAdminNavigation(l);translateAdminCards(l);translateAdminLogin(l);
+ adminLanguageSelect.value=l;adminLanguageLabel.textContent=adminLanguageCopy[l].label;translateAdminNavigation(l);translateAdminCards(l);translateAdminLogin(l);translateAdminYouthForm(l);
  document.documentElement.lang=l==='ja'?'ja':l==='en'?'en':'pt-BR';
  try{localStorage.setItem('fju_lang',l);localStorage.setItem('fju_language',l);localStorage.setItem('fju-connect-lang',l);}catch(_){}
 }
