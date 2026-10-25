@@ -764,6 +764,9 @@ function translateSpecialEventInputs(language){
  const submit=document.getElementById('special-event-submit');if(submit&&['Salvar evento especial','特別イベントを保存','Save special event'].includes(submit.textContent.trim()))submit.textContent=labels[4];
  const cancel=document.getElementById('special-event-cancel');if(cancel)cancel.textContent=labels[5];
 }
+
+const specialEventFeedbackI18n={"pt":["Selecione uma data válida (dia, mês e ano).","Preencha nome, data e total de jovens válido.","Selecione a igreja responsável pelo evento.","A edição de eventos existentes é exclusiva do Administrador Nacional.","Enviando solicitação...","Salvando evento...","Solicitação enviada. O evento aparecerá após a aprovação nacional.","Evento atualizado com sucesso.","Evento especial salvo com sucesso.","Evento gravado ou solicitação enviada, mas não foi possível atualizar a lista. Use Atualizar para consultar novamente.","Não foi possível concluir: "],"ja":["有効な日付（日・月・年）を選択してください。","イベント名、日付、参加人数を正しく入力してください。","イベント担当教会を選択してください。","既存イベントを編集できるのは全国管理者のみです。","申請を送信中…","イベントを保存中…","申請を送信しました。全国管理者の承認後にイベントが表示されます。","イベントを更新しました。","特別イベントを保存しました。","イベントの保存または申請は完了しましたが、一覧を更新できませんでした。再度更新してください。","完了できませんでした: "],"en":["Select a valid date (day, month, year).","Enter a valid event name, date and youth total.","Select the church responsible for the event.","Only the National Administrator can edit existing events.","Sending request...","Saving event...","Request sent. The event will appear after National approval.","Event updated successfully.","Special event saved successfully.","Event saved or request sent, but the list could not refresh. Refresh to check again.","Could not complete: "]};
+function specialEventFeedback(index){const lang=typeof adminLanguageSelect!=='undefined'&&adminLanguageSelect?.value||'pt';return (specialEventFeedbackI18n[lang]||specialEventFeedbackI18n.pt)[index];}
 const adminReportHeadings={"pt":["Relatórios","FJU JAPAN · RELATÓRIOS","Acompanhamento de relatórios","Selecione uma área abaixo para acompanhar os números ou registrar uma atividade.","Relatório semanal","Evento especial","Relatórios semanais por igreja","Semana do relatório","Atualizar painel","Imprimir relatório nacional A4","Relatórios das igrejas","Situação do envio","Igreja / polo","Ver resumo nacional e gráficos","Preencher relatório semanal"],"ja":["レポート","FJU JAPAN · レポート","レポートの管理","下の項目を選択して、数値の確認や活動の登録を行ってください。","週間レポート","特別イベント","教会別週間レポート","報告週","画面を更新","全国レポートをA4で印刷","各教会のレポート","提出状況","教会","全国集計とグラフを表示","週間レポートを入力"],"en":["Reports","FJU JAPAN · REPORTS","Report overview","Choose a section below to review figures or record an activity.","Weekly report","Special event","Weekly reports by church","Report week","Refresh dashboard","Print national report A4","Church reports","Submission status","Church","View national summary and charts","Complete weekly report"]};
 function translateAdminReportHeadings(language){
  const values=adminReportHeadings[language]||adminReportHeadings.pt;
@@ -2360,22 +2363,22 @@ el('special-event-form').addEventListener('submit',async e=>{
   const profile=currentProfile;
   if(!profile||specialEventSubmitting)return;
   if(!syncSpecialEventDate()){
-    message('special-event-message','Selecione uma data válida (dia, mês e ano).',true);return;
+    message('special-event-message',specialEventFeedback(0),true);return;
   }
   const name=el('special-event-name').value.trim();
   const date=el('special-event-date').value;
   const totalRaw=el('special-event-total').value.trim();
   const total=Number(totalRaw);
   if(!name||!date||!totalRaw||!Number.isInteger(total)||total<0){
-    message('special-event-message','Preencha nome, data e total de jovens válido.',true);return;
+    message('special-event-message',specialEventFeedback(1),true);return;
   }
   const poloId=profile.papel==='nacional'?el('special-event-polo').value:profile.polo_id;
   if(!poloId){
-    message('special-event-message','Selecione a igreja responsável pelo evento.',true);return;
+    message('special-event-message',specialEventFeedback(2),true);return;
   }
   const editId=el('special-event-edit-id').value;
   if(profile.papel==='coordenador'&&editId){
-    message('special-event-message','A edição de eventos existentes é exclusiva do Administrador Nacional.',true);
+    message('special-event-message',specialEventFeedback(3),true);
     return;
   }
   const payload={polo_id:poloId,nome_evento:name,data_evento:date,total_jovens:total};
@@ -2384,7 +2387,7 @@ el('special-event-form').addEventListener('submit',async e=>{
   setSpecialEventSubmitting(true);
   const stillCurrent=()=>version===specialEventSubmitVersion&&currentProfile===profile;
   try{
-    message('special-event-message',profile.papel==='coordenador'?'Enviando solicitação...':'Salvando evento...');
+    message('special-event-message',profile.papel==='coordenador'?specialEventFeedback(4):specialEventFeedback(5));
     const {data:auth,error:authError}=await supabase.auth.getUser();
     if(!stillCurrent())return;
     if(authError||!auth?.user?.id)throw new Error('Sessão expirada. Entre novamente.');
@@ -2395,7 +2398,7 @@ el('special-event-form').addEventListener('submit',async e=>{
       if(!stillCurrent())return;
       if(error)throw error;
       resetSpecialEventEdit();
-      message('special-event-message','Solicitação enviada. O evento aparecerá após a aprovação nacional.');
+      message('special-event-message',specialEventFeedback(6));
     }else{
       const result=editId
         ?await supabase.from('fju_eventos_especiais').update(payload).eq('id',editId).select('id')
@@ -2404,20 +2407,20 @@ el('special-event-form').addEventListener('submit',async e=>{
       if(result.error)throw result.error;
       if(!result.data?.length)throw new Error('Nenhum registro alterado. Verifique as permissões.');
       resetSpecialEventEdit();
-      message('special-event-message',editId?'Evento atualizado com sucesso.':'Evento especial salvo com sucesso.');
+      message('special-event-message',editId?specialEventFeedback(7):specialEventFeedback(8));
     }
     // Falha ao atualizar a lista não desfaz o evento já salvo no Supabase.
     try{
       await loadSpecialEvents();
     }catch(refreshError){
       if(!stillCurrent())return;
-      message('special-event-message','Evento gravado ou solicitação enviada, mas não foi possível atualizar a lista. Use Atualizar para consultar novamente.',true);
+      message('special-event-message',specialEventFeedback(9),true);
     }
     if(!stillCurrent())return;
     if(profile.papel==='coordenador')void refreshAdminPriorities(profile,profileRequest);
   }catch(error){
     if(!stillCurrent())return;
-    message('special-event-message','Não foi possível concluir: '+(error?.message||'Falha de conexão.'),true);
+    message('special-event-message',specialEventFeedback(10)+(error?.message||'Falha de conexão.'),true);
   }finally{
     if(version===specialEventSubmitVersion){
       specialEventSubmitting=false;

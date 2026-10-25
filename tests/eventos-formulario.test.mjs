@@ -36,6 +36,7 @@ function fixture(role='coordenador',editId=''){
  w.eval('var currentProfile=window.__profile;var profileRequest=7;'+
    'var supabase=window.__db;const el=id=>document.getElementById(id);'+
    'const message=(id,text,error)=>window.__messages.push({id,text,error});'+
+   'const specialEventFeedback=index=>["Selecione uma data válida (dia, mês e ano).","Preencha nome, data e total de jovens válido.","Selecione a igreja responsável pelo evento.","A edição de eventos existentes é exclusiva do Administrador Nacional.","Enviando solicitação...","Salvando evento...","Solicitação enviada. O evento aparecerá após a aprovação nacional.","Evento atualizado com sucesso.","Evento especial salvo com sucesso.","Evento gravado ou solicitação enviada, mas não foi possível atualizar a lista. Use Atualizar para consultar novamente.","Não foi possível concluir: "][index];'+
    'const syncSpecialEventDate=()=>true;'+
    'const resetSpecialEventEdit=()=>{window.__updates.push("reset");el("special-event-edit-id").value="";};'+
    'const loadSpecialEvents=async()=>window.__reloads.push("events");'+
