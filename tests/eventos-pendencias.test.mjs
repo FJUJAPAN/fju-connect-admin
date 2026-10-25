@@ -47,7 +47,8 @@ function fixture(rows,opts={}){
    'const el=id=>document.getElementById(id);'+
    'const message=()=>{};'+
    'const refreshAdminPriorities=()=>{};'+
-   'const loadSpecialEvents=async()=>{};'+
+   'const specialEventRequestsStatus=index=>["Não foi possível carregar solicitações: ","Erro"," pendente"," pendentes"][index];'+
+ 'const loadSpecialEvents=async()=>{};'+
    source+'\nwindow.__load=loadEventRequests;window.__logout=()=>{currentProfile=null;++specialEventsLoadVersion};');
  return {dom,w,d,pending,queries,profile,close:()=>dom.window.close()};
 }
