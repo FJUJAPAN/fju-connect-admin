@@ -227,6 +227,36 @@ test('Pacote 5/5: erros e respostas de aprovação têm traduções independente
   assert.ok(dict[lang][11].length>3);
  }
 });
+function evaluateProfileLanguage(metadata,stored={},blocked=false){
+ const start=html.indexOf('async function loadProfile(user){');
+ const end=html.indexOf('const initialRequest=profileRequest;',start);
+ assert.ok(start>=0&&end>start,'Carregamento do perfil não encontrado');
+ const source=html.slice(start,end);
+ const dom=new JSDOM('',{runScripts:'outside-only'});
+ try{
+  const w=dom.window;
+  w.__metadata=metadata;
+  w.__storage=stored;
+  w.__blocked=blocked;
+  w.eval('var localStorage={getItem(key){if(window.__blocked)throw Error("Storage blocked");return window.__storage[key]||null;}};var chosen="";function setAdminLanguage(lang){chosen=lang;}'+source+'window.__loadLanguage=loadProfile;');
+  return w.__loadLanguage({user_metadata:metadata}).then(()=>w.eval('chosen')).finally(()=>dom.window.close());
+ }catch(e){dom.window.close();throw e;}
+}
+test('Pacote perfil 1/5: preferência do usuário prevalece sobre armazenamento',async()=>{
+ assert.equal(await evaluateProfileLanguage({preferred_language:'ja'},{fju_lang:'en'}),'ja');
+});
+test('Pacote perfil 2/5: idioma inglês do perfil funciona sem armazenamento',async()=>{
+ assert.equal(await evaluateProfileLanguage({preferred_language:'en'},{},true),'en');
+});
+test('Pacote perfil 3/5: idioma local é recuperado quando perfil não tem preferência',async()=>{
+ assert.equal(await evaluateProfileLanguage({}, {fju_lang:'ja'}),'ja');
+});
+test('Pacote perfil 4/5: armazenamento secundário é usado quando principal está vazio',async()=>{
+ assert.equal(await evaluateProfileLanguage({}, {'fju-connect-lang':'en'}),'en');
+});
+test('Pacote perfil 5/5: armazenamento bloqueado mantém fallback português',async()=>{
+ assert.equal(await evaluateProfileLanguage({}, {},true),'pt');
+});
 test('Erro no Supabase libera aprovação e rejeição para tentar novamente',async()=>{
  const f=fixture();
  try{
