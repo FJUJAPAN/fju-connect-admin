@@ -31,7 +31,7 @@ function fixture(role='nacional'){
  'const el=id=>document.getElementById(id);'+
  'const message=(id,msg,error)=>window.__messages.push({id,msg,error});'+
  'const refreshAdminPriorities=(profile,version)=>window.__refreshes.push("priorities");'+
- 'const specialEventRequestsStatus=index=>["Não foi possível carregar solicitações: ","Erro"," pendente"," pendentes","Incluir","Excluir","Evento indisponível","Igreja não identificada"," jovens","Aprovar","Rejeitar","Registrando decisão…"][index];'+
+ 'const specialEventRequestsStatus=index=>["Não foi possível carregar solicitações: ","Erro"," pendente"," pendentes","Incluir","Excluir","Evento indisponível","Igreja não identificada"," jovens","Aprovar","Rejeitar","Registrando decisão…","Solicitação aprovada.","Solicitação rejeitada.","Não foi possível decidir: ","Falha de conexão."][index];'+
  'const loadSpecialEvents=async()=>window.__refreshes.push("events");'+src+
  '\nwindow.__loadRequests=loadEventRequests;window.__logout=()=>{currentProfile=null;++specialEventsLoadVersion};');
  return {dom,w,doc,profile,req,decision,calls,refreshes,messages,cleanup:()=>dom.window.close()};
