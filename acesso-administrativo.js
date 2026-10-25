@@ -73,15 +73,17 @@ export function setupAdministrativeAccess({supabase,getProfile,getLanguage=()=> 
     en: ['Linked account and admin access','Request admin access','Checking linked account…']
   };
   const coordinatorLabel = index => (coordinatorCopy[getLanguage()] || coordinatorCopy.pt)[index];
+  const coordinatorMessages={"pt":["O coordenador solicita; somente o Nacional aprova. O acesso será limitado ao mesmo polo desta ficha. A patente, sozinha, não libera o painel.","Ao solicitar a mudança de patente para Coordenador, o acesso será incluído automaticamente no mesmo pedido ao Nacional.","Enviando pedido ao Nacional…","Pedido enviado. Acompanhe na aba Pedidos. O acesso só será liberado após a aprovação do Nacional."],"ja":["コーディネーターが申請し、全国管理者のみが承認します。アクセスはこの名簿と同じ教会に限定され、階級だけでは管理画面にアクセスできません。","コーディネーターへの階級変更を申請すると、管理者アクセスも同じ申請に含まれます。","全国管理者へ申請を送信中…","申請を送信しました。申請タブで確認できます。全国管理者の承認後にアクセスが有効になります。"],"en":["Coordinators request access; only National approves. Access is limited to the church on this record. Rank alone does not grant dashboard access.","Requesting promotion to Coordinator automatically includes administrative access in the same request.","Sending request to National…","Request sent. Track it in the Requests tab. Access is granted only after National approval."]};
+  const coordinatorMessage = index => (coordinatorMessages[getLanguage()] || coordinatorMessages.pt)[index];
   function appendRequest(panel,youth){
     const profile=getProfile();
     if(!profile||!['coordenador','nacional'].includes(profile.papel))return;
     const box=element('div',null,'stat');box.style.marginTop='12px';
     box.append(element('strong',coordinatorLabel(0)));
-    box.append(element('p','O coordenador solicita; somente o Nacional aprova. O acesso será limitado ao mesmo polo desta ficha. A patente, sozinha, não libera o painel.','muted'));
+    box.append(element('p',coordinatorMessage(0),'muted'));
     const isCoordinator=String(youth.patente||'').toLowerCase()==='coordenador';
     if(!isCoordinator){
-      box.append(element('p','Ao solicitar a mudança de patente para Coordenador, o acesso será incluído automaticamente no mesmo pedido ao Nacional.','muted'));
+      box.append(element('p',coordinatorMessage(1),'muted'));
     }
     const account=element('p',coordinatorLabel(2),'muted');
     const button=element('button',coordinatorLabel(1));button.type='button';button.disabled=true;button.hidden=!isCoordinator;
@@ -99,12 +101,12 @@ export function setupAdministrativeAccess({supabase,getProfile,getLanguage=()=> 
     })();
     button.addEventListener('click',async()=>{
       if(getProfile()!==profile||button.disabled||!isCoordinator)return;
-      button.disabled=true;feedback.textContent='Enviando pedido ao Nacional…';
+      button.disabled=true;feedback.textContent=coordinatorMessage(2);
       try{
         const {error}=await supabase.rpc('fju_solicitar_acesso_admin',{p_jovem_id:youth.id});
         if(getProfile()!==profile||!box.isConnected)return;
         if(error)throw error;
-        feedback.textContent='Pedido enviado. Acompanhe na aba Pedidos. O acesso só será liberado após a aprovação do Nacional.';
+        feedback.textContent=coordinatorMessage(3);
       }catch(error){if(getProfile()===profile&&box.isConnected){feedback.textContent=errorText(error);button.disabled=false;}}
     });
   }
