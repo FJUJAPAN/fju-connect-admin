@@ -279,7 +279,7 @@ h2{font-size:clamp(18px,2.3vw,22px)}body{font-size:14px}
     <div class="fju-login-intro-footer">Nacional e coordenadores locais · Acesso individual autorizado</div>
   </div>
   <div class="fju-login-form-panel">
-    <div class="fju-login-form-head">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px"><label for="fju-login-language-select" style="margin-right:8px;align-self:center">🌐</label><select id="fju-login-language-select" aria-label="Language / Idioma / 言語" style="padding:8px;border:1px solid #cbd5e1;border-radius:8px"><option value="pt">Português</option><option value="ja">日本語</option><option value="en">English</option></select></div><div class="fju-login-form-head">
       <span class="fju-login-eyebrow">ÁREA RESTRITA</span>
       <h2>Entrar no painel</h2>
       <p>Utilize a conta autorizada para o seu perfil de liderança.</p>
@@ -694,6 +694,26 @@ function translateAdminNavigation(lang){
  else{const label=button.querySelector('.fju-nav-label');if(label)label.textContent=translated;}
  });
 }
+
+const adminLoginTranslations={
+ pt:{headline:'Um só lugar para cuidar da FJU.',intro:'Painel exclusivo da liderança FJU JAPAN: gestão de jovens, relatórios, inscrições e acompanhamento dos polos.',youth:'Jovens',reports:'Relatórios',requests:'Solicitações',footer:'Nacional e coordenadores locais · Acesso individual autorizado',restricted:'ÁREA RESTRITA',login:'Entrar no painel',instruction:'Utilize a conta autorizada para o seu perfil de liderança.',password:'Senha',show:'Mostrar',forgot:'Esqueci minha senha',security:'🔒 As permissões de cada igreja são verificadas após o login.'},
+ ja:{headline:'FJUの管理を一か所で。',intro:'FJU JAPANリーダー専用パネル。青年、報告、登録申請、各教会の活動を管理できます。',youth:'青年',reports:'報告',requests:'申請',footer:'全国管理者・各教会のコーディネーター · 承認済みアカウント専用',restricted:'管理者専用',login:'管理パネルにログイン',instruction:'承認済みのリーダーアカウントでログインしてください。',password:'パスワード',show:'表示',forgot:'パスワードを忘れた場合',security:'🔒 ログイン後、教会ごとのアクセス権限を確認します。'},
+ en:{headline:'One place to manage FJU.',intro:'Exclusive FJU JAPAN leadership panel for youth, reports, registrations and church coordination.',youth:'Youth',reports:'Reports',requests:'Requests',footer:'National and local coordinators · Authorized individual access',restricted:'RESTRICTED AREA',login:'Sign in to the dashboard',instruction:'Use your authorized leadership account.',password:'Password',show:'Show',forgot:'Forgot my password',security:'🔒 Church permissions are verified after sign-in.'}
+};
+function translateAdminLogin(language){
+ const t=adminLoginTranslations[language]||adminLoginTranslations.pt;
+ const set=(selector,value)=>{const n=document.querySelector(selector);if(n)n.textContent=value;};
+ set('.fju-login-intro h2',t.headline);set('.fju-login-intro > p',t.intro);
+ document.querySelectorAll('.fju-login-mini-grid strong').forEach((n,i)=>n.textContent=[t.youth,t.reports,t.requests][i]);
+ set('.fju-login-intro-footer',t.footer);set('.fju-login-eyebrow',t.restricted);
+ set('.fju-login-form-head h2',t.login);set('.fju-login-form-head p',t.instruction);
+ set('label[for="password"]',t.password);set('#fju-toggle-password',t.show);
+ const submit=document.querySelector('.fju-login-submit');if(submit){const node=[...submit.childNodes].find(n=>n.nodeType===Node.TEXT_NODE);if(node)node.textContent=t.login+' ';}
+ set('#forgot',t.forgot);set('.fju-login-security-note',t.security);
+ const loginSelector=el('fju-login-language-select');if(loginSelector)loginSelector.value=language;
+}
+const loginLanguageSelect=el('fju-login-language-select');
+loginLanguageSelect?.addEventListener('change',()=>setAdminLanguage(loginLanguageSelect.value));
 const adminLanguageCopy={
  pt:{label:'Idioma preferido',saved:'Idioma salvo no perfil.',error:'Erro ao salvar idioma.'},
  ja:{label:'表示言語',saved:'言語設定を保存しました。',error:'言語を保存できませんでした。'},
@@ -701,10 +721,11 @@ const adminLanguageCopy={
 };
 function setAdminLanguage(value){
  const l=['pt','ja','en'].includes(value)?value:'pt';
- adminLanguageSelect.value=l;adminLanguageLabel.textContent=adminLanguageCopy[l].label;translateAdminNavigation(l);translateAdminCards(l);
+ adminLanguageSelect.value=l;adminLanguageLabel.textContent=adminLanguageCopy[l].label;translateAdminNavigation(l);translateAdminCards(l);translateAdminLogin(l);
  document.documentElement.lang=l==='ja'?'ja':l==='en'?'en':'pt-BR';
  try{localStorage.setItem('fju_lang',l);localStorage.setItem('fju_language',l);localStorage.setItem('fju-connect-lang',l);}catch(_){}
 }
+setAdminLanguage(localStorage.getItem('fju_lang')||localStorage.getItem('fju-connect-lang')||'pt');
 adminLanguageSelect.addEventListener('change',async()=>{
  const value=adminLanguageSelect.value;adminLanguageSelect.disabled=true;adminLanguageFeedback.textContent='';
  try{const {error}=await supabase.auth.updateUser({data:{preferred_language:value}});if(error)throw error;setAdminLanguage(value);adminLanguageFeedback.textContent=adminLanguageCopy[value].saved;}
