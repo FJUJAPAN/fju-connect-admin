@@ -60,7 +60,7 @@ function fixture(role='coordenador',pending=[],eventPolo='polo-A'){
    'const message=(id,text,error)=>window.__messages.push({id,text,error});'+
    'const refreshAdminPriorities=()=>window.__priority.push("update");'+
    'const loadEventRequests=async()=>new Set(window.__pending);'+
-   'const specialEventListText=index=>["Carregando eventos...","Não foi possível carregar eventos: ","Nenhum evento especial registrado ainda.","Polo não identificado","Evento especial","jovens participantes","Total informado pelo polo","Solicitar inclusão","Salvar alterações","Salvar evento especial","Editar","Excluir","Verifique as solicitações","Exclusão aguardando Nacional","Solicitar exclusão"][index];'+
+   'const specialEventListText=index=>["Carregando eventos...","Não foi possível carregar eventos: ","Nenhum evento especial registrado ainda.","Polo não identificado","Evento especial","jovens participantes","Total informado pelo polo","Solicitar inclusão","Salvar alterações","Salvar evento especial","Editar","Excluir","Verifique as solicitações","Exclusão aguardando Nacional","Solicitar exclusão","Enviando pedido…","Excluindo evento…","Solicitar autorização nacional para excluir ","?","Excluir definitivamente o evento ","Não foi possível concluir a exclusão: ","Falha de conexão.","Já existe um pedido de exclusão pendente para este evento.","Solicitação de exclusão enviada para aprovação nacional.","Evento excluído."][index];'+
    snippet+
    '\nwindow.__load=loadSpecialEvents;'+
    'window.__logout=()=>{currentProfile=null;++specialEventsLoadVersion;specialEventRemovalsInFlight.clear()};');
