@@ -1,7 +1,7 @@
 // FJU JAPAN | Solicitação e aprovação nacional de acesso ao painel.
 
 const accessCopy={
- pt:{loading:'Consultando pedidos de acesso administrativo…',pending:n=>n+' pedido(s) aguardando decisão nacional.',empty:'Nenhum pedido de acesso administrativo pendente.',church:'Polo da ficha no pedido: ',account:'Conta: ',by:'Solicitado por: ',states:{pendente:'Aguardando aprovação nacional',aprovado:'Aprovado',rejeitado:'Rejeitado'},linked:t().linked,approve:'Aprovar acesso',approveLinked:'Aprovar patente e acesso',reject:'Rejeitar',rejectLinked:'Rejeitar patente e acesso',confirmApprove:'Liberar o painel administrativo para ',confirmReject:'Rejeitar o acesso de ',churchSuffix:', polo ',saving:'Registrando decisão…'},
+ pt:{loading:'Consultando pedidos de acesso administrativo…',pending:n=>n+' pedido(s) aguardando decisão nacional.',empty:'Nenhum pedido de acesso administrativo pendente.',church:'Polo da ficha no pedido: ',account:'Conta: ',by:'Solicitado por: ',states:{pendente:'Aguardando aprovação nacional',aprovado:'Aprovado',rejeitado:'Rejeitado'},linked:'Vinculado à mudança de patente. A decisão é feita no pedido da ficha, acima.',approve:'Aprovar acesso',approveLinked:'Aprovar patente e acesso',reject:'Rejeitar',rejectLinked:'Rejeitar patente e acesso',confirmApprove:'Liberar o painel administrativo para ',confirmReject:'Rejeitar o acesso de ',churchSuffix:', polo ',saving:'Registrando decisão…'},
  ja:{loading:'管理者アクセス申請を確認中…',pending:n=>n+'件の申請が全国管理者の判断待ちです。',empty:'保留中の管理者アクセス申請はありません。',church:'申請対象の教会: ',account:'アカウント: ',by:'申請者: ',states:{pendente:'全国管理者の承認待ち',aprovado:'承認済み',rejeitado:'却下'},linked:'階級変更申請に紐づいています。上記の青年名簿申請から判断してください。',approve:'アクセスを承認',approveLinked:'階級とアクセスを承認',reject:'却下',rejectLinked:'階級とアクセスを却下',confirmApprove:'管理パネルへのアクセスを許可しますか: ',confirmReject:'アクセスを却下しますか: ',churchSuffix:', 教会 ',saving:'処理中…'},
  en:{loading:'Loading administrative access requests…',pending:n=>n+' request(s) awaiting national approval.',empty:'No pending administrative access requests.',church:'Church on requested record: ',account:'Account: ',by:'Requested by: ',states:{pendente:'Awaiting national approval',aprovado:'Approved',rejeitado:'Rejected'},linked:'Linked to a rank change. Decide using the youth record request above.',approve:'Approve access',approveLinked:'Approve rank and access',reject:'Reject',rejectLinked:'Reject rank and access',confirmApprove:'Grant dashboard access to ',confirmReject:'Reject access for ',churchSuffix:', church ',saving:'Saving decision…'}
 };
@@ -39,7 +39,7 @@ export function setupAdministrativeAccess({supabase,getProfile,getLanguage=()=> 
         const state=t().states;
         card.append(element('p',state[row.status]||row.status,'muted'));
         if(row.solicitado_em)card.append(element('p',new Date(row.solicitado_em).toLocaleString('pt-BR',{timeZone:'Asia/Tokyo'}),'muted'));
-        if(row.solicitacao_patente_id){card.append(element('p','Vinculado à mudança de patente. A decisão é feita no pedido da ficha, acima.','muted'));}
+        if(row.solicitacao_patente_id){card.append(element('p',t().linked,'muted'));}
         if(row.status==='pendente'&&profile.papel==='nacional'){
           const actions=element('div',null,'actions'),feedback=element('p',null,'message');feedback.setAttribute('role','status');
           const linked=Boolean(row.solicitacao_patente_id);
