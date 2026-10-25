@@ -134,8 +134,9 @@ test('Falha ao salvar idioma restaura preferência anterior sem nova requisiçã
  const end=html.indexOf('const administrativeAccess=',start);
  assert.ok(start>=0&&end>start);
  const handler=html.slice(start,end);
- assert.match(handler,/let previousLanguage='pt'/);
- assert.match(handler,/try\{previousLanguage=localStorage\.getItem\('fju_lang'\)\|\|'pt';\}catch\(_\)\{\}/);
+ assert.match(handler,/const previousLanguage=\['pt','ja','en'\]\.find/);
+ assert.match(handler,/document\.documentElement\.lang/);
+ assert.doesNotMatch(handler,/localStorage\.getItem/);
  assert.match(handler,/catch\(e\)\{setAdminLanguage\(previousLanguage\)/);
  assert.doesNotMatch(handler,/supabase\.auth\.getUser\(/);
  assert.match(handler,/finally\{adminLanguageSelect\.disabled=false;\}/);
