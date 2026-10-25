@@ -719,6 +719,20 @@ function translateAdminWeeklyFields(language){
  const submit=el('weekly-report-submit');if(submit&&['Salvar relatório semanal','週間レポートを保存','Save weekly report'].includes(submit.textContent.trim()))submit.textContent=extra[2];
  const hint=document.querySelector('#weekly-calendar-days + small, #weekly-calendar > small');if(hint)hint.textContent=extra[3];
 }
+
+const nationalReportFilterTranslations={"pt":["Somente enviados","Todos os polos","Somente pendentes","Enviados no prazo","Enviados com atraso","Enviados sem horário registrado","Todas as igrejas","Tendência das últimas semanas","Comparação entre polos","Total único informado no relatório da semana selecionada.","Preencher relatório excepcionalmente"],"ja":["提出済みのみ","すべての教会","未提出のみ","期限内に提出","期限後に提出","提出時刻の記録なし","すべての教会","直近数週間の推移","教会間の比較","選択した週のレポートに記載された重複なしの合計。","例外的にレポートを入力"],"en":["Submitted only","All churches","Pending only","Submitted on time","Submitted late","Submission time not recorded","All churches","Recent weekly trends","Compare churches","Unique total reported for the selected week.","Complete an exceptional report"]};
+function translateNationalReportFilters(language){
+ const labels=nationalReportFilterTranslations[language]||nationalReportFilterTranslations.pt;
+ const selectors=["#national-status-filter option[value=\"enviado\"]","#national-status-filter option[value=\"todos\"]","#national-status-filter option[value=\"pendente\"]","#national-status-filter option[value=\"prazo\"]","#national-status-filter option[value=\"atrasado\"]","#national-status-filter option[value=\"indefinido\"]","#national-polo-filter option[value=\"\"]","#national-trend-chart","#national-polo-chart","#national-report-analytics .report-section-title:nth-of-type(2) + p","#national-weekly-toggle"];
+ selectors.forEach((selector,i)=>{
+  if(i===7||i===8)return;
+  const node=document.querySelector(selector);
+  if(node)node.textContent=labels[i];
+ });
+ const titles=document.querySelectorAll('#national-report-analytics h3.report-section-title');
+ if(titles[0])titles[0].textContent=labels[7];
+ if(titles[1])titles[1].textContent=labels[8];
+}
 const adminReportHeadings={"pt":["Relatórios","FJU JAPAN · RELATÓRIOS","Acompanhamento de relatórios","Selecione uma área abaixo para acompanhar os números ou registrar uma atividade.","Relatório semanal","Evento especial","Relatórios semanais por igreja","Semana do relatório","Atualizar painel","Imprimir relatório nacional A4","Relatórios das igrejas","Situação do envio","Igreja / polo","Ver resumo nacional e gráficos","Preencher relatório semanal"],"ja":["レポート","FJU JAPAN · レポート","レポートの管理","下の項目を選択して、数値の確認や活動の登録を行ってください。","週間レポート","特別イベント","教会別週間レポート","報告週","画面を更新","全国レポートをA4で印刷","各教会のレポート","提出状況","教会","全国集計とグラフを表示","週間レポートを入力"],"en":["Reports","FJU JAPAN · REPORTS","Report overview","Choose a section below to review figures or record an activity.","Weekly report","Special event","Weekly reports by church","Report week","Refresh dashboard","Print national report A4","Church reports","Submission status","Church","View national summary and charts","Complete weekly report"]};
 function translateAdminReportHeadings(language){
  const values=adminReportHeadings[language]||adminReportHeadings.pt;
@@ -811,7 +825,7 @@ const adminLanguageCopy={
 };
 function setAdminLanguage(value){
  const l=['pt','ja','en'].includes(value)?value:'pt';
- adminLanguageSelect.value=l;adminLanguageLabel.textContent=adminLanguageCopy[l].label;translateAdminNavigation(l);translateAdminCards(l);translateAdminLogin(l);translateAdminYouthForm(l);translateAdminYouthExtra(l);translateAdminRequests(l);translateAdminReportHeadings(l);translateAdminWeeklyFields(l);
+ adminLanguageSelect.value=l;adminLanguageLabel.textContent=adminLanguageCopy[l].label;translateAdminNavigation(l);translateAdminCards(l);translateAdminLogin(l);translateAdminYouthForm(l);translateAdminYouthExtra(l);translateAdminRequests(l);translateAdminReportHeadings(l);translateAdminWeeklyFields(l);translateNationalReportFilters(l);
  document.documentElement.lang=l==='ja'?'ja':l==='en'?'en':'pt-BR';
  try{localStorage.setItem('fju_lang',l);localStorage.setItem('fju_language',l);localStorage.setItem('fju-connect-lang',l);}catch(_){}
 }
