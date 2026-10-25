@@ -697,6 +697,31 @@ function translateAdminNavigation(lang){
 
 
 
+
+const adminRequestsI18n={
+ pt:{heading:'Autorizações de fichas',kicker:'CENTRAL DE SOLICITAÇÕES',title:'Solicitações e autorizações',intro:'Acompanhe os pedidos de alteração de fichas e de acesso administrativo.',fichas:'Alterações de fichas',acessos:'Acesso administrativo',fichasIntro:'Pedidos de edição, patente e exclusão.',acessosIntro:'Pedidos vinculados à ficha e à função de coordenador.',refresh:'Atualizar solicitações',accessRefresh:'Atualizar pedidos de acesso',more:'Carregar mais 25 solicitações',filters:['Pendentes','Aprovadas','Rejeitadas','Todas']},
+ ja:{heading:'青年名簿の承認',kicker:'申請センター',title:'申請と承認',intro:'青年名簿の変更申請と管理者アクセス申請を確認できます。',fichas:'青年名簿の変更',acessos:'管理者アクセス',fichasIntro:'編集・階級変更・削除の申請',acessosIntro:'青年名簿とコーディネーターの役割に関する申請',refresh:'申請を更新',accessRefresh:'アクセス申請を更新',more:'さらに25件読み込む',filters:['保留中','承認済み','却下','すべて']},
+ en:{heading:'Record approvals',kicker:'REQUEST CENTER',title:'Requests and approvals',intro:'Review youth record changes and administrative access requests.',fichas:'Record changes',acessos:'Administrative access',fichasIntro:'Requests to edit, change rank or delete records.',acessosIntro:'Requests linked to youth records and coordinator roles.',refresh:'Refresh requests',accessRefresh:'Refresh access requests',more:'Load 25 more requests',filters:['Pending','Approved','Rejected','All']}
+};
+function translateAdminRequests(language){
+ const t=adminRequestsI18n[language]||adminRequestsI18n.pt;
+ const set=(selector,value)=>{const n=document.querySelector(selector);if(n)n.textContent=value;};
+ set('#autorizacoes > h2',t.heading);set('#fju-requests-kicker',t.kicker);
+ set('#fju-requests-title',t.title);set('#fju-requests-intro',t.intro);
+ set('#fju-request-fichas-heading',t.fichas);set('#fju-request-acessos-heading',t.acessos);
+ set('#fju-request-fichas-intro',t.fichasIntro);set('#fju-request-acessos-intro',t.acessosIntro);
+ set('#requests-refresh',t.refresh);set('#admin-access-refresh',t.accessRefresh);
+ set('#requests-load-more',t.more);
+ document.querySelectorAll('#requests-filters [data-request-filter]').forEach(n=>{
+ const i=['pendente','aprovada','rejeitada','todas'].indexOf(n.dataset.requestFilter);
+ if(i>=0)n.textContent=t.filters[i];
+ });
+ document.querySelectorAll('[data-request-jump]').forEach(n=>{
+ const target=n.dataset.requestJump==='fju-request-fichas'?t.fichas:t.acessos;
+ const textNode=[...n.childNodes].find(child=>child.nodeType===Node.TEXT_NODE&&child.textContent.trim());
+ if(textNode)textNode.textContent=' '+target+' ';
+ });
+}
 const adminYouthExtraI18n={
  pt:{rank:'Patente do jovem',photo:'Foto do jovem (galeria ou câmera)',save:'Salvar ficha',clear:'Limpar formulário',choose:'Selecione',photoHelp:'A foto será comprimida automaticamente para até 100 KB e enviada ao bucket privado ao salvar a ficha. Use apenas imagens fictícias nesta fase de teste.',photoAlt:'Prévia da foto escolhida',ranks:['Inconstante','Firme','CPO','Colaborador','Obreiro','Coordenador']},
  ja:{rank:'青年の階級',photo:'青年の写真（写真ライブラリまたはカメラ）',save:'登録内容を保存',clear:'フォームをクリア',choose:'選択してください',photoHelp:'写真は自動的に100 KB以下に圧縮され、保存時に非公開ストレージに送信されます。テスト中は架空の画像のみ使用してください。',photoAlt:'選択した写真のプレビュー',ranks:['不安定','堅固','CPO','協力者','奉仕者','コーディネーター']},
@@ -759,7 +784,7 @@ const adminLanguageCopy={
 };
 function setAdminLanguage(value){
  const l=['pt','ja','en'].includes(value)?value:'pt';
- adminLanguageSelect.value=l;adminLanguageLabel.textContent=adminLanguageCopy[l].label;translateAdminNavigation(l);translateAdminCards(l);translateAdminLogin(l);translateAdminYouthForm(l);translateAdminYouthExtra(l);
+ adminLanguageSelect.value=l;adminLanguageLabel.textContent=adminLanguageCopy[l].label;translateAdminNavigation(l);translateAdminCards(l);translateAdminLogin(l);translateAdminYouthForm(l);translateAdminYouthExtra(l);translateAdminRequests(l);
  document.documentElement.lang=l==='ja'?'ja':l==='en'?'en':'pt-BR';
  try{localStorage.setItem('fju_lang',l);localStorage.setItem('fju_language',l);localStorage.setItem('fju-connect-lang',l);}catch(_){}
 }
