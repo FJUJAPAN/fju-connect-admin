@@ -292,6 +292,21 @@ test('App mobile 4/5: cards suportam textos longos sem ampliar a página',()=>{
 test('App mobile 5/5: âncoras respeitam a altura do cabeçalho',()=>{
  assert.match(html,/scroll-padding-top:90px/);
 });
+test('Barra app 1/5: menu respeita área segura esquerda do iPhone',()=>{
+ assert.match(html,/padding-left:max\(9px,env\(safe-area-inset-left\)\)/);
+});
+test('Barra app 2/5: menu respeita área segura direita do iPhone',()=>{
+ assert.match(html,/padding-right:max\(9px,env\(safe-area-inset-right\)\)/);
+});
+test('Barra app 3/5: toque dos botões evita seleção de texto',()=>{
+ assert.match(html,/touch-action:manipulation;-webkit-user-select:none;user-select:none/);
+});
+test('Barra app 4/5: títulos longos da navegação não estouram os botões',()=>{
+ assert.match(html,/\.fju-nav-label-mobile\{overflow:hidden;text-overflow:ellipsis\}/);
+});
+test('Barra app 5/5: conteúdo do painel não cria largura extra',()=>{
+ assert.match(html,/#app\{min-width:0;overflow-wrap:break-word\}/);
+});
 test('Erro no Supabase libera aprovação e rejeição para tentar novamente',async()=>{
  const f=fixture();
  try{
