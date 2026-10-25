@@ -696,6 +696,22 @@ function translateAdminNavigation(lang){
 }
 
 
+
+const adminYouthExtraI18n={
+ pt:{rank:'Patente do jovem',photo:'Foto do jovem (galeria ou câmera)',save:'Salvar ficha',clear:'Limpar formulário',choose:'Selecione',photoHelp:'A foto será comprimida automaticamente para até 100 KB e enviada ao bucket privado ao salvar a ficha. Use apenas imagens fictícias nesta fase de teste.',photoAlt:'Prévia da foto escolhida',ranks:['Inconstante','Firme','CPO','Colaborador','Obreiro','Coordenador']},
+ ja:{rank:'青年の階級',photo:'青年の写真（写真ライブラリまたはカメラ）',save:'登録内容を保存',clear:'フォームをクリア',choose:'選択してください',photoHelp:'写真は自動的に100 KB以下に圧縮され、保存時に非公開ストレージに送信されます。テスト中は架空の画像のみ使用してください。',photoAlt:'選択した写真のプレビュー',ranks:['不安定','堅固','CPO','協力者','奉仕者','コーディネーター']},
+ en:{rank:'Youth rank',photo:'Youth photo (gallery or camera)',save:'Save record',clear:'Clear form',choose:'Select',photoHelp:'The photo will be compressed automatically to 100 KB or less and uploaded to private storage when saved. Use fictional images only during testing.',photoAlt:'Selected photo preview',ranks:['Inconstant','Firm','CPO','Collaborator','Worker','Coordinator']}
+};
+function translateAdminYouthExtra(language){
+ const t=adminYouthExtraI18n[language]||adminYouthExtraI18n.pt;
+ const set=(selector,value)=>{const node=document.querySelector(selector);if(node)node.textContent=value;};
+ set('label[for="youth-rank"]',t.rank);set('label[for="youth-photo"]',t.photo);
+ set('#youth-submit',t.save);set('#youth-clear',t.clear);
+ const rank=el('youth-rank');if(rank)rank.querySelectorAll('option').forEach((option,i)=>{option.textContent=i===0?t.choose:(t.ranks[i-1]||option.textContent);});
+ const country=el('youth-country');if(country){const empty=country.querySelector('option[value=""]');if(empty)empty.textContent=t.choose;}
+ set('#youth-photo-preview + .muted',t.photoHelp);
+ const preview=el('youth-photo-preview');if(preview)preview.alt=t.photoAlt;
+}
 const adminYouthFormI18n={
  pt:{title:'Fichas dos jovens',add:'Adicionar jovem',newForm:'Nova ficha',close:'Fechar',polo:'Polo',name:'Nome completo',birth:'Nascimento',day:'Dia',month:'Mês',year:'Ano',phone:'Telefone',country:'Nacionalidade',languages:'Idiomas que fala (selecione um ou mais)',pickLanguages:'Selecionar idiomas'},
  ja:{title:'青年名簿',add:'青年を追加',newForm:'新規登録',close:'閉じる',polo:'教会',name:'氏名',birth:'生年月日',day:'日',month:'月',year:'年',phone:'電話番号',country:'国籍',languages:'話せる言語（複数選択可）',pickLanguages:'言語を選択'},
@@ -743,7 +759,7 @@ const adminLanguageCopy={
 };
 function setAdminLanguage(value){
  const l=['pt','ja','en'].includes(value)?value:'pt';
- adminLanguageSelect.value=l;adminLanguageLabel.textContent=adminLanguageCopy[l].label;translateAdminNavigation(l);translateAdminCards(l);translateAdminLogin(l);translateAdminYouthForm(l);
+ adminLanguageSelect.value=l;adminLanguageLabel.textContent=adminLanguageCopy[l].label;translateAdminNavigation(l);translateAdminCards(l);translateAdminLogin(l);translateAdminYouthForm(l);translateAdminYouthExtra(l);
  document.documentElement.lang=l==='ja'?'ja':l==='en'?'en':'pt-BR';
  try{localStorage.setItem('fju_lang',l);localStorage.setItem('fju_language',l);localStorage.setItem('fju-connect-lang',l);}catch(_){}
 }
