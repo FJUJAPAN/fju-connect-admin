@@ -629,6 +629,50 @@ const adminLanguageSelect=el('fju-admin-language-select');
 const adminLanguageLabel=el('fju-admin-language-label');
 const adminLanguageFeedback=el('fju-admin-language-feedback');
 
+
+const adminCardI18n={
+ pt:[
+ ['Fichas dos 23 polos','Fichas do meu polo','Consultar, cadastrar e organizar jovens.','Consultar, cadastrar e solicitar alterações.','Fichas dos jovens','Cadastros e acompanhamento'],
+ ['Relatórios nacionais','Relatório semanal','Acompanhar envios e indicadores por polo.','Preencher e acompanhar os relatórios da igreja.','Relatórios','Indicadores semanais'],
+ ['Novos cadastros','Inscrições do meu polo','Acompanhar pedidos de inscrição.','Analisar os jovens que se cadastraram.','Inscrições','Solicitações de cadastro'],
+ ['Pedidos para aprovação','Minhas solicitações','Decidir alterações, patentes e acessos.','Acompanhar solicitações enviadas ao Nacional.','Autorizações','Solicitações e decisões'],
+ ['Liderança nacional','Meu perfil de liderança','Consultar a equipe de coordenadores.','Atualizar nome e foto do meu perfil.','Liderança','Perfis da equipe'],
+ ['Configurações','Notificações e ajustes','Ajustes e dispositivos autorizados.','Gerenciar notificações deste aparelho.','Configurações','Ajustes e notificações'],
+ ['Matérias FJU','Escrever e acompanhar publicações.'],
+ ['Site oficial','Visitar o site FJU JAPAN']],
+ ja:[
+ ['23教会の青年名簿','所属教会の青年名簿','青年の登録と管理','青年の登録・変更申請','青年名簿','登録とフォローアップ'],
+ ['全国レポート','週間レポート','教会ごとの報告と指標','教会の週間報告を入力・確認','レポート','週間データ'],
+ ['新規登録','所属教会の登録申請','登録申請を確認','青年の新規登録を審査','新規登録','登録申請'],
+ ['承認待ち','自分の申請','変更・階級・アクセスを承認','全国管理者への申請を確認','承認','申請と決定'],
+ ['全国リーダー','自分のリーダープロフィール','コーディネーターを確認','名前と写真を更新','リーダー','チームのプロフィール'],
+ ['設定','通知と設定','設定と登録デバイス','この端末の通知を管理','設定','通知と設定'],
+ ['FJU記事','記事の作成と確認'],
+ ['公式サイト','FJU JAPANサイトへ']],
+ en:[
+ ['Youth records: 23 churches','My church youth records','View, register and manage youth','View, register and request changes','Youth records','Registration and follow-up'],
+ ['National reports','Weekly report','Review reports and indicators by church','Submit and review church reports','Reports','Weekly indicators'],
+ ['New registrations','My church registrations','Review registration requests','Review youth sign-ups','Registrations','Sign-up requests'],
+ ['Pending approvals','My requests','Approve changes, ranks and access','Track requests sent to National','Approvals','Requests and decisions'],
+ ['National leadership','My leadership profile','View the coordinator team','Update my name and photo','Leadership','Team profiles'],
+ ['Settings','Notifications and settings','Settings and authorized devices','Manage notifications on this device','Settings','Notifications and settings'],
+ ['FJU articles','Write and manage publications'],
+ ['Official website','Visit FJU JAPAN website']]
+};
+function translateAdminCards(language){
+ const items=adminCardI18n[language]||adminCardI18n.pt;
+ document.querySelectorAll('.fju-dashboard-actions .fju-action-card').forEach((card,i)=>{
+ const values=items[i];if(!values)return;
+ const title=card.querySelector('strong'),desc=card.querySelector('strong + span');
+ if(values.length===6){
+ card.dataset.nationalTitle=values[0];card.dataset.localTitle=values[1];
+ card.dataset.nationalDesc=values[2];card.dataset.localDesc=values[3];
+ const national=typeof currentProfile!=='undefined'&&currentProfile?.papel==='nacional';
+ if(title)title.textContent=national?values[0]:values[1];
+ if(desc)desc.textContent=national?values[2]:values[3];
+ }else{if(title)title.textContent=values[0];if(desc)desc.textContent=values[1];}
+ });
+}
 const adminNavTranslations={
  pt:{dashboard:'Painel de controle',management:'GERENCIAMENTO',overview:'Visão geral',area:'ÁREA ADMINISTRATIVA',logout:'Sair',authorized:'SESSÃO AUTORIZADA',tabs:{inicio:'Início',jovens:'Jovens',relatorios:'Relatórios',inscricoes:'Inscrições',autorizacoes:'Autorizações',lideranca:'Liderança',config:'Configurações'}},
  ja:{dashboard:'管理パネル',management:'管理メニュー',overview:'概要',area:'管理エリア',logout:'ログアウト',authorized:'ログイン中',tabs:{inicio:'ホーム',jovens:'青年',relatorios:'報告',inscricoes:'新規登録',autorizacoes:'承認',lideranca:'リーダー',config:'設定'}},
@@ -657,7 +701,7 @@ const adminLanguageCopy={
 };
 function setAdminLanguage(value){
  const l=['pt','ja','en'].includes(value)?value:'pt';
- adminLanguageSelect.value=l;adminLanguageLabel.textContent=adminLanguageCopy[l].label;translateAdminNavigation(l);
+ adminLanguageSelect.value=l;adminLanguageLabel.textContent=adminLanguageCopy[l].label;translateAdminNavigation(l);translateAdminCards(l);
  document.documentElement.lang=l==='ja'?'ja':l==='en'?'en':'pt-BR';
  try{localStorage.setItem('fju_lang',l);localStorage.setItem('fju_language',l);localStorage.setItem('fju-connect-lang',l);}catch(_){}
 }
