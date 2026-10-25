@@ -1,8 +1,15 @@
 // FJU JAPAN | Solicitação e aprovação nacional de acesso ao painel.
-export function setupAdministrativeAccess({supabase,getProfile,onDecision=()=>{}}){
+
+const accessCopy={
+ pt:{loading:'Consultando pedidos de acesso administrativo…',pending:n=>n+' pedido(s) aguardando decisão nacional.',empty:'Nenhum pedido de acesso administrativo pendente.',church:'Polo da ficha no pedido: ',account:'Conta: ',by:'Solicitado por: ',states:{pendente:'Aguardando aprovação nacional',aprovado:'Aprovado',rejeitado:'Rejeitado'},linked:t().linked,approve:'Aprovar acesso',approveLinked:'Aprovar patente e acesso',reject:'Rejeitar',rejectLinked:'Rejeitar patente e acesso',confirmApprove:'Liberar o painel administrativo para ',confirmReject:'Rejeitar o acesso de ',churchSuffix:', polo ',saving:'Registrando decisão…'},
+ ja:{loading:'管理者アクセス申請を確認中…',pending:n=>n+'件の申請が全国管理者の判断待ちです。',empty:'保留中の管理者アクセス申請はありません。',church:'申請対象の教会: ',account:'アカウント: ',by:'申請者: ',states:{pendente:'全国管理者の承認待ち',aprovado:'承認済み',rejeitado:'却下'},linked:'階級変更申請に紐づいています。上記の青年名簿申請から判断してください。',approve:'アクセスを承認',approveLinked:'階級とアクセスを承認',reject:'却下',rejectLinked:'階級とアクセスを却下',confirmApprove:'管理パネルへのアクセスを許可しますか: ',confirmReject:'アクセスを却下しますか: ',churchSuffix:', 教会 ',saving:'処理中…'},
+ en:{loading:'Loading administrative access requests…',pending:n=>n+' request(s) awaiting national approval.',empty:'No pending administrative access requests.',church:'Church on requested record: ',account:'Account: ',by:'Requested by: ',states:{pendente:'Awaiting national approval',aprovado:'Approved',rejeitado:'Rejected'},linked:'Linked to a rank change. Decide using the youth record request above.',approve:'Approve access',approveLinked:'Approve rank and access',reject:'Reject',rejectLinked:'Reject rank and access',confirmApprove:'Grant dashboard access to ',confirmReject:'Reject access for ',churchSuffix:', church ',saving:'Saving decision…'}
+};
+export function setupAdministrativeAccess({supabase,getProfile,getLanguage=()=> 'pt',onDecision=()=>{}}){
   const list=document.getElementById('admin-access-list');
   const status=document.getElementById('admin-access-message');
   let version=0;
+  const t=()=>accessCopy[getLanguage()]||accessCopy.pt;
   const missing=error=>['PGRST202','42883','42P01'].includes(error?.code);
   const errorText=error=>missing(error)
     ?'A solicitação de acesso administrativo aguarda a instalação da atualização no banco de dados pelo Nacional.'
@@ -13,7 +20,7 @@ export function setupAdministrativeAccess({supabase,getProfile,onDecision=()=>{}
   function clear(){version++;list.replaceChildren();status.textContent='';}
   async function refresh(){
     const current=++version,profile=getProfile();
-    list.replaceChildren();status.textContent='Consultando pedidos de acesso administrativo…';
+    list.replaceChildren();status.textContent=t().loading;
     if(!profile){status.textContent='';return;}
     try{
       const {data,error}=await supabase.rpc('fju_listar_pedidos_acesso_admin');
@@ -21,28 +28,28 @@ export function setupAdministrativeAccess({supabase,getProfile,onDecision=()=>{}
       if(error)throw error;
       const rows=Array.isArray(data)?data:[];
       const pending=rows.filter(row=>row.status==='pendente');
-      status.textContent=pending.length?pending.length+' pedido(s) aguardando decisão nacional.':'Nenhum pedido de acesso administrativo pendente.';
+      status.textContent=pending.length?t().pending(pending.length):t().empty;
       const ordered=[...pending,...rows.filter(row=>row.status!=='pendente')];
       for(const row of ordered){
         const card=element('article',null,'report-card');
         card.append(element('strong',row.nome_completo||'Ficha sem nome','report-card-title'));
-        card.append(element('p','Polo da ficha no pedido: '+row.polo_nome));
-        card.append(element('p','Conta: '+row.email));
-        card.append(element('p','Solicitado por: '+row.solicitante_nome,'muted'));
-        const state={pendente:'Aguardando aprovação nacional',aprovado:'Aprovado',rejeitado:'Rejeitado'};
+        card.append(element('p',t().church+row.polo_nome));
+        card.append(element('p',t().account+row.email));
+        card.append(element('p',t().by+row.solicitante_nome,'muted'));
+        const state=t().states;
         card.append(element('p',state[row.status]||row.status,'muted'));
         if(row.solicitado_em)card.append(element('p',new Date(row.solicitado_em).toLocaleString('pt-BR',{timeZone:'Asia/Tokyo'}),'muted'));
         if(row.solicitacao_patente_id){card.append(element('p','Vinculado à mudança de patente. A decisão é feita no pedido da ficha, acima.','muted'));}
         if(row.status==='pendente'&&profile.papel==='nacional'){
           const actions=element('div',null,'actions'),feedback=element('p',null,'message');feedback.setAttribute('role','status');
           const linked=Boolean(row.solicitacao_patente_id);
-          const approve=element('button',linked?'Aprovar patente e acesso':'Aprovar acesso'),reject=element('button',linked?'Rejeitar patente e acesso':'Rejeitar','secondary');
+          const approve=element('button',linked?t().approveLinked:t().approve),reject=element('button',linked?t().rejectLinked:t().reject,'secondary');
           for(const [button,approved] of [[approve,true],[reject,false]]){
             button.type='button';
             button.addEventListener('click',async()=>{
               if(approve.disabled||reject.disabled||current!==version||getProfile()!==profile||!card.isConnected)return;
-              if(!confirm((approved?'Liberar o painel administrativo para ':'Rejeitar o acesso de ')+row.nome_completo+' ('+row.email+'), polo '+row.polo_nome+'?'))return;
-              approve.disabled=true;reject.disabled=true;feedback.textContent='Registrando decisão…';
+              if(!confirm((approved?t().confirmApprove:t().confirmReject)+row.nome_completo+' ('+row.email+')+t().churchSuffix+row.polo_nome+'?'))return;
+              approve.disabled=true;reject.disabled=true;feedback.textContent=t().saving;
               try{
                 const {error}=linked
                   ?await supabase.rpc('fju_decidir_solicitacao',{p_solicitacao_id:row.solicitacao_patente_id,p_aprovar:approved})
