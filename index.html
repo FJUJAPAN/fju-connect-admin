@@ -11,6 +11,7 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="stylesheet" href="./cards-coordenadores.css?v=20261023b">
 <link rel="stylesheet" href="./fichas-jovens.css">
+<link rel="stylesheet" href="./fichas-complementos.css?v=20261026-ficha">
 <meta name="theme-color" content="#081e3b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -2869,6 +2870,17 @@ async function loadYouthSignups(){
     await loadYouthSignups();
     if(currentProfile!==profile)return;
     status.textContent='Inscrição aprovada e ficha oficial criada.'+photoWarning;
+     if(jovemId){
+       const open=document.createElement('button');open.type='button';open.className='secondary';open.textContent='Abrir ficha criada';
+       open.style.marginLeft='10px';open.addEventListener('click',async()=>{
+         if(currentProfile!==profile)return;
+         if(profile.papel==='nacional')el('youth-list-polo').value=String(item.polo_id);
+         const tab=document.querySelector('#main-nav [data-tab="jovens"]');tab?.click();
+         await loadYouth();
+         if(currentProfile===profile&&youthRows.some(x=>String(x.id)===String(jovemId)))void viewYouth(jovemId);
+         else youthMessage('Ficha criada, mas não foi possível encontrá-la na lista. Atualize as fichas.');
+       });status.append(document.createTextNode(' '),open);
+     }
     void refreshAdminPriorities(profile,profileRequest);
   });
   reject.addEventListener('click',async()=>{
@@ -2917,7 +2929,7 @@ async function refreshAdminPriorities(profile,requestId){
   el('fju-priority-signups-note').textContent='Consultando inscrições…';
   el('fju-priority-requests-note').textContent='Consultando solicitações…';
   updatePriorityReportStatus();
-  const [signups,requests]=await Promise.allSettled([
+  const [signups,requests,complements]=await Promise.allSettled([
     supabase.rpc('fju_listar_inscricoes_polo_detalhadas'),
     (()=>{
       let query=supabase.from('fju_solicitacoes').select('id',{count:'exact',head:true}).eq('status','pendente');
