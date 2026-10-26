@@ -1665,12 +1665,18 @@ const fjuComplementFields=[
  ['batismo_aguas','Data do batismo nas águas','date',null],
  ['batismo_espirito','Data do batismo com o Espírito Santo','date',null]
 ];
+const fjuComplementI18n={
+ pt:{fields:{endereco:'Endereço no Japão',testemunho:'Testemunho do jovem',observacoes:'Observações para acompanhamento',batismo_aguas:'Data do batismo nas águas',batismo_espirito:'Data do batismo com o Espírito Santo'},signup:'＋ Completar ficha (testemunho e mais informações)',open:'Completar ficha',close:'Fechar informações',initial:'Opcional. Se preenchido, será salvo junto da ficha ao aprovar o cadastro.',save:'Enviar informações ao Nacional',saveNational:'Salvar informações da ficha'},
+ ja:{fields:{endereco:'日本の住所',testemunho:'青年の証し',observacoes:'フォローアップのメモ',batismo_aguas:'水のバプテスマの日付',batismo_espirito:'聖霊のバプテスマの日付'},signup:'＋ 青年の記録を詳しく入力',open:'記録を完成する',close:'詳細を閉じる',initial:'任意項目です。入力すると承認時に青年の記録に保存されます。',save:'全国責任者に申請',saveNational:'記録を保存'},
+ en:{fields:{endereco:'Address in Japan',testemunho:'Youth testimony',observacoes:'Follow-up notes',batismo_aguas:'Water baptism date',batismo_espirito:'Holy Spirit baptism date'},signup:'＋ Complete record (testimony and details)',open:'Complete record',close:'Close details',initial:'Optional. These details are saved with the record when registration is approved.',save:'Send details to National',saveNational:'Save record details'}
+};
+const fjuComplementCopy=()=>fjuComplementI18n[el('fju-admin-language-select')?.value]||fjuComplementI18n.pt;
 function fjuComplementForm(initial={}){
  const wrap=document.createElement('div');wrap.className='fju-complement-fields';
  const inputs={};
  for(const [key,label,type,max] of fjuComplementFields){
    const item=document.createElement('label');item.className='fju-complement-field';
-   const cap=document.createElement('span');cap.textContent=label;item.append(cap);
+   const cap=document.createElement('span');cap.textContent=fjuComplementCopy().fields[key]||label;item.append(cap);
    const input=document.createElement(type==='date'?'input':'textarea');
    if(type==='date'){input.type='date';input.max=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
    else{input.rows=key==='testemunho'?5:2;input.maxLength=max;}
@@ -1695,7 +1701,7 @@ async function fjuOpenComplementEditor(jovemId,mount){
   const foot=document.createElement('p');foot.className='muted';
   foot.textContent=pending?'Existe uma alteração aguardando decisão do Nacional. Aguarde antes de enviar outra.':profile.papel==='coordenador'?'As informações complementares serão enviadas ao Nacional para aprovação.':'Como Nacional, você pode salvar diretamente os dados complementares.';
   mount.append(foot);
-  const save=document.createElement('button');save.type='button';save.textContent=profile.papel==='coordenador'?'Enviar informações ao Nacional':'Salvar informações da ficha';save.disabled=pending;
+  const save=document.createElement('button');save.type='button';save.textContent=profile.papel==='coordenador'?fjuComplementCopy().save:fjuComplementCopy().saveNational;save.disabled=pending;
   const feedback=document.createElement('p');feedback.className='message';feedback.setAttribute('role','status');
   mount.append(save,feedback);
   let saving=false;
@@ -1744,7 +1750,7 @@ async function fjuLoadComplementApprovals(){
   for(const [key,label] of fjuComplementFields){
    const value=request.dados_propostos?.[key];if(!value)continue;
    const group=document.createElement('div');group.className='fju-complement-approval-field';
-   const dt=document.createElement('dt');dt.textContent=label;const dd=document.createElement('dd');dd.textContent=String(value);
+   const dt=document.createElement('dt');dt.textContent=fjuComplementCopy().fields[key]||label;const dd=document.createElement('dd');dd.textContent=String(value);
    group.append(dt,dd);list.append(group);
   }
   card.append(list);
@@ -1789,11 +1795,11 @@ async function viewYouth(id){
     editButton.onclick=()=>{panel.classList.add('hidden');editYouth(r.id);};
     editActions.append(editButton);
     const detailsButton=document.createElement('button');detailsButton.type='button';detailsButton.className='secondary';
-    detailsButton.textContent='Completar ficha';editActions.append(detailsButton);
+    detailsButton.textContent=fjuComplementCopy().open;editActions.append(detailsButton);
     const complementArea=document.createElement('section');complementArea.className='fju-complement-detail';complementArea.hidden=true;
     detailsButton.addEventListener('click',()=>{
       if(!complementArea.hidden){complementArea.hidden=true;detailsButton.textContent='Completar ficha';return;}
-      detailsButton.textContent='Fechar informações';void fjuOpenComplementEditor(r.id,complementArea);
+      detailsButton.textContent=fjuComplementCopy().close;void fjuOpenComplementEditor(r.id,complementArea);
     });
     panel.append(editActions,complementArea);
     if(currentProfile.papel==='coordenador'){
@@ -2834,9 +2840,9 @@ async function loadYouthSignups(){
     }catch(_){}
   })();
   const expanded=document.createElement('details');expanded.className='fju-complement-signup';
-   const expandedTitle=document.createElement('summary');expandedTitle.textContent='＋ Completar ficha (testemunho e mais informações)';
+   const expandedTitle=document.createElement('summary');expandedTitle.textContent=fjuComplementCopy().signup;
    expanded.append(expandedTitle);const extraForm=fjuComplementForm();expanded.append(extraForm.element);
-   const extraInfo=document.createElement('p');extraInfo.className='muted';extraInfo.textContent='Opcional. Se preenchido, será salvo junto da ficha ao aprovar o cadastro.';expanded.append(extraInfo);
+   const extraInfo=document.createElement('p');extraInfo.className='muted';extraInfo.textContent=fjuComplementCopy().initial;expanded.append(extraInfo);
    const controls=document.createElement('div');controls.className='fju-signup-controls';
   const rankLabel=document.createElement('label');rankLabel.textContent='Patente inicial';
   const rank=document.createElement('select');rank.id='fju-signup-rank-'+item.id;rankLabel.htmlFor=rank.id;rank.setAttribute('aria-label','Patente inicial de '+(item.nome||'jovem'));
