@@ -64,3 +64,6 @@ body.fju-coordinator-dashboard #fju-coord-status{color:#cd2840;font-size:12px;fo
 }
 @media(max-width:350px){body.fju-coordinator-dashboard .fju-coord-app-icon{width:64px;height:64px;font-size:31px}}
 @media print{body.fju-coordinator-dashboard #fju-coord-app-shell{display:none!important}}
+
+/* Exibe os dados da conta dentro do painel unificado do coordenador. */
+body.fju-coordinator-dashboard #fju-coord-app-shell > #fju-my-page {display:block!important;margin:0 0 18px!important;}
