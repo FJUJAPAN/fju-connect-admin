@@ -669,6 +669,7 @@ const el=id=>document.getElementById(id);
 // Initialize session state before the first language render.
 let currentProfile=null;
 // A senha é alterada por fluxo seguro de recuperação da conta autenticada.
+window.fjuAdminRefreshReportStatus=()=>{if(currentProfile?.papel==='coordenador')return loadDashboard(currentProfile,profileRequest);};
 window.fjuAdminRequestPasswordReset=async()=>{
   const {data,error}=await supabase.auth.getUser();
   if(error||!data?.user?.email)throw error||new Error('Sessão não encontrada.');
