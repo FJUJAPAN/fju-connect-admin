@@ -1,0 +1,95 @@
+/* FJU JAPAN — organização exclusiva do painel do coordenador.
+   Mantém intacto o dashboard nacional e todos os IDs/fluxos existentes. */
+body.fju-coordinator-dashboard #inicio{display:flex;flex-direction:column;gap:0}
+body.fju-coordinator-dashboard #inicio>.fju-overview-intro{order:0;margin:0 0 18px}
+body.fju-coordinator-dashboard #inicio>.fju-priority-heading{order:1;margin:0 0 11px}
+body.fju-coordinator-dashboard #inicio>.fju-priority-grid{order:2;margin:0 0 23px}
+body.fju-coordinator-dashboard #inicio>.fju-today-section{order:3;margin:0 0 23px}
+body.fju-coordinator-dashboard #inicio>.fju-actions-title{order:4;margin:0 0 12px}
+body.fju-coordinator-dashboard #inicio>.fju-dashboard-actions{order:5;margin:0 0 12px}
+body.fju-coordinator-dashboard #inicio>#fju-coord-more-tools{order:6}
+body.fju-coordinator-dashboard #inicio>#fju-coord-more-info-button{order:7}
+body.fju-coordinator-dashboard #inicio>.grid{order:8}
+body.fju-coordinator-dashboard #inicio>#fju-my-page{order:9}
+body.fju-coordinator-dashboard #inicio>#leader-home{order:10}
+body.fju-coordinator-dashboard #inicio>#dashboard-note{order:11}
+body.fju-coordinator-dashboard #inicio .fju-overview-intro strong{font-size:clamp(20px,3.5vw,25px);line-height:1.25}
+body.fju-coordinator-dashboard #inicio .fju-overview-intro p{font-size:13px;line-height:1.6}
+body.fju-coordinator-dashboard #inicio .fju-priority-heading h3,
+body.fju-coordinator-dashboard #inicio .fju-today-heading h3,
+body.fju-coordinator-dashboard #inicio .fju-actions-title{color:#182e53;font-size:16px;font-weight:830;letter-spacing:-.02em}
+body.fju-coordinator-dashboard #inicio .fju-priority-heading p{display:none}
+body.fju-coordinator-dashboard #inicio .fju-priority-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+body.fju-coordinator-dashboard #inicio .fju-priority-card{min-height:105px;gap:9px;border:1px solid #dae3ef;border-radius:15px;background:#f7f9fc;color:#1b345b;padding:13px}
+body.fju-coordinator-dashboard #inicio .fju-priority-label{font-size:12px;line-height:1.4}
+body.fju-coordinator-dashboard #inicio .fju-priority-card strong{font-size:24px;line-height:1.1;font-variant-numeric:tabular-nums}
+body.fju-coordinator-dashboard #inicio .fju-priority-card>span:last-child{font-size:10px;line-height:1.45}
+body.fju-coordinator-dashboard #inicio .fju-today-heading{margin-bottom:10px}
+body.fju-coordinator-dashboard #inicio .fju-today-heading p{display:none}
+body.fju-coordinator-dashboard #inicio .fju-daily-actions[data-role-target="coordenador"]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+body.fju-coordinator-dashboard #inicio .fju-daily-actions[data-role-target="coordenador"]>button:last-child{display:none!important}
+body.fju-coordinator-dashboard #inicio .fju-daily-button{min-height:72px;align-items:center;box-shadow:none;border-radius:14px;padding:13px 12px}
+body.fju-coordinator-dashboard #inicio .fju-daily-button strong{font-size:13px}
+body.fju-coordinator-dashboard #inicio .fju-daily-button small{font-size:10px;line-height:1.4}
+body.fju-coordinator-dashboard #inicio .fju-dashboard-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+body.fju-coordinator-dashboard #inicio .fju-dashboard-actions>.fju-action-card{min-height:120px;padding:16px 10px 12px!important;border-radius:15px!important;gap:7px;box-shadow:none!important;border-color:#dce4ee!important;background:#fff!important}
+body.fju-coordinator-dashboard #inicio .fju-dashboard-actions>.fju-action-card .fju-action-icon svg{width:25px;height:25px;color:#264779}
+body.fju-coordinator-dashboard #inicio .fju-dashboard-actions>.fju-action-card strong{font-size:13px;line-height:1.3;color:#1e3659}
+body.fju-coordinator-dashboard #inicio .fju-dashboard-actions>.fju-action-card>span:not(.fju-action-icon):not(.fju-action-arrow):not(.fju-pending-badge){font-size:11px;line-height:1.4;color:#687b93}
+body.fju-coordinator-dashboard #inicio .fju-dashboard-actions>.fju-action-card .fju-action-arrow{display:none}
+body.fju-coordinator-dashboard #inicio .fju-dashboard-actions>.fju-action-card:is([data-open-tab="lideranca"],[data-open-tab="config"]){display:none!important}
+body.fju-coordinator-dashboard #inicio .fju-dashboard-actions>.fju-action-link[href^="https://fjujapan.github.io/"]{display:none!important}
+body.fju-coordinator-dashboard #inicio #fju-coord-more-tools{
+ margin:4px 0 10px;border:1px solid #dce5ef;background:#fff;border-radius:14px;overflow:hidden
+}
+body.fju-coordinator-dashboard #inicio #fju-coord-more-tools summary{
+ list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;
+ min-height:49px;padding:13px 15px;font-size:13px;font-weight:780;color:#2c466b
+}
+body.fju-coordinator-dashboard #inicio #fju-coord-more-tools summary::-webkit-details-marker{display:none}
+body.fju-coordinator-dashboard #inicio #fju-coord-more-tools summary:after{content:"⌄";font-size:21px;line-height:1}
+body.fju-coordinator-dashboard #inicio #fju-coord-more-tools[open] summary:after{transform:rotate(180deg)}
+body.fju-coordinator-dashboard #inicio .fju-coord-more-links{display:grid;gap:8px;padding:0 12px 12px}
+body.fju-coordinator-dashboard #inicio .fju-coord-more-links :is(button,a){
+ display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:45px;padding:11px 12px;
+ border-radius:11px;background:#f3f6fb;border:1px solid #e0e7f1;color:#263f66!important;
+ font-size:13px;font-weight:720;text-align:left;text-decoration:none
+}
+body.fju-coordinator-dashboard #inicio .fju-coord-more-links :is(button,a):hover{background:#e8effa}
+body.fju-coordinator-dashboard #inicio #fju-coord-more-info-button{
+ display:flex;align-items:center;justify-content:space-between;width:100%;min-height:44px;
+ margin:4px 0 9px;padding:11px 14px;background:transparent;color:#3b5780;
+ border:1px dashed #cbd7e7;border-radius:12px;font-size:12px;font-weight:740;text-align:left
+}
+body.fju-coordinator-dashboard #inicio:not(.fju-coord-data-open)>.grid,
+body.fju-coordinator-dashboard #inicio:not(.fju-coord-data-open)>#fju-my-page,
+body.fju-coordinator-dashboard #inicio:not(.fju-coord-data-open)>#leader-home,
+body.fju-coordinator-dashboard #inicio:not(.fju-coord-data-open)>#dashboard-note{display:none!important}
+body.fju-coordinator-dashboard #inicio>.grid{margin:10px 0 9px}
+body.fju-coordinator-dashboard #inicio>#fju-my-page{margin:10px 0!important}
+body.fju-coordinator-dashboard #inicio>#leader-home{margin-top:12px}
+body.fju-coordinator-dashboard #inicio :is(#fju-coord-more-tools summary,#fju-coord-more-info-button,.fju-coord-more-links a,.fju-coord-more-links button):focus-visible{outline:3px solid #3c73bc;outline-offset:2px}
+@media(max-width:650px){
+ body.fju-coordinator-dashboard #inicio{padding:15px 13px}
+ body.fju-coordinator-dashboard #inicio .fju-priority-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ body.fju-coordinator-dashboard #inicio .fju-priority-card{min-height:94px;padding:12px 11px}
+ body.fju-coordinator-dashboard #inicio .fju-priority-card:last-child{grid-column:1/-1;min-height:76px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center}
+ body.fju-coordinator-dashboard #inicio .fju-priority-card:last-child>span:last-child{grid-column:1/-1}
+ body.fju-coordinator-dashboard #inicio .fju-priority-card strong{font-size:21px}
+ body.fju-coordinator-dashboard #inicio .fju-daily-actions[data-role-target="coordenador"]{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ body.fju-coordinator-dashboard #inicio .fju-daily-button{min-height:97px;flex-direction:column;align-items:flex-start;gap:6px;padding:12px 10px}
+ body.fju-coordinator-dashboard #inicio .fju-daily-button>span:last-child{display:none}
+ body.fju-coordinator-dashboard #inicio .fju-dashboard-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+ body.fju-coordinator-dashboard #inicio .fju-dashboard-actions>.fju-action-card{min-height:116px;padding:14px 8px 11px!important}
+ body.fju-coordinator-dashboard #inicio .fju-dashboard-actions>.fju-action-card strong{font-size:12px}
+ body.fju-coordinator-dashboard #inicio .fju-dashboard-actions>.fju-action-card>span:not(.fju-action-icon):not(.fju-action-arrow):not(.fju-pending-badge){font-size:10px}
+}
+@media(max-width:350px){
+ body.fju-coordinator-dashboard #inicio .fju-daily-button strong{font-size:12px}
+ body.fju-coordinator-dashboard #inicio .fju-priority-label{font-size:11px}
+}
+@media print{
+ body.fju-coordinator-dashboard #inicio #fju-coord-more-tools,
+ body.fju-coordinator-dashboard #inicio #fju-coord-more-info-button{display:none!important}
+ body.fju-coordinator-dashboard #inicio>.grid{display:grid!important}
+}
