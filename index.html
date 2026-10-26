@@ -2935,7 +2935,8 @@ async function refreshAdminPriorities(profile,requestId){
       let query=supabase.from('fju_solicitacoes').select('id',{count:'exact',head:true}).eq('status','pendente');
       if(!national)query=query.eq('polo_id',profile.polo_id);
       return query;
-    })()
+    })(),
+    national?supabase.rpc('fju_listar_pedidos_ficha_complementar'):Promise.resolve({data:[]})
   ]);
   if(requestId!==profileRequest||currentProfile!==profile)return;
   if(signups.status==='fulfilled'&&!signups.value.error&&Array.isArray(signups.value.data)){
@@ -2947,7 +2948,8 @@ async function refreshAdminPriorities(profile,requestId){
     el('fju-priority-signups-note').textContent='Não foi possível consultar';
   }
   if(requests.status==='fulfilled'&&!requests.value.error&&Number.isFinite(requests.value.count)){
-    const n=requests.value.count;
+    const extra=national&&complements?.status==='fulfilled'&&!complements.value.error&&Array.isArray(complements.value.data)?complements.value.data.length:0;
+    const n=requests.value.count+extra;
     el('fju-priority-requests').textContent=String(n);
     el('fju-priority-requests-note').textContent=n
       ?(national?'Pedidos aguardando decisão':'Pedidos aguardando análise nacional')
