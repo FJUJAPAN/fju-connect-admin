@@ -35,7 +35,7 @@
   ['fichas','👥','blue'],['cadastros','📥','green'],['relatorios','📊','orange'],
   ['materias','📰','purple'],['mypage','👤','slate']
  ];
- let activeGroup=null,built=false,isCoordinator=false,reportDue=false;
+ let activeGroup=null,built=false,isCoordinator=false,reportDue=false,jpLastStamp=null,jpLastOpen=false;
  const lang=()=>copy[$('fju-admin-language-select')?.value]?$('fju-admin-language-select').value:'pt';
  const t=()=>copy[lang()];
  const nav=tab=>{const btn=document.querySelector('#main-nav [data-tab="'+tab+'"]');if(btn){btn.click();activeGroup=null;render();}};
@@ -49,6 +49,9 @@
   const registration=$('fju-coord-app-cadastros')?.querySelector('.fju-coord-app-badge');
   if(registration){const show=Number.isFinite(count)&&count>0;registration.hidden=!show;registration.textContent=show?(count>99?'99+':String(count)):'';}
   const jp=getJp(), nowSunday=jp.weekday==='Sun'&&Number(jp.hour)>=12;
+  const stamp=jp.year+'-'+jp.month+'-'+jp.day;
+  if(jpLastStamp!==null&&nowSunday&&(stamp!==jpLastStamp||!jpLastOpen))window.fjuAdminRefreshReportStatus?.();
+  jpLastStamp=stamp;jpLastOpen=nowSunday;
   const reportStatus=($('pending-count')?.textContent||'').trim();
   // A badge de domingo só aparece se o estado real do relatório foi confirmado.
   reportDue=nowSunday&&/^●\s*Pendente/i.test(reportStatus);
@@ -88,8 +91,8 @@
    ],
    cadastros:[[t().registers,()=>nav('inscricoes'),'📥']],
    relatorios:[
-    [t().reportFill,()=>nav('relatorios'),'📝'],
-    [t().reportHistory,()=>nav('relatorios'),'📊']
+    [t().reportFill,()=>{nav('relatorios');window.fjuAdminHideCoordinatorReportHistory?.();},'📝'],
+    [t().reportHistory,()=>{nav('relatorios');window.fjuAdminLoadCoordinatorReportHistory?.();},'📊']
    ],
    materias:[
     [t().createPost,()=>location.assign(articleUrl('acao=novo&secao=eventos_realizados')),'✍️'],
