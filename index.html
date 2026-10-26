@@ -670,6 +670,47 @@ const el=id=>document.getElementById(id);
 let currentProfile=null;
 // A senha é alterada por fluxo seguro de recuperação da conta autenticada.
 window.fjuAdminRefreshReportStatus=()=>{if(currentProfile?.papel==='coordenador')return loadDashboard(currentProfile,profileRequest);};
+window.fjuAdminHideCoordinatorReportHistory=()=>{const section=el('fju-coord-report-history');if(section)section.hidden=true;};
+window.fjuAdminLoadCoordinatorReportHistory=async()=>{
+  if(currentProfile?.papel!=='coordenador'||!currentProfile.polo_id)return;
+  document.querySelector('[data-report-tab="semanal"]')?.click();
+  const parent=el('report-weekly');if(!parent)return;
+  let section=el('fju-coord-report-history');
+  if(!section){section=document.createElement('section');section.id='fju-coord-report-history';
+    section.style.cssText='margin-top:20px;padding:16px;border:1px solid #dbe4ef;border-radius:16px;background:#fff;color:#263e5f';
+    parent.append(section);}
+  section.hidden=false;section.replaceChildren();
+  const l=el('fju-admin-language-select')?.value||'pt';
+  const labels={
+    pt:['Histórico de relatórios','Consultando relatórios…','Semana','Total de jovens','Firmes','Novos','Nenhum relatório enviado ainda.','Não foi possível consultar: '],
+    ja:['週間報告の履歴','報告を取得中…','報告週','青年合計','堅固','新規','提出された報告はありません。','取得できませんでした: '],
+    en:['Report history','Loading reports…','Week','Youth total','Steady','New','No reports submitted yet.','Could not load reports: ']};
+  const t=labels[l]||labels.pt;
+  const title=document.createElement('h3');title.textContent=t[0];title.style.margin='0 0 12px';section.append(title);
+  const status=document.createElement('p');status.textContent=t[1];status.setAttribute('role','status');section.append(status);
+  const profile=currentProfile;
+  try{
+    const {data,error}=await supabase.from('fju_relatorios_semanais')
+      .select('semana_domingo,total_jovens_unicos,jovens_firmes,jovens_novos')
+      .eq('polo_id',profile.polo_id).order('semana_domingo',{ascending:false}).limit(20);
+    if(currentProfile!==profile||section.hidden)return;
+    if(error)throw error;
+    status.remove();
+    if(!data?.length){const empty=document.createElement('p');empty.textContent=t[6];section.append(empty);return;}
+    const wrap=document.createElement('div');wrap.style.overflowX='auto';
+    const table=document.createElement('table');table.style.cssText='width:100%;border-collapse:collapse;font-size:13px';
+    const thead=document.createElement('thead'),thRow=document.createElement('tr');
+    for(const label of t.slice(2,6)){const th=document.createElement('th');th.textContent=label;th.style.cssText='padding:9px 6px;text-align:left;border-bottom:2px solid #e2e8f0';thRow.append(th);}
+    thead.append(thRow);table.append(thead);
+    const tbody=document.createElement('tbody');
+    for(const report of data){const tr=document.createElement('tr');
+      for(const value of [report.semana_domingo,report.total_jovens_unicos,report.jovens_firmes,report.jovens_novos]){
+        const td=document.createElement('td');td.textContent=String(value??'—');td.style.cssText='padding:10px 6px;border-bottom:1px solid #ebeff5';tr.append(td);}
+      tbody.append(tr);}
+    table.append(tbody);wrap.append(table);section.append(wrap);
+  }catch(error){status.textContent=t[7]+(error?.message||'');}
+  section.scrollIntoView({behavior:'smooth',block:'start'});
+};
 window.fjuAdminRequestPasswordReset=async()=>{
   const {data,error}=await supabase.auth.getUser();
   if(error||!data?.user?.email)throw error||new Error('Sessão não encontrada.');
