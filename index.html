@@ -1655,6 +1655,115 @@ function resetYouthSession(){
   detail.classList.add('hidden');detail.replaceChildren();
   if(detailPhotoUrl){URL.revokeObjectURL(detailPhotoUrl);detailPhotoUrl=null;}
 }
+
+/* Complementos da ficha: dados privados, editáveis sem alterar os campos originais do cadastro. */
+const fjuComplementFields=[
+ ['endereco','Endereço no Japão','textarea',350],
+ ['testemunho','Testemunho do jovem','textarea',4500],
+ ['observacoes','Observações para acompanhamento','textarea',3000],
+ ['batismo_aguas','Data do batismo nas águas','date',null],
+ ['batismo_espirito','Data do batismo com o Espírito Santo','date',null]
+];
+function fjuComplementForm(initial={}){
+ const wrap=document.createElement('div');wrap.className='fju-complement-fields';
+ const inputs={};
+ for(const [key,label,type,max] of fjuComplementFields){
+   const item=document.createElement('label');item.className='fju-complement-field';
+   const cap=document.createElement('span');cap.textContent=label;item.append(cap);
+   const input=document.createElement(type==='date'?'input':'textarea');
+   if(type==='date'){input.type='date';input.max=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
+   else{input.rows=key==='testemunho'?5:2;input.maxLength=max;}
+   input.className='fju-complement-input';input.value=String(initial[key]||'');inputs[key]=input;item.append(input);wrap.append(item);
+ }
+ return {element:wrap,read:()=>Object.fromEntries(Object.entries(inputs).map(([key,input])=>[key,input.value.trim()]))};
+}
+async function fjuOpenComplementEditor(jovemId,mount){
+ const profile=currentProfile;
+ if(!profile||!mount.isConnected)return;
+ mount.replaceChildren();mount.hidden=false;
+ const status=document.createElement('p');status.setAttribute('role','status');status.textContent='Carregando informações complementares…';mount.append(status);
+ try{
+  const result=await supabase.rpc('fju_ler_ficha_complementar',{p_jovem_id:jovemId});
+  if(currentProfile!==profile||!mount.isConnected)return;
+  if(result.error)throw result.error;
+  mount.replaceChildren();
+  const form=fjuComplementForm(result.data?.dados||{});
+  const intro=document.createElement('p');intro.className='muted';intro.textContent='Informações complementares da ficha. Não alteram o cadastro original nem a patente.';
+  mount.append(intro,form.element);
+  const pending=Boolean(result.data?.pedido_pendente);
+  const foot=document.createElement('p');foot.className='muted';
+  foot.textContent=pending?'Existe uma alteração aguardando decisão do Nacional. Aguarde antes de enviar outra.':profile.papel==='coordenador'?'As informações complementares serão enviadas ao Nacional para aprovação.':'Como Nacional, você pode salvar diretamente os dados complementares.';
+  mount.append(foot);
+  const save=document.createElement('button');save.type='button';save.textContent=profile.papel==='coordenador'?'Enviar informações ao Nacional':'Salvar informações da ficha';save.disabled=pending;
+  const feedback=document.createElement('p');feedback.className='message';feedback.setAttribute('role','status');
+  mount.append(save,feedback);
+  let saving=false;
+  save.addEventListener('click',async()=>{
+    if(saving||currentProfile!==profile)return;
+    saving=true;save.disabled=true;feedback.textContent='Salvando informações…';
+    const values=form.read();
+    try{
+     const fn=profile.papel==='nacional'?'fju_salvar_ficha_complementar_nacional':'fju_solicitar_ficha_complementar';
+     const {error}=await supabase.rpc(fn,{p_jovem_id:jovemId,p_dados:values});
+     if(currentProfile!==profile||!mount.isConnected)return;
+     if(error)throw error;
+     feedback.textContent=profile.papel==='nacional'?'Informações complementares salvas.':'Solicitação enviada ao Nacional. A ficha oficial ainda não foi alterada.';
+     if(profile.papel==='nacional')save.disabled=false;
+     void refreshAdminPriorities(profile,profileRequest);
+    }catch(error){
+     if(currentProfile!==profile||!mount.isConnected)return;
+     save.disabled=false;
+     feedback.textContent='Não foi possível salvar: '+(error?.message||'Erro desconhecido');
+    }finally{saving=false;}
+  });
+ }catch(error){
+  if(currentProfile!==profile||!mount.isConnected)return;
+  status.textContent='Não foi possível abrir informações complementares: '+(error?.message||'Verifique se a migração SQL foi instalada no Supabase.');
+ }
+}
+async function fjuLoadComplementApprovals(){
+ const profile=currentProfile;
+ if(profile?.papel!=='nacional')return;
+ let section=el('fju-complement-approvals');
+ if(!section){
+  section=document.createElement('section');section.id='fju-complement-approvals';section.className='fju-complement-approvals';
+  const parent=el('autorizacoes');parent.append(section);
+ }
+ section.replaceChildren();
+ const h=document.createElement('h3');h.textContent='Informações complementares das fichas';section.append(h);
+ const status=document.createElement('p');status.textContent='Consultando pedidos para análise…';status.setAttribute('role','status');section.append(status);
+ const {data,error}=await supabase.rpc('fju_listar_pedidos_ficha_complementar');
+ if(currentProfile!==profile||!section.isConnected)return;
+ if(error){status.textContent='Não foi possível consultar as solicitações de complemento: '+error.message;return;}
+ status.textContent=data?.length?data.length+' solicitação(ões) aguardando sua decisão.':'Nenhuma informação complementar aguardando aprovação.';
+ for(const request of data||[]){
+  const card=document.createElement('div');card.className='fju-complement-approval-card';
+  const name=document.createElement('strong');name.textContent=request.nome||'Ficha';card.append(name);
+  const list=document.createElement('dl');
+  for(const [key,label] of fjuComplementFields){
+   const value=request.dados_propostos?.[key];if(!value)continue;
+   const group=document.createElement('div');group.className='fju-complement-approval-field';
+   const dt=document.createElement('dt');dt.textContent=label;const dd=document.createElement('dd');dd.textContent=String(value);
+   group.append(dt,dd);list.append(group);
+  }
+  card.append(list);
+  const buttons=document.createElement('div');buttons.className='actions';
+  const approve=document.createElement('button');approve.type='button';approve.textContent='Aprovar informações';
+  const deny=document.createElement('button');deny.type='button';deny.className='secondary';deny.textContent='Rejeitar';
+  const feedback=document.createElement('p');feedback.className='message';feedback.setAttribute('role','status');
+  async function decision(ok){
+   if(currentProfile!==profile||!card.isConnected||!confirm((ok?'Aprovar':'Rejeitar')+' informações de '+(request.nome||'jovem')+'?'))return;
+   approve.disabled=true;deny.disabled=true;feedback.textContent='Registrando decisão…';
+   const {error}=await supabase.rpc('fju_decidir_ficha_complementar',{p_pedido_id:request.id,p_aprovar:ok});
+   if(currentProfile!==profile||!card.isConnected)return;
+   if(error){feedback.textContent='Não foi possível concluir: '+error.message;approve.disabled=false;deny.disabled=false;return;}
+   await fjuLoadComplementApprovals();void refreshAdminPriorities(profile,profileRequest);
+  }
+  approve.addEventListener('click',()=>void decision(true));deny.addEventListener('click',()=>void decision(false));
+  buttons.append(approve,deny);card.append(buttons,feedback);section.append(card);
+ }
+}
+
 async function viewYouth(id){
   const r=youthRows.find(x=>x.id===id);if(!r)return;
   const panel=el('youth-detail');panel.replaceChildren();panel.classList.remove('hidden');
@@ -1677,7 +1786,15 @@ async function viewYouth(id){
     const editButton=document.createElement('button');editButton.type='button';
     editButton.textContent=currentProfile.papel==='coordenador'?'Solicitar edição':'Editar ficha';
     editButton.onclick=()=>{panel.classList.add('hidden');editYouth(r.id);};
-    editActions.append(editButton);panel.append(editActions);
+    editActions.append(editButton);
+    const detailsButton=document.createElement('button');detailsButton.type='button';detailsButton.className='secondary';
+    detailsButton.textContent='Completar ficha';editActions.append(detailsButton);
+    const complementArea=document.createElement('section');complementArea.className='fju-complement-detail';complementArea.hidden=true;
+    detailsButton.addEventListener('click',()=>{
+      if(!complementArea.hidden){complementArea.hidden=true;detailsButton.textContent='Completar ficha';return;}
+      detailsButton.textContent='Fechar informações';void fjuOpenComplementEditor(r.id,complementArea);
+    });
+    panel.append(editActions,complementArea);
     if(currentProfile.papel==='coordenador'){
       const editNote=document.createElement('p');editNote.className='muted';
       editNote.textContent='Edite os dados e envie para aprovação do Nacional. A ficha só será alterada após a aprovação.';
@@ -2715,7 +2832,11 @@ async function loadYouthSignups(){
       if(version===signupLoadVersion&&currentProfile===profile&&!photoError&&link?.signedUrl&&card.isConnected){photo.src=link.signedUrl;photo.style.display='block';}
     }catch(_){}
   })();
-  const controls=document.createElement('div');controls.className='fju-signup-controls';
+  const expanded=document.createElement('details');expanded.className='fju-complement-signup';
+   const expandedTitle=document.createElement('summary');expandedTitle.textContent='＋ Completar ficha (testemunho e mais informações)';
+   expanded.append(expandedTitle);const extraForm=fjuComplementForm();expanded.append(extraForm.element);
+   const extraInfo=document.createElement('p');extraInfo.className='muted';extraInfo.textContent='Opcional. Se preenchido, será salvo junto da ficha ao aprovar o cadastro.';expanded.append(extraInfo);
+   const controls=document.createElement('div');controls.className='fju-signup-controls';
   const rankLabel=document.createElement('label');rankLabel.textContent='Patente inicial';
   const rank=document.createElement('select');rank.id='fju-signup-rank-'+item.id;rankLabel.htmlFor=rank.id;rank.setAttribute('aria-label','Patente inicial de '+(item.nome||'jovem'));
   for(const value of ['Inconstante','Firme','CPO','Colaborador','Obreiro','Coordenador']){const opt=document.createElement('option');opt.value=value;opt.textContent=value;rank.append(opt);}
@@ -2733,7 +2854,11 @@ async function loadYouthSignups(){
       if(!result.error)photoBlob=result.data;
     }catch(_){}
     if(currentProfile!==profile)return;
-    const {data:jovemId,error}=await supabase.rpc('fju_decidir_inscricao_jovem',{p_inscricao_id:item.id,p_acao:'aprovar',p_patente:rank.value});
+    const extraData=extraForm.read();
+     const extraFilled=Object.values(extraData).some(value=>value!=='');
+     const {data:jovemId,error}=extraFilled
+       ?await supabase.rpc('fju_aprovar_inscricao_ficha_completa',{p_inscricao_id:item.id,p_patente:rank.value,p_dados:extraData})
+       :await supabase.rpc('fju_decidir_inscricao_jovem',{p_inscricao_id:item.id,p_acao:'aprovar',p_patente:rank.value});
     if(currentProfile!==profile)return;
     if(error){feedback.textContent='Não foi possível aprovar: '+error.message;approve.disabled=false;reject.disabled=false;return;}
     let photoWarning='';
@@ -2766,7 +2891,7 @@ async function loadYouthSignups(){
   const badge=document.createElement('span');badge.className='fju-signup-badge';badge.textContent='● Aguardando análise';
   identity.append(badge,name,meta);head.append(avatar,identity);
   const actionRow=document.createElement('div');actionRow.className='fju-signup-action-row';actionRow.append(approve,reject);
-  controls.append(rankLabel,rank,actionRow);card.append(head,details,projects,controls,feedback);list.append(card);
+  controls.append(rankLabel,rank,actionRow);card.append(head,details,projects,expanded,controls,feedback);list.append(card);
  }
  filterSignups();
 }
@@ -2960,7 +3085,7 @@ function activateMainTab(button){
   const targetPanel=sectionId?el(sectionId):null;
   if(!targetPanel||!document.querySelector('#app')?.contains(targetPanel))return;
   if(sectionId==='inscricoes')void loadYouthSignups();
-  if(sectionId==='autorizacoes'){void loadYouthRequests();void administrativeAccess.refresh();}
+  if(sectionId==='autorizacoes'){void loadYouthRequests();void administrativeAccess.refresh();if(currentProfile?.papel==='nacional')void fjuLoadComplementApprovals();}
   if(sectionId==='lideranca')void coordinatorCards.refresh();
   document.querySelectorAll('#main-nav [data-tab]').forEach(item=>{
     const active=item===button;
