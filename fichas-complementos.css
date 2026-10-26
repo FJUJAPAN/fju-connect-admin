@@ -1,0 +1,27 @@
+/* FJU JAPAN — campos complementares privados na inscrição e na ficha. */
+.fju-complement-signup{margin:12px 0;background:#f7faff;border:1px solid #d8e4f2;border-radius:15px;overflow:hidden;color:#24405f}
+.fju-complement-signup>summary{list-style:none;min-height:53px;padding:15px 14px;cursor:pointer;font-weight:790;font-size:14px;display:flex;align-items:center;gap:8px}
+.fju-complement-signup>summary::-webkit-details-marker{display:none}
+.fju-complement-signup>summary:focus-visible{outline:3px solid #3676ce;outline-offset:-3px}
+.fju-complement-signup[open]>summary{border-bottom:1px solid #dce5f0;background:#edf4fe}
+.fju-complement-signup>.fju-complement-fields{padding:14px}
+.fju-complement-signup>.muted{padding:0 14px 14px;font-size:12px;line-height:1.5}
+.fju-complement-detail:not([hidden]){margin:12px 0 18px;padding:16px;background:#f7faff;border:1px solid #dbe6f3;border-radius:16px}
+.fju-complement-detail[hidden]{display:none!important}
+.fju-complement-detail>button{margin-top:14px;min-height:47px}
+.fju-complement-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:14px;row-gap:13px}
+.fju-complement-field{display:flex;flex-direction:column;gap:6px;min-width:0;margin:0!important;color:#385475!important;font-size:12.5px;font-weight:750}
+.fju-complement-field:nth-child(-n+3){grid-column:1/-1}
+.fju-complement-field .fju-complement-input{width:100%;min-height:45px;padding:10px 12px!important;border:1px solid #cbd8e9!important;border-radius:11px!important;box-shadow:none;background:#fff!important;color:#183a60!important;font:inherit;font-size:14px!important;resize:vertical}
+.fju-complement-field textarea.fju-complement-input{line-height:1.55;min-height:68px}
+.fju-complement-field textarea.fju-complement-input:focus-visible,
+.fju-complement-field input.fju-complement-input:focus-visible{outline:3px solid #aac9fa;outline-offset:1px}
+.fju-complement-approvals{margin:18px 0;padding:16px;border:1px solid #d7e3f1;border-radius:15px;background:#f5f8fd}
+.fju-complement-approvals>h3{font-size:18px;margin:0 0 10px;color:#183863}
+.fju-complement-approval-card{border:1px solid #d7e1ee;background:#fff;border-radius:12px;padding:14px;margin-top:12px}
+.fju-complement-approval-card>strong{display:block;font-size:15px;color:#23466f}
+.fju-complement-approval-card dl{display:grid;gap:8px;margin:13px 0;overflow-wrap:anywhere}
+.fju-complement-approval-field{background:#f5f8fd;border-radius:9px;padding:9px 12px}
+.fju-complement-approval-field dt{font-size:11px;color:#617897;font-weight:730}
+.fju-complement-approval-field dd{font-size:13px;color:#243e62;white-space:pre-wrap;margin:5px 0 0}
+@media(max-width:600px){.fju-complement-fields{grid-template-columns:1fr}.fju-complement-field:nth-child(-n+3){grid-column:auto}.fju-complement-signup>summary{font-size:13px}.fju-complement-approvals{padding:12px}}
