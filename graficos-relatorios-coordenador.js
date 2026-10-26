@@ -10,30 +10,30 @@ const fieldKeys=[
 const dictionary={
  pt:{
   title:'Evolução da minha igreja',detail:'Compare os relatórios que sua igreja enviou.',metric:'O que comparar',
-  interval:'Período',last:'Último envio',previous:'Envio anterior',change:'Variação',higher:'a mais',lower:'a menos',
+  interval:'Últimos envios',last:'Último envio',previous:'Envio anterior',change:'Variação',higher:'a mais',lower:'a menos',
   same:'sem alteração',needTwo:'Envie pelo menos dois relatórios para comparar a evolução.',
   noValue:'Sem valores disponíveis para este indicador.',note:'O gráfico mostra semanas com relatório enviado. Semanas sem envio não são estimadas.',
-  one:'semana',many:'semanas',weeks:'Últimos envios',unit:'jovens',metricNames:[
+  one:'relatório',many:'relatórios',weeks:'Últimos envios',unit:'jovens',metricNames:[
    'Total de jovens (sem repetir)','Jovens firmes','Jovens novos','Jovens afastados',
-   'Presença no domingo','Presença no Encontro FJU','Batizados com o Espírito Santo','Batizados nas águas']
+   'Presença no domingo 9h30','Presença no Encontro FJU','Batizados com o Espírito Santo','Batizados nas águas']
  },
  ja:{
   title:'教会の成長グラフ',detail:'提出済みの週間報告を比較できます。',metric:'比較する項目',
-  interval:'期間',last:'最新の報告',previous:'前回の報告',change:'増減',higher:'増加',lower:'減少',
+  interval:'直近の報告数',last:'最新の報告',previous:'前回の報告',change:'増減',higher:'増加',lower:'減少',
   same:'変化なし',needTwo:'推移を見るには2回以上の報告が必要です。',
   noValue:'この項目の数値はまだありません。',note:'提出した週だけを表示します。未提出の週の値は推定しません。',
-  one:'週',many:'週',weeks:'最近の報告',unit:'人',metricNames:[
+  one:'回',many:'回',weeks:'最近の報告',unit:'人',metricNames:[
    '青年実人数','堅固な青年','新しい青年','離れた青年',
-   '日曜日の出席','FJUミーティングの出席','聖霊のバプテスマ','水のバプテスマ']
+   '日曜9時30分の出席','FJUミーティングの出席','聖霊のバプテスマ','水のバプテスマ']
  },
  en:{
   title:'My church progress',detail:'Compare your church’s submitted weekly reports.',metric:'Compare metric',
-  interval:'Period',last:'Latest report',previous:'Previous report',change:'Difference',higher:'more',lower:'fewer',
+  interval:'Recent reports',last:'Latest report',previous:'Previous report',change:'Difference',higher:'more',lower:'fewer',
   same:'no change',needTwo:'Submit at least two reports to compare progress.',
   noValue:'No numbers yet for this metric.',note:'Only submitted weeks are shown. Missing weeks are not estimated.',
-  one:'week',many:'weeks',weeks:'Recent reports',unit:'youth',metricNames:[
+  one:'report',many:'reports',weeks:'Recent reports',unit:'youth',metricNames:[
    'Unique youth total','Steady youth','New youth','Inactive youth',
-   'Sunday attendance','FJU meeting attendance','Holy Spirit baptisms','Water baptisms']
+   'Sunday 9:30 attendance','FJU meeting attendance','Holy Spirit baptisms','Water baptisms']
  }
 };
 const node=(tag,cls,text)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=String(text);return el};
@@ -71,7 +71,7 @@ function renderGraph(container,reports,language){
   const stat=(label,value,kind)=>{const box=node('div','fju-coord-chart-stat'+(kind?' fju-coord-chart-stat-'+kind:''));box.append(node('span','',label),node('strong','',value));statistics.append(box)};
   stat(t.last,latest?latest.value.toLocaleString(language==='ja'?'ja-JP':language==='en'?'en-US':'pt-BR'):'—');
   stat(t.previous,previous?previous.value.toLocaleString(language==='ja'?'ja-JP':language==='en'?'en-US':'pt-BR'):'—');
-  const changeStr=difference===null?'—':difference===0?t.same:(difference>0?'+':'')+difference+' '+(difference>0?t.higher:t.lower);
+  const changeStr=difference===null?'—':difference===0?t.same:Math.abs(difference).toLocaleString(language==='ja'?'ja-JP':language==='en'?'en-US':'pt-BR')+' '+(difference>0?t.higher:t.lower);
   stat(t.change,changeStr,difference===null?'':difference<0?'down':difference>0?'up':'');
   if(points.length<2){viewport.append(node('p','fju-coord-chart-empty',latest?t.needTwo:t.noValue));return}
   const width=740,height=276,left=48,right=21,top=21,bottom=48,plotWidth=width-left-right,plotHeight=height-top-bottom;
