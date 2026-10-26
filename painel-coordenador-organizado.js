@@ -66,6 +66,9 @@
  const articleUrl=params=>'./materias.html'+(params?'?'+params:'');
  function showDetail(which){
   const slot=$('fju-coord-subdetail');if(!slot)return;
+  const langOriginal=$('fju-admin-language-settings');
+  if(langOriginal?.parentElement===slot){$('app').prepend(langOriginal);langOriginal.hidden=true;langOriginal.style.display='none';}
+  const notifyOriginal=$('notification-settings');if(notifyOriginal?.parentElement===slot){$('fju-settings-notify-anchor')?.after(notifyOriginal);}
   slot.replaceChildren();slot.hidden=false;
   const title=document.createElement('h4');title.textContent=which==='display'?t().display:t().notifications;slot.append(title);
   if(which==='display'){
@@ -78,7 +81,6 @@
  function options(group){
   const slot=$('fju-coord-options');if(!slot)return;
   slot.replaceChildren();
-  $('fju-coord-subdetail').hidden=true;
   const records={
    fichas:[
     [t().openFichas,()=>nav('jovens'),'📁'],
@@ -144,7 +146,7 @@
    const icon=document.createElement('span');icon.className='fju-coord-app-icon fju-coord-'+color;icon.textContent=emoji;icon.setAttribute('aria-hidden','true');
    const badge=document.createElement('span');badge.className='fju-coord-app-badge';badge.hidden=true;icon.append(badge);
    const label=document.createElement('span');label.className='fju-coord-app-label';
-   b.append(icon,label);b.addEventListener('click',()=>{activeGroup=activeGroup===key?null:key;render();if(activeGroup)$('fju-coord-choices').scrollIntoView({block:'nearest',behavior:'smooth'});});
+   b.append(icon,label);b.addEventListener('click',()=>{const next=activeGroup===key?null:key;resetHome();activeGroup=next;render();if(activeGroup)$('fju-coord-choices').scrollIntoView({block:'nearest',behavior:'smooth'});});
    apps.append(b);
   }
   const choices=document.createElement('section');choices.id='fju-coord-choices';choices.hidden=true;
