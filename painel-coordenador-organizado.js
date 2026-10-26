@@ -122,7 +122,7 @@
  }
  function render(){
   if(!built)return;
-  const tt=t();$('fju-coord-intro').textContent=tt.intro;$('fju-coord-options-hint').textContent=tt.choose;
+  const tt=t();const settings=$('fju-coord-account-settings');if(settings)settings.textContent=lang()==='ja'?'⚙️ アカウント設定':lang()==='en'?'⚙️ Account settings':'⚙️ Ajustes da conta';$('fju-coord-intro').textContent=tt.intro;$('fju-coord-options-hint').textContent=tt.choose;
   $('fju-coord-back').textContent=tt.back;$('fju-coord-home-return').textContent=tt.returnHome;
   appDef.forEach(([key])=>{
     const el=$('fju-coord-app-'+key);
@@ -168,7 +168,9 @@
   const status=document.createElement('p');status.id='fju-coord-status';status.setAttribute('role','status');section.append(status);
   const headingAnchor=root.querySelector('.fju-today-section');root.insertBefore(section,headingAnchor||root.firstChild);
   // A conta faz parte do painel principal; nao e um quinto aplicativo.
-  const accountCard=$('fju-my-page');if(accountCard){section.prepend(accountCard);accountCard.hidden=false;accountCard.style.display='block';}
+  const accountCard=$('fju-my-page');if(accountCard){section.prepend(accountCard);accountCard.hidden=false;accountCard.style.display='block';
+   if(!$('fju-coord-account-settings')){const settings=document.createElement('button');settings.type='button';settings.id='fju-coord-account-settings';settings.textContent='⚙️ Ajustes da conta';settings.addEventListener('click',()=>{resetHome();activeGroup='mypage';render();$('fju-coord-choices')?.scrollIntoView({block:'nearest',behavior:'smooth'});});accountCard.append(settings);}
+  }
   const toolbar=$('fju-admin-menu-toggle');if(toolbar){
    const home=document.createElement('button');home.type='button';home.id='fju-coord-home-return';home.hidden=true;
    home.addEventListener('click',()=>{resetHome();activeGroup=null;nav('inicio');render();});toolbar.after(home);

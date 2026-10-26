@@ -67,3 +67,13 @@ body.fju-coordinator-dashboard #fju-coord-status{color:#cd2840;font-size:12px;fo
 
 /* Exibe os dados da conta dentro do painel unificado do coordenador. */
 body.fju-coordinator-dashboard #fju-coord-app-shell > #fju-my-page {display:block!important;margin:0 0 18px!important;}
+
+/* iPhone: quatro aplicativos em grade equilibrada e ajustes no cartao da conta. */
+body.fju-coordinator-dashboard #fju-coord-account-settings{display:inline-flex;align-items:center;justify-content:center;min-height:40px;margin-top:12px;padding:8px 14px;border-radius:12px;border:1px solid #d4dfed;background:#f4f7fc;color:#25446c;font-weight:750;font-size:13px;box-shadow:none}
+@media(max-width:700px){
+ body.fju-coordinator-dashboard #fju-coord-app-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;max-width:420px;margin:0 auto}
+ body.fju-coordinator-dashboard .fju-coord-app{padding:10px 4px 12px;gap:9px}
+ body.fju-coordinator-dashboard .fju-coord-app-icon{width:72px;height:72px;border-radius:19px;font-size:33px}
+ body.fju-coordinator-dashboard .fju-coord-app-label{min-height:0;font-size:13px}
+ body.fju-coordinator-dashboard #fju-coord-intro{margin-bottom:12px}
+}
