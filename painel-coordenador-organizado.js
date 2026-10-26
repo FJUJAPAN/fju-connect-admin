@@ -104,7 +104,12 @@
     [t().profile,()=>nav('lideranca'),'👤'],
     [t().display,()=>showDetail('display'),'🌐'],
     [t().password,async()=>{
-      const detail=$('fju-coord-subdetail');detail.hidden=false;detail.replaceChildren();
+      const detail=$('fju-coord-subdetail');detail.hidden=false;
+      const langNode=$('fju-admin-language-settings');
+      if(langNode?.parentElement===detail){$('app').prepend(langNode);langNode.hidden=true;langNode.style.display='none';}
+      const notifyNode=$('notification-settings');
+      if(notifyNode?.parentElement===detail)$('fju-settings-notify-anchor')?.after(notifyNode);
+      detail.replaceChildren();
       const feedback=document.createElement('p');feedback.setAttribute('role','status');feedback.textContent='…';detail.append(feedback);
       try{if(typeof window.fjuAdminRequestPasswordReset!=='function')throw Error('Ação indisponível');
        await window.fjuAdminRequestPasswordReset();feedback.textContent=t().emailSent;
