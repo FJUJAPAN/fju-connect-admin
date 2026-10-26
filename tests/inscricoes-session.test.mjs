@@ -43,6 +43,8 @@ function setup(){
      var profileRequest=7;
      const el=id=>document.getElementById(id);
      const refreshAdminPriorities=(profile,requestId)=>window.__refreshes.push({profile,requestId});
+     const fjuComplementCopy=()=>({signup:'Completar ficha',initial:'Campos opcionais'});
+     const fjuComplementForm=()=>({element:document.createElement('div'),read:()=>({})});
      ${snippet}`);
  return {w,dom,profile,requests,actions,refreshes,document,
    cleanup:()=>dom.window.close()};
