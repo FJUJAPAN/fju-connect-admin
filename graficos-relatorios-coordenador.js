@@ -53,7 +53,7 @@ function renderGraph(container,reports,language){
  metricGroup.append(node('span','',t.metric));
  const select=node('select');select.setAttribute('aria-label',t.metric);
  fieldKeys.forEach((key,i)=>{const option=node('option','',t.metricNames[i]);option.value=key;select.append(option)});
- metricGroup.append(select);
+ select.value=fieldKeys[0];metricGroup.append(select);
  const periodGroup=node('label','fju-coord-chart-control');periodGroup.append(node('span','',t.interval));
  const period=node('select');period.setAttribute('aria-label',t.interval);
  for(const n of [4,8,12,20]){const option=node('option','',n+' '+(n===1?t.one:t.many));option.value=String(n);period.append(option)}
