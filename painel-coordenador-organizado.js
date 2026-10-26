@@ -4,7 +4,7 @@
  const $=id=>document.getElementById(id);
  const copy={
   pt:{
-   home:'Painel de controle', intro:'Toque em um ícone para acessar as opções', back:'Voltar', returnHome:'← Painel de controle', choose:'Escolha o que deseja fazer',
+   home:'Painel de controle', intro:'Meu FJU · Todas as funções em um só lugar', back:'Voltar', returnHome:'← Painel de controle', choose:'Escolha o que deseja fazer',
    fichas:'Fichas',cadastros:'Cadastros',relatorios:'Relatórios',materias:'Matérias e eventos',mypage:'My Page',
    openFichas:'Consultar fichas',addYouth:'Cadastrar ficha de jovem',registers:'Analisar cadastros recebidos',reportFill:'Preencher relatório semanal',reportHistory:'Consultar histórico de relatórios',
    createPost:'Criar matéria',pastEvent:'Publicar evento realizado',drafts:'Meus rascunhos',myPublications:'Minhas publicações',
@@ -13,7 +13,7 @@
    reportDue:'Relatório semanal pendente',reportDone:'Relatório enviado',otherTasks:'Pendências que exigem sua ação'
   },
   ja:{
-   home:'管理パネル',intro:'アイコンをタップして操作を選んでください',back:'戻る',returnHome:'← 管理パネル',choose:'操作を選択してください',
+   home:'管理パネル',intro:'マイページ · すべての機能をここから',back:'戻る',returnHome:'← 管理パネル',choose:'操作を選択してください',
    fichas:'青年の記録',cadastros:'登録申請',relatorios:'週間報告',materias:'記事・イベント',mypage:'マイページ',
    openFichas:'青年の記録を確認',addYouth:'青年の記録を追加',registers:'新規登録を確認',reportFill:'週間報告を提出',reportHistory:'過去の報告を見る',
    createPost:'記事を作成',pastEvent:'終了したイベントを投稿',drafts:'下書き',myPublications:'自分の投稿',
@@ -22,7 +22,7 @@
    reportDue:'週間報告が未提出です',reportDone:'週間報告済み',otherTasks:'対応が必要な項目'
   },
   en:{
-   home:'Dashboard',intro:'Tap an icon to choose what to do',back:'Back',returnHome:'← Dashboard',choose:'Choose an action',
+   home:'Dashboard',intro:'My FJU · All your tools in one place',back:'Back',returnHome:'← Dashboard',choose:'Choose an action',
    fichas:'Youth records',cadastros:'Registrations',relatorios:'Weekly reports',materias:'Articles & events',mypage:'My Page',
    openFichas:'View youth records',addYouth:'Create youth record',registers:'Review registrations',reportFill:'Submit weekly report',reportHistory:'View report history',
    createPost:'Create article',pastEvent:'Post completed event',drafts:'My drafts',myPublications:'My publications',
@@ -33,7 +33,7 @@
  };
  const appDef=[
   ['fichas','👥','blue'],['cadastros','📥','green'],['relatorios','📊','orange'],
-  ['materias','📰','purple'],['mypage','👤','slate']
+  ['materias','📰','purple']
  ];
  let activeGroup=null,built=false,isCoordinator=false,reportDue=false,jpLastStamp=null,jpLastOpen=false;
  const lang=()=>copy[$('fju-admin-language-select')?.value]?$('fju-admin-language-select').value:'pt';
@@ -167,6 +167,8 @@
   section.append(choices);
   const status=document.createElement('p');status.id='fju-coord-status';status.setAttribute('role','status');section.append(status);
   const headingAnchor=root.querySelector('.fju-today-section');root.insertBefore(section,headingAnchor||root.firstChild);
+  // A conta faz parte do painel principal; nao e um quinto aplicativo.
+  const accountCard=$('fju-my-page');if(accountCard){section.prepend(accountCard);accountCard.hidden=false;accountCard.style.display='block';}
   const toolbar=$('fju-admin-menu-toggle');if(toolbar){
    const home=document.createElement('button');home.type='button';home.id='fju-coord-home-return';home.hidden=true;
    home.addEventListener('click',()=>{resetHome();activeGroup=null;nav('inicio');render();});toolbar.after(home);
@@ -192,7 +194,7 @@
     const langTop=$('fju-admin-language-settings');if(langTop&&!coordinator){langTop.hidden=false;langTop.style.display='flex';}
     if(langTop&&coordinator&&langTop.parentElement?.id!=='fju-coord-subdetail'){langTop.hidden=true;langTop.style.display='none';}
   }
-  if(isCoordinator)render();
+  if(isCoordinator){const card=$('fju-my-page');if(card){card.hidden=false;card.style.display='block';}render();}
  }
  $('fju-session-role')&&new MutationObserver(refresh).observe($('fju-session-role'),{subtree:true,childList:true,characterData:true});
  build();refresh();setInterval(refreshBadges,30000);
