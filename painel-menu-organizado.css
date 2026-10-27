@@ -1,0 +1,7 @@
+/* Organização do Painel Nacional por fluxo de trabalho. */
+body.fju-admin-shell #inicio .fju-dashboard-actions{gap:12px;align-items:stretch}
+body.fju-admin-shell #inicio .fju-action-card{display:flex;flex-direction:column;justify-content:flex-start;min-width:0}
+body.fju-admin-shell #inicio .fju-action-card .fju-action-arrow{margin-top:auto}
+body.fju-admin-shell #inicio .fju-action-card[data-open-tab="autorizacoes"],
+body.fju-admin-shell #inicio .fju-action-card[data-open-tab="inscricoes"]{border-color:#d8e1ee;background:linear-gradient(155deg,#fff,#f7faff)}
+body.fju-admin-shell #inicio .fju-action-card:focus-visible{outline:3px solid #3b6eb1;outline-offset:3px}
