@@ -142,6 +142,15 @@
       panel.insertBefore(list,panel.lastElementChild);
     }).catch(()=>{if(panel.isConnected)note.textContent=lang()==='ja'?'履歴を読み込めませんでした。':lang()==='en'?'Could not load rank history.':'Não foi possível carregar o histórico de patentes.';});
   }
+  if(key==='projects'&&typeof window.fjuAdminOwnProjects==='function'){
+    note.textContent=lang()==='ja'?'プロジェクトを読み込み中…':lang()==='en'?'Loading approved projects…':'Carregando projetos aprovados…';
+    window.fjuAdminOwnProjects().then(projects=>{
+      if(!panel.isConnected||panel.hidden)return;
+      if(projects===null){note.textContent=lang()==='ja'?'青年の記録がリンクされていません。':lang()==='en'?'No youth record linked.':'Nenhuma ficha vinculada à sua conta.';return;}
+      note.textContent=projects.length?'':(lang()==='ja'?'承認済みのプロジェクトはありません。':lang()==='en'?'No approved projects yet.':'Nenhum projeto aprovado até o momento.');
+      const list=document.createElement('ul');projects.forEach(name=>{const item=document.createElement('li');item.textContent=name;list.append(item);});panel.append(list);
+    }).catch(()=>{if(panel.isConnected)note.textContent=lang()==='ja'?'承認済みのプロジェクトを確認できません。':lang()==='en'?'Unable to verify approved projects.':'Não foi possível verificar os projetos aprovados.';});
+  }
   const link=document.createElement('a');link.href='https://fjujapan.github.io/fju-connect/';link.textContent=t().openPersonal;panel.append(link);
   panel.scrollIntoView({block:'nearest',behavior:'smooth'});
  }
