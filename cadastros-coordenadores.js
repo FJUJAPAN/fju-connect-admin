@@ -1,13 +1,13 @@
 export function setupCoordinatorRequests({supabase,getProfile}){
- const host=document.getElementById('admin-access-list');
+ const host=document.getElementById('autorizacoes');
  if(!host)return;
  const section=document.createElement('section');
- section.style.cssText='margin:16px 0;padding:16px;border:1px solid #d4dce8;border-radius:16px';
- const title=document.createElement('h3');title.textContent='Cadastros exclusivos de coordenadores';
+ section.style.cssText='margin:12px 0 22px;padding:18px;border:2px solid #315b9a;border-radius:18px;background:#f0f5ff';
+ const title=document.createElement('h3');title.textContent='📩 Aprovação de coordenadores';
  const refresh=document.createElement('button');refresh.type='button';refresh.textContent='Atualizar pedidos de coordenadores';
  const status=document.createElement('p');status.setAttribute('role','status');
  const list=document.createElement('div');section.append(title,refresh,status,list);
- host.parentElement.insertBefore(section,host);
+ host.insertBefore(section,host.firstChild);
  async function load(){
   list.replaceChildren();
   if(getProfile()?.papel!=='nacional'){section.hidden=true;return;}
@@ -15,7 +15,7 @@ export function setupCoordinatorRequests({supabase,getProfile}){
   const {data,error}=await supabase.rpc('fju_listar_cadastros_coordenadores');
   if(error){status.textContent='Não foi possível consultar: '+error.message;return;}
   const rows=Array.isArray(data)?data:[];
-  status.textContent=rows.length?rows.length+' pedido(s) pendente(s)':'Nenhum cadastro de coordenador pendente.';
+  status.textContent=rows.length?rows.length+' pedido(s) pendente(s)':'Nenhum pedido na fila exclusiva. Cadastros anteriores à atualização podem não ter sido migrados; não refaça cadastros sem verificar os registros.';
   for(const row of rows){
    const card=document.createElement('article');card.className='report-card';
    const heading=document.createElement('strong');heading.textContent=row.nome;
