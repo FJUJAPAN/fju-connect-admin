@@ -8,3 +8,11 @@
 #inicio .fju-dashboard-actions>.fju-action-card:last-child .fju-action-icon{background:#fff0f1!important;color:#d82442!important}
 #inicio #fju-my-page{margin-top:18px!important}
 @media(min-width:800px){#inicio .fju-dashboard-actions{gap:15px!important}#inicio .fju-dashboard-actions>.fju-action-card{min-height:148px!important;padding:19px 12px!important}#inicio .fju-dashboard-actions .fju-action-icon{width:64px!important;height:64px!important}#inicio .fju-dashboard-actions .fju-action-icon svg{width:34px;height:34px}#inicio .fju-dashboard-actions>.fju-action-card strong{font-size:14px!important}}
+
+/* iOS admin: visual uniforme em telas Nacional e Coordenador */
+body.fju-admin-shell #inicio .fju-dashboard-actions>.fju-action-card{border-radius:20px!important;background:#fff!important;border:1px solid #e7eaf0!important;box-shadow:0 3px 14px rgba(20,35,55,.045)!important;padding:16px 12px!important;min-height:136px!important;align-items:center;justify-content:center}
+body.fju-admin-shell #inicio .fju-dashboard-actions .fju-action-icon{width:48px!important;height:48px!important;border-radius:14px!important;background:#f2f4f8!important;color:#24344b!important;display:grid;place-items:center;margin:0 auto 8px!important}
+body.fju-admin-shell #inicio .fju-dashboard-actions .fju-action-icon svg{width:25px!important;height:25px!important;stroke-width:1.75!important;stroke-linecap:round;stroke-linejoin:round}
+body.fju-admin-shell #inicio .fju-dashboard-actions>.fju-action-card strong{font-size:13px!important;font-weight:650!important;letter-spacing:-.025em;text-align:center}
+body.fju-admin-shell #inicio .fju-dashboard-actions>.fju-action-card:focus-visible{outline:3px solid #8db5ff;outline-offset:2px}
+@media(max-width:390px){body.fju-admin-shell #inicio .fju-dashboard-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
