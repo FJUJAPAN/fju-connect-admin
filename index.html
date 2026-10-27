@@ -290,6 +290,16 @@ body.fju-admin-shell{min-height:100dvh;overscroll-behavior-y:none;-webkit-tap-hi
 }
 :where(button,a,input,select,textarea):focus-visible{outline:3px solid #d35c25;outline-offset:3px}
 @media (prefers-reduced-motion: reduce){html:focus-within{scroll-behavior:auto}}
+
+/* Autorizações agrupadas por igreja, com navegação iOS */
+#autorizacoes .fju-church-requests{margin:10px 0;border:1px solid #e5e9f0;border-radius:17px;background:#fff;overflow:hidden}
+#autorizacoes .fju-church-requests>summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px;font-size:15px;list-style:none;min-height:54px}
+#autorizacoes .fju-church-requests>summary::-webkit-details-marker{display:none}
+#autorizacoes .fju-church-requests>summary:after{content:'›';font-size:23px;color:#8b95a5;order:3}
+#autorizacoes .fju-church-requests[open]>summary:after{transform:rotate(90deg)}
+#autorizacoes .fju-church-request-count{margin-left:auto;border-radius:99px;padding:3px 9px;background:#edf0f4;color:#566070;font-size:12px;font-weight:700}
+#autorizacoes .fju-church-request-count.is-pending{background:#d9233f;color:white}
+#autorizacoes .fju-church-requests>.report-card{margin:10px 12px 14px}
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023g">
@@ -1984,6 +1994,30 @@ async function loadYouthRequests(){
     if(!youthError)for(const youth of people||[])youthById.set(String(youth.id),youth);
     else console.warn('Não foi possível identificar fichas para aprovação:',youthError.message);
   }
+  // Agrupa a página carregada por igreja, mantendo os cartões e decisões originais.
+  const churchGroups=new Map();
+  if(profile.papel==='nacional'){
+    for(const polo of poloRows){
+      const entries=visible.filter(r=>String(r.polo_id)===String(polo.id));
+      if(!entries.length)continue;
+      const group=document.createElement('details');group.className='fju-church-requests';
+      const summary=document.createElement('summary');
+      const name=document.createElement('strong');name.textContent=polo.nome;
+      const count=document.createElement('span');count.className='fju-church-request-count';
+      const pending=entries.filter(r=>r.status==='pendente').length;
+      count.textContent=pending?String(pending):String(entries.length);
+      count.classList.toggle('is-pending',pending>0);
+      count.setAttribute('aria-label',pending?pending+' pendências nesta página':entries.length+' solicitações nesta página');
+      summary.append(name,count);group.append(summary);list.append(group);
+      churchGroups.set(String(polo.id),group);
+    }
+    const unknown=visible.filter(r=>!poloRows.some(p=>String(p.id)===String(r.polo_id)));
+    if(unknown.length){
+      const group=document.createElement('details');group.className='fju-church-requests';
+      const summary=document.createElement('summary');summary.textContent='Igreja não identificada ('+unknown.length+')';
+      group.append(summary);list.append(group);churchGroups.set('__unknown',group);
+    }
+  }
   for(const r of visible){
     const card=document.createElement('article');card.className='report-card';
     const jovem=youthById.get(String(r.jovem_id))||null;
@@ -2105,7 +2139,8 @@ async function loadYouthRequests(){
       const actions=document.createElement('div');actions.className='authorization-actions';
       actions.append(approve,deny);card.append(actions,feedback);
     }
-    list.append(card);
+    const destination=profile.papel==='nacional'?(churchGroups.get(String(r.polo_id))||churchGroups.get('__unknown')):list;
+    destination.append(card);
   }
 }
 document.querySelectorAll('[data-request-filter]').forEach(btn=>btn.addEventListener('click',()=>{
