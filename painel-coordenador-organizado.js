@@ -131,6 +131,17 @@
    note.textContent=lang()==='ja'?'参加プロジェクトは、プロフィールに登録されるとここに表示されます。':lang()==='en'?'Your approved projects will appear here once linked to your profile.':'Seus projetos aprovados aparecerão aqui quando estiverem vinculados ao seu perfil.';
   }
   panel.append(note);
+  if(key==='journey'&&typeof window.fjuAdminOwnRankHistory==='function'){
+    note.textContent=lang()==='ja'?'履歴を読み込み中…':lang()==='en'?'Loading your history…':'Carregando seu histórico…';
+    window.fjuAdminOwnRankHistory().then(history=>{
+      if(!panel.isConnected||panel.hidden)return;
+      if(history===null){note.textContent=lang()==='ja'?'このアカウントに青年の記録が関連付けられていません。':lang()==='en'?'No youth record is linked to this account.':'Nenhuma ficha de jovem está vinculada a esta conta.';return;}
+      note.textContent=history.length?'':(lang()==='ja'?'昇格履歴はまだありません。':lang()==='en'?'No rank changes recorded yet.':'Ainda não há alterações de patente registradas.');
+      const list=document.createElement('ul');list.className='fju-coord-rank-history';
+      history.forEach(row=>{const item=document.createElement('li');const date=row.alterado_em?new Date(row.alterado_em).toLocaleDateString(lang()==='ja'?'ja-JP':lang()==='en'?'en-US':'pt-BR'):'—';item.textContent=date+' · '+(row.patente_anterior||'—')+' → '+(row.patente_nova||'—');list.append(item);});
+      panel.insertBefore(list,panel.lastElementChild);
+    }).catch(()=>{if(panel.isConnected)note.textContent=lang()==='ja'?'履歴を読み込めませんでした。':lang()==='en'?'Could not load rank history.':'Não foi possível carregar o histórico de patentes.';});
+  }
   const link=document.createElement('a');link.href='https://fjujapan.github.io/fju-connect/';link.textContent=t().openPersonal;panel.append(link);
   panel.scrollIntoView({block:'nearest',behavior:'smooth'});
  }
