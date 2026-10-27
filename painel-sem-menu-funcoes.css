@@ -1,0 +1,8 @@
+/* Cartões do Painel de Controle substituem o menu Funções. */
+body.fju-admin-shell .fju-admin-workspace{display:block!important;max-width:1100px;margin-left:auto;margin-right:auto}
+body.fju-admin-shell .fju-admin-sidebar{display:none!important}
+body.fju-admin-shell .fju-admin-menu-overlay{display:none!important}
+body.fju-admin-shell .fju-content-toolbar .fju-ios-menu-icon{display:none!important}
+body.fju-admin-shell .fju-admin-content{width:100%!important;max-width:100%!important;min-width:0!important}
+body.fju-admin-shell #inicio .fju-dashboard-actions{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:900px){body.fju-admin-shell #inicio .fju-dashboard-actions{grid-template-columns:repeat(2,minmax(0,1fr))}}
