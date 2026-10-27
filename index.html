@@ -3173,9 +3173,9 @@ function updateAdminDashboardRole(profile,poloNome){
   });
   const authorizationLabel=document.querySelector('#main-nav [data-tab="autorizacoes"] .fju-nav-label-desktop');
   authorizationLabel.textContent=national?'Autorizações nacionais':'Minhas solicitações';
-  el('fju-requests-kicker').textContent=national?'APROVAÇÕES DA LIDERANÇA NACIONAL':'PEDIDOS DA MINHA IGREJA';
-  el('fju-requests-title').textContent=national?'Central de aprovações':'Acompanhamento de solicitações';
-  el('fju-requests-intro').textContent=national
+  (document.getElementById('fju-requests-kicker')||{textContent:''}).textContent=national?'APROVAÇÕES DA LIDERANÇA NACIONAL':'PEDIDOS DA MINHA IGREJA';
+  (document.getElementById('fju-requests-title')||{textContent:''}).textContent=national?'Central de aprovações':'Acompanhamento de solicitações';
+  (document.getElementById('fju-requests-intro')||{textContent:''}).textContent=national
     ?'Analise os pedidos recebidos dos polos. As decisões são confirmadas antes de alterar qualquer ficha ou liberar um acesso.'
     :'Consulte pedidos da sua igreja e acompanhe as decisões da liderança nacional. Somente o Nacional pode autorizar mudanças protegidas.';
   el('fju-request-fichas-heading').textContent=national?'Autorizações de fichas':'Solicitações de fichas do polo';
