@@ -300,6 +300,20 @@ body.fju-admin-shell{min-height:100dvh;overscroll-behavior-y:none;-webkit-tap-hi
 #autorizacoes .fju-church-request-count{margin-left:auto;border-radius:99px;padding:3px 9px;background:#edf0f4;color:#566070;font-size:12px;font-weight:700}
 #autorizacoes .fju-church-request-count.is-pending{background:#d9233f;color:white}
 #autorizacoes .fju-church-requests>.report-card{margin:10px 12px 14px}
+
+/* Central de aprovações: navegação compacta no estilo iOS */
+#autorizacoes.fju-approval-center{padding:16px!important}
+#autorizacoes .fju-approval-header{margin:0 0 14px}
+#autorizacoes .fju-approval-header h2{font-size:clamp(23px,5vw,30px);margin:0 0 4px;letter-spacing:-.035em}
+#autorizacoes .fju-approval-header p{font-size:13px;color:#738097;margin:0}
+#autorizacoes .fju-approval-tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:5px;background:#eef1f6;border-radius:14px;margin-bottom:18px}
+#autorizacoes .fju-approval-tabs button{border:0;background:transparent;border-radius:10px;color:#4c5870;min-height:42px;padding:8px;font-weight:650;font-size:13px;box-shadow:none}
+#autorizacoes .fju-approval-tabs button.active{background:#fff;color:#172b49;box-shadow:0 2px 7px #1d31551a}
+#autorizacoes .fju-request-zone[hidden]{display:none!important}
+#autorizacoes .fju-request-zone{padding:0!important;margin:0!important;border:0!important;box-shadow:none!important;background:transparent!important}
+#autorizacoes .fju-zone-num{display:none!important}
+#autorizacoes .fju-request-zone-heading h3{font-size:16px!important;margin:0!important}
+#autorizacoes .fju-request-zone-heading p{font-size:12px!important;margin:4px 0 12px!important}
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023g">
@@ -509,23 +523,15 @@ body.fju-admin-shell{min-height:100dvh;overscroll-behavior-y:none;-webkit-tap-hi
 <div class="fju-signups-title"><div><small>FJU JAPAN · INSCRIÇÕES</small><h3>Jovens aguardando análise</h3><p>Confira os dados antes de criar uma ficha oficial.</p></div><strong id="inscricoes-count" aria-live="polite">—</strong></div>
 <div class="fju-signups-toolbar"><div><label for="inscricoes-search">Buscar jovem ou projeto</label><input id="inscricoes-search" type="search" autocomplete="off" placeholder="Nome, projeto ou nacionalidade"></div><button type="button" id="inscricoes-refresh" class="secondary">↻ Atualizar</button></div>
 <p id="inscricoes-visible-count" class="muted" aria-live="polite"></p><p id="inscricoes-message" class="message" role="status"></p>
-<div id="inscricoes-list" class="fju-signups-list"></div></section><section id="autorizacoes" class="panel hidden"><h2>Autorizações de fichas</h2>
-<div class="fju-requests-landing">
-  <span class="fju-requests-kicker" id="fju-requests-kicker">CENTRAL DE SOLICITAÇÕES</span>
-  <h3 id="fju-requests-title">Solicitações e autorizações</h3>
-  <p id="fju-requests-intro">Acompanhe os pedidos de alteração de fichas e de acesso administrativo.</p>
-  <div class="fju-requests-jump" aria-label="Tipos de solicitação">
-    <button type="button" data-request-jump="fju-request-fichas"><span aria-hidden="true">📝</span> Alterações de fichas <span aria-hidden="true">↘</span></button>
-    <button type="button" data-request-jump="fju-request-acessos"><span aria-hidden="true">🔑</span> Acesso administrativo <span aria-hidden="true">↘</span></button>
-  </div>
-</div>
+<div id="inscricoes-list" class="fju-signups-list"></div></section><section id="autorizacoes" class="panel hidden fju-approval-center"><header class="fju-approval-header"><h2>Central de aprovações</h2><p>Solicitações organizadas por igreja.</p></header>
+<nav class="fju-approval-tabs" aria-label="Seções da central de aprovações"><button type="button" class="active" data-approval-tab="fju-request-fichas" aria-pressed="true">Fichas</button><button type="button" data-approval-tab="fju-request-acessos" aria-pressed="false">Coordenadores</button></nav>
 <div id="fju-request-fichas" class="fju-request-zone">
   <div class="fju-request-zone-heading"><div><span class="fju-zone-num">01</span><h3 id="fju-request-fichas-heading">Alterações de fichas</h3></div><p id="fju-request-fichas-intro">Pedidos de edição, patente e exclusão.</p></div>
   <div class="fju-request-actions"><button type="button" id="requests-refresh" class="secondary">Atualizar solicitações</button></div><p id="requests-message" class="message" role="status"></p><div class="authorization-filters" id="requests-filters"><button type="button" data-request-filter="pendente" class="active">Pendentes</button><button type="button" data-request-filter="aprovada">Aprovadas</button><button type="button" data-request-filter="rejeitada">Rejeitadas</button><button type="button" data-request-filter="todas">Todas</button></div><div id="requests-list" class="report-list"></div>
 <div class="fju-request-more"><button type="button" id="requests-load-more" class="secondary" hidden>Carregar mais 25 solicitações</button></div></div>
 <div id="fju-request-acessos" class="fju-request-zone">
   <div class="fju-request-zone-heading"><div><span class="fju-zone-num">02</span><h3 id="fju-request-acessos-heading">Acesso administrativo</h3></div><p id="fju-request-acessos-intro">Pedidos vinculados à ficha e à função de coordenador.</p></div>
-  <div class="fju-request-actions"><button type="button" id="admin-access-refresh" class="secondary">Atualizar pedidos de acesso</button></div><p id="admin-access-message" class="message" role="status"></p><div id="admin-access-list" class="report-list"></div></div></section><section id="relatorios" class="panel hidden">
+  <div class="fju-request-actions"><button type="button" id="admin-access-refresh" class="secondary">Atualizar pedidos de acesso</button></div><p id="admin-access-message" class="message" role="status"></p><div id="admin-access-list" class="report-list"></div></div><script>document.addEventListener('DOMContentLoaded',()=>{const panel=document.getElementById('autorizacoes');if(!panel)return;const tabs=[...panel.querySelectorAll('[data-approval-tab]')];function select(id){for(const tab of tabs){const active=tab.dataset.approvalTab===id;tab.classList.toggle('active',active);tab.setAttribute('aria-pressed',String(active));}for(const zone of panel.querySelectorAll('.fju-request-zone'))zone.hidden=zone.id!==id;}tabs.forEach(tab=>tab.addEventListener('click',()=>select(tab.dataset.approvalTab)));select('fju-request-fichas');});</script></section><section id="relatorios" class="panel hidden">
 <h2>Relatórios</h2>
 <div class="fju-reports-hero">
   <span class="fju-reports-eyebrow" id="fju-reports-eyebrow">FJU JAPAN · RELATÓRIOS</span>
