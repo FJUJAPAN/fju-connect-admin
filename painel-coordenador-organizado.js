@@ -120,6 +120,20 @@
   };
   (records[group]||[]).forEach(([label,action,emoji])=>slot.append(btn(label,action,emoji)));
  }
+ function showPersonalDetail(key){
+  const panel=$('fju-coord-personal-detail');if(!panel)return;
+  panel.replaceChildren();panel.hidden=false;
+  const heading=document.createElement('h4');heading.textContent=t()[key];panel.append(heading);
+  const note=document.createElement('p');
+  if(key==='journey'){
+   note.textContent=lang()==='ja'?'個人の歩みと昇格履歴は、プロフィールに記録がある場合に表示されます。':lang()==='en'?'Your journey and rank history will appear here when linked to your profile.':'Sua jornada e o histórico de patentes aparecerão aqui quando estiverem vinculados ao seu perfil.';
+  }else{
+   note.textContent=lang()==='ja'?'参加プロジェクトは、プロフィールに登録されるとここに表示されます。':lang()==='en'?'Your approved projects will appear here once linked to your profile.':'Seus projetos aprovados aparecerão aqui quando estiverem vinculados ao seu perfil.';
+  }
+  panel.append(note);
+  const link=document.createElement('a');link.href='https://fjujapan.github.io/fju-connect/';link.textContent=t().openPersonal;panel.append(link);
+  panel.scrollIntoView({block:'nearest',behavior:'smooth'});
+ }
  function buildPersonalArea(section){
   if($('fju-coord-personal-area'))return;
   const personal=document.createElement('section');personal.id='fju-coord-personal-area';
@@ -133,8 +147,8 @@
       a.href='#fju-coord-choices';
       a.addEventListener('click',event=>{event.preventDefault();resetHome();activeGroup='mypage';render();showDetail('notifications');$('fju-coord-choices')?.scrollIntoView({block:'nearest',behavior:'smooth'});});
     }else{
-      a.href='https://fjujapan.github.io/fju-connect/';
-      a.title='Funcionalidade pessoal em desenvolvimento';
+      a.href='#fju-coord-personal-detail';
+      a.addEventListener('click',event=>{event.preventDefault();showPersonalDetail(key);});
     }
     a.setAttribute('aria-label',key);
     const icon=document.createElement('span');icon.textContent=emoji;icon.className='fju-coord-personal-icon';
@@ -142,6 +156,7 @@
     a.append(icon,label);grid.append(a);
   });
   const hint=document.createElement('p');hint.id='fju-coord-personal-hint';personal.append(hint);
+  const detail=document.createElement('div');detail.id='fju-coord-personal-detail';detail.hidden=true;personal.append(detail);
   section.insertBefore(personal,$('fju-coord-choices'));
  }
  function render(){
