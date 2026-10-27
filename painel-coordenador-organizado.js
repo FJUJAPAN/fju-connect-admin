@@ -128,7 +128,14 @@
   const items=[['journey','🌱'],['checkin','📍'],['projects','🎯'],['personalNotifications','🔔']];
   items.forEach(([key,emoji])=>{
     const a=document.createElement('a');a.className='fju-coord-personal-link';
-    a.href='https://fjujapan.github.io/fju-connect/';
+    if(key==='checkin')a.href='https://fjujapan.github.io/fju-connect/check-in/';
+    else if(key==='personalNotifications'){
+      a.href='#fju-coord-choices';
+      a.addEventListener('click',event=>{event.preventDefault();resetHome();activeGroup='mypage';render();showDetail('notifications');$('fju-coord-choices')?.scrollIntoView({block:'nearest',behavior:'smooth'});});
+    }else{
+      a.href='https://fjujapan.github.io/fju-connect/';
+      a.title='Funcionalidade pessoal em desenvolvimento';
+    }
     a.setAttribute('aria-label',key);
     const icon=document.createElement('span');icon.textContent=emoji;icon.className='fju-coord-personal-icon';
     const label=document.createElement('span');label.className='fju-coord-personal-label';label.dataset.personalKey=key;
