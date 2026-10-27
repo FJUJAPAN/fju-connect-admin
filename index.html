@@ -672,6 +672,17 @@ const el=id=>document.getElementById(id);
 // Initialize session state before the first language render.
 let currentProfile=null;
 // A senha é alterada por fluxo seguro de recuperação da conta autenticada.
+window.fjuAdminOwnRankHistory=async function(){
+ const auth=await supabase.auth.getUser();
+ if(auth.error)throw auth.error;
+ if(!auth.data.user)throw new Error('Login necessário');
+ const link=await supabase.from('fju_vinculos_conta_jovem').select('jovem_id').eq('usuario_id',auth.data.user.id).eq('ativo',true).maybeSingle();
+ if(link.error)throw link.error;
+ if(!link.data)return null;
+ const history=await supabase.from('fju_historico_patentes').select('patente_anterior,patente_nova,alterado_em').eq('jovem_id',link.data.jovem_id).order('alterado_em',{ascending:false}).limit(50);
+ if(history.error)throw history.error;
+ return history.data||[];
+};
 window.fjuAdminRefreshReportStatus=()=>{if(currentProfile?.papel==='coordenador')return loadDashboard(currentProfile,profileRequest);};
 window.fjuAdminHideCoordinatorReportHistory=()=>{const section=el('fju-coord-report-history');if(section)section.hidden=true;};
 window.fjuAdminLoadCoordinatorReportHistory=async()=>{
