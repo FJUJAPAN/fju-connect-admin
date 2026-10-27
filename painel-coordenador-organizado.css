@@ -77,3 +77,12 @@ body.fju-coordinator-dashboard #fju-coord-account-settings{display:inline-flex;a
  body.fju-coordinator-dashboard .fju-coord-app-label{min-height:0;font-size:13px}
  body.fju-coordinator-dashboard #fju-coord-intro{margin-bottom:12px}
 }
+
+/* Área pessoal do coordenador — mesmo padrão compacto de três colunas. */
+.fju-coordinator-dashboard #fju-coord-personal-area{margin:18px 0 12px}
+.fju-coordinator-dashboard #fju-coord-personal-title{font-size:17px;font-weight:750;margin:0 0 12px;color:#19264b}
+.fju-coordinator-dashboard .fju-coord-personal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.fju-coordinator-dashboard .fju-coord-personal-link{display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center;text-decoration:none;color:#19264b;font-size:12px;font-weight:650;min-width:0}
+.fju-coordinator-dashboard .fju-coord-personal-icon{display:grid;place-items:center;width:58px;height:58px;border-radius:16px;background:#edf1fb;font-size:28px;box-shadow:0 2px 8px #14213d12}
+.fju-coordinator-dashboard .fju-coord-personal-label{overflow-wrap:anywhere}
+.fju-coordinator-dashboard #fju-coord-personal-hint{font-size:12px;color:#61708b;margin:12px 0}
