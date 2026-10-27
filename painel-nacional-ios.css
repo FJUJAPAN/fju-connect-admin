@@ -1,0 +1,38 @@
+/* FJU JAPAN — nova linguagem visual iOS para o Painel Nacional.
+   Apenas apresentação; preserva rotas, IDs, eventos e regras de acesso. */
+body.fju-admin-shell{--fju-ios-bg:#f5f6f9;--fju-ios-ink:#172236;--fju-ios-muted:#6b7587;--fju-ios-border:#e6e9ef;background:var(--fju-ios-bg);color:var(--fju-ios-ink);-webkit-font-smoothing:antialiased}
+body.fju-admin-shell .fju-admin-workspace{gap:20px}
+body.fju-admin-shell .fju-admin-sidebar{border-radius:22px;box-shadow:0 12px 32px rgba(22,36,59,.09)}
+body.fju-admin-shell .fju-admin-workspace>.panel,body.fju-admin-shell .fju-admin-workspace>.fju-admin-content{min-width:0}
+body.fju-admin-shell #inicio.panel{background:transparent;border:0;box-shadow:none;padding:0}
+body.fju-admin-shell #inicio>h2{font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:#7b8493;font-weight:750;margin:0 0 12px}
+body.fju-admin-shell #inicio .fju-overview-intro{border:1px solid var(--fju-ios-border);border-radius:24px;background:#fff;padding:23px 24px;box-shadow:0 5px 22px rgba(27,44,70,.045);margin-bottom:18px}
+body.fju-admin-shell #inicio #fju-overview-title{font-size:clamp(23px,3vw,32px);font-weight:800;letter-spacing:-.045em;line-height:1.18;color:#142238}
+body.fju-admin-shell #inicio #fju-overview-description{font-size:14px;line-height:1.55;color:var(--fju-ios-muted);margin:9px 0 0}
+body.fju-admin-shell #inicio .fju-today-section{border:1px solid var(--fju-ios-border);background:#fff;border-radius:23px;padding:21px;box-shadow:0 5px 22px rgba(27,44,70,.035);margin-bottom:18px}
+body.fju-admin-shell #inicio .fju-today-heading h3,body.fju-admin-shell #inicio .fju-actions-title{font-size:18px;font-weight:800;letter-spacing:-.035em;color:#19283e}
+body.fju-admin-shell #inicio .fju-today-heading p{font-size:13px;color:var(--fju-ios-muted)}
+body.fju-admin-shell #inicio .fju-daily-actions:not([hidden]){display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+body.fju-admin-shell #inicio .fju-daily-button{min-width:0;min-height:104px;border:1px solid var(--fju-ios-border);border-radius:17px;background:#f9fafc;color:#1b2b40;padding:15px;text-align:left;box-shadow:none;transition:background .15s ease,transform .15s ease}
+body.fju-admin-shell #inicio .fju-daily-button:hover{background:#f0f3f8;transform:translateY(-1px)}
+body.fju-admin-shell #inicio .fju-daily-button strong{font-size:14px;letter-spacing:-.015em}
+body.fju-admin-shell #inicio .fju-daily-button small{font-size:11px;line-height:1.4;color:#69758a}
+body.fju-admin-shell #inicio .fju-dashboard-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+body.fju-admin-shell #inicio .fju-action-card{min-width:0;min-height:145px;border:1px solid var(--fju-ios-border);border-radius:20px;background:#fff;padding:18px;box-shadow:0 4px 17px rgba(27,44,70,.035);transition:transform .15s ease,box-shadow .15s ease}
+body.fju-admin-shell #inicio .fju-action-card:hover{transform:translateY(-2px);box-shadow:0 9px 23px rgba(27,44,70,.075)}
+body.fju-admin-shell #inicio .fju-action-card strong{font-size:14px;font-weight:750;letter-spacing:-.02em}
+body.fju-admin-shell #inicio .fju-action-card>span:not(.fju-action-icon):not(.fju-action-arrow){font-size:12px;color:var(--fju-ios-muted)}
+body.fju-admin-shell #inicio .fju-action-icon{border-radius:13px}
+body.fju-admin-shell .panel:not(#inicio){border-radius:22px}
+body.fju-admin-shell button,body.fju-admin-shell input,body.fju-admin-shell select{touch-action:manipulation}
+@media(max-width:900px){
+ body.fju-admin-shell .fju-admin-workspace{display:block}
+ body.fju-admin-shell #inicio .fju-overview-intro{padding:21px 19px;border-radius:21px}
+ body.fju-admin-shell #inicio .fju-today-section{padding:17px;border-radius:21px}
+ body.fju-admin-shell #inicio .fju-daily-actions:not([hidden]){grid-template-columns:1fr;gap:9px}
+ body.fju-admin-shell #inicio .fju-daily-button{min-height:70px;padding:12px 14px}
+ body.fju-admin-shell #inicio .fju-dashboard-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ body.fju-admin-shell #inicio .fju-action-card{min-height:137px;padding:15px;border-radius:18px}
+}
+@media(max-width:390px){body.fju-admin-shell #inicio .fju-dashboard-actions{grid-template-columns:1fr}body.fju-admin-shell #inicio .fju-action-card{min-height:105px}}
+@media(prefers-reduced-motion:reduce){body.fju-admin-shell #inicio .fju-action-card,body.fju-admin-shell #inicio .fju-daily-button{transition:none}}
