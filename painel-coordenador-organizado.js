@@ -8,7 +8,7 @@
    fichas:'Fichas',cadastros:'Cadastros',relatorios:'Relatórios',materias:'Matérias e eventos',mypage:'My Page',
    openFichas:'Consultar fichas',addYouth:'Cadastrar ficha de jovem',registers:'Analisar cadastros recebidos',reportFill:'Preencher relatório semanal',reportHistory:'Consultar histórico de relatórios',
    createPost:'Criar matéria',pastEvent:'Publicar evento realizado',drafts:'Meus rascunhos',myPublications:'Minhas publicações',
-   profile:'Meu perfil',display:'Idioma de exibição',password:'Alterar senha',notifications:'Notificações do aparelho',
+   journey:'Minha Jornada',checkin:'Check-in',projects:'Meus Projetos',personalNotifications:'Notificações',personalHeading:'Minha área',personalHint:'Acesse suas funções pessoais no FJU Connect',openPersonal:'Abrir no FJU Connect',profile:'Meu perfil',display:'Idioma de exibição',password:'Alterar senha',notifications:'Notificações do aparelho',
    emailSent:'Enviamos as instruções de alteração de senha ao seu e-mail.',emailFail:'Não foi possível enviar o e-mail de alteração de senha.',
    reportDue:'Relatório semanal pendente',reportDone:'Relatório enviado',otherTasks:'Pendências que exigem sua ação'
   },
@@ -17,7 +17,7 @@
    fichas:'青年の記録',cadastros:'登録申請',relatorios:'週間報告',materias:'記事・イベント',mypage:'マイページ',
    openFichas:'青年の記録を確認',addYouth:'青年の記録を追加',registers:'新規登録を確認',reportFill:'週間報告を提出',reportHistory:'過去の報告を見る',
    createPost:'記事を作成',pastEvent:'終了したイベントを投稿',drafts:'下書き',myPublications:'自分の投稿',
-   profile:'プロフィール',display:'表示言語',password:'パスワード変更',notifications:'端末の通知',
+   journey:'私の歩み',checkin:'チェックイン',projects:'参加プロジェクト',personalNotifications:'お知らせ',personalHeading:'マイエリア',personalHint:'FJU Connectで個人機能を開きます',openPersonal:'FJU Connectを開く',profile:'プロフィール',display:'表示言語',password:'パスワード変更',notifications:'端末の通知',
    emailSent:'パスワード変更の案内をメールで送信しました。',emailFail:'パスワード変更メールを送信できませんでした。',
    reportDue:'週間報告が未提出です',reportDone:'週間報告済み',otherTasks:'対応が必要な項目'
   },
@@ -26,7 +26,7 @@
    fichas:'Youth records',cadastros:'Registrations',relatorios:'Weekly reports',materias:'Articles & events',mypage:'My Page',
    openFichas:'View youth records',addYouth:'Create youth record',registers:'Review registrations',reportFill:'Submit weekly report',reportHistory:'View report history',
    createPost:'Create article',pastEvent:'Post completed event',drafts:'My drafts',myPublications:'My publications',
-   profile:'My profile',display:'Display language',password:'Change password',notifications:'Device notifications',
+   journey:'My Journey',checkin:'Check-in',projects:'My Projects',personalNotifications:'Notifications',personalHeading:'My area',personalHint:'Open personal features in FJU Connect',openPersonal:'Open FJU Connect',profile:'My profile',display:'Display language',password:'Change password',notifications:'Device notifications',
    emailSent:'Password change instructions have been sent to your email.',emailFail:'Could not send the password change email.',
    reportDue:'Weekly report due',reportDone:'Report submitted',otherTasks:'Items requiring your action'
   }
@@ -120,9 +120,30 @@
   };
   (records[group]||[]).forEach(([label,action,emoji])=>slot.append(btn(label,action,emoji)));
  }
+ function buildPersonalArea(section){
+  if($('fju-coord-personal-area'))return;
+  const personal=document.createElement('section');personal.id='fju-coord-personal-area';
+  const title=document.createElement('h3');title.id='fju-coord-personal-title';personal.append(title);
+  const grid=document.createElement('div');grid.className='fju-coord-personal-grid';personal.append(grid);
+  const items=[['journey','🌱'],['checkin','📍'],['projects','🎯'],['personalNotifications','🔔']];
+  items.forEach(([key,emoji])=>{
+    const a=document.createElement('a');a.className='fju-coord-personal-link';
+    a.href='https://fjujapan.github.io/fju-connect/';
+    a.setAttribute('aria-label',key);
+    const icon=document.createElement('span');icon.textContent=emoji;icon.className='fju-coord-personal-icon';
+    const label=document.createElement('span');label.className='fju-coord-personal-label';label.dataset.personalKey=key;
+    a.append(icon,label);grid.append(a);
+  });
+  const hint=document.createElement('p');hint.id='fju-coord-personal-hint';personal.append(hint);
+  section.insertBefore(personal,$('fju-coord-choices'));
+ }
  function render(){
   if(!built)return;
-  const tt=t();const settings=$('fju-coord-account-settings');if(settings)settings.textContent=lang()==='ja'?'⚙️ アカウント設定':lang()==='en'?'⚙️ Account settings':'⚙️ Ajustes da conta';$('fju-coord-intro').textContent=tt.intro;$('fju-coord-options-hint').textContent=tt.choose;
+  const tt=t();
+  const personalTitle=$('fju-coord-personal-title');if(personalTitle)personalTitle.textContent=tt.personalHeading;
+  const personalHint=$('fju-coord-personal-hint');if(personalHint)personalHint.textContent=tt.personalHint;
+  document.querySelectorAll('[data-personal-key]').forEach(el=>{el.textContent=tt[el.dataset.personalKey];el.parentElement.setAttribute('aria-label',tt[el.dataset.personalKey]+' — '+tt.openPersonal);});
+  const settings=$('fju-coord-account-settings');if(settings)settings.textContent=lang()==='ja'?'⚙️ アカウント設定':lang()==='en'?'⚙️ Account settings':'⚙️ Ajustes da conta';$('fju-coord-intro').textContent=tt.intro;$('fju-coord-options-hint').textContent=tt.choose;
   $('fju-coord-back').textContent=tt.back;$('fju-coord-home-return').textContent=tt.returnHome;
   appDef.forEach(([key])=>{
     const el=$('fju-coord-app-'+key);
@@ -165,6 +186,7 @@
   const menu=document.createElement('div');menu.id='fju-coord-options';choices.append(menu);
   const detail=document.createElement('div');detail.id='fju-coord-subdetail';detail.hidden=true;choices.append(detail);
   section.append(choices);
+  buildPersonalArea(section);
   const status=document.createElement('p');status.id='fju-coord-status';status.setAttribute('role','status');section.append(status);
   const headingAnchor=root.querySelector('.fju-today-section');root.insertBefore(section,headingAnchor||root.firstChild);
   // A conta faz parte do painel principal; nao e um quinto aplicativo.
