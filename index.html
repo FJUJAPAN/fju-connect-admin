@@ -665,6 +665,7 @@ body.fju-admin-shell{min-height:100dvh;overscroll-behavior-y:none;-webkit-tap-hi
 import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import {setupCoordinatorCards} from './cards-coordenadores.js';
 import {setupAdministrativeAccess} from './acesso-administrativo.js?v=20261022-conta-automatica-2';
+import {setupCoordinatorRequests} from './cadastros-coordenadores.js';
 const SUPABASE_URL='https://hmacroktklgwkofxsygv.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_mdkfafhpqtthwzU8Hf7u9A_rErx3MFJ';
 const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
@@ -1017,6 +1018,7 @@ const administrativeAccess=setupAdministrativeAccess({
     void refreshAdminPriorities(profile,profileRequest);
   }
 });
+setupCoordinatorRequests({supabase,getProfile:()=>currentProfile});
 const coordinatorCards=setupCoordinatorCards({supabase,compressPhoto:compactarFoto100KB,navigateToTab:()=>document.querySelector('#main-nav [data-tab="lideranca"]')?.click()});
 const quantityOptions=document.createDocumentFragment();
 for(let n=0;n<=1000;n++){const option=document.createElement('option');option.value=String(n);option.textContent=String(n);quantityOptions.append(option);}
