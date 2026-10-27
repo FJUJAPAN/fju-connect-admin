@@ -72,6 +72,8 @@ test('Funções abre no celular e fecha por X, toque fora, Esc e resize',()=>{
   const shell=uniqueId('fju-admin-workspace');
   const sidebar=uniqueId('fju-admin-sidebar');
   const toggle=uniqueId('fju-admin-menu-toggle');
+  // O botão é oculto na interface nova; reabilita apenas neste teste para validar o controlador legado.
+  toggle.hidden=false;
   const overlay=uniqueId('fju-admin-menu-overlay');
   const close=uniqueId('fju-admin-menu-close');
   const assertClosed=()=>{
