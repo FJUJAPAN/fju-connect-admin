@@ -1994,22 +1994,41 @@ async function loadYouthRequests(){
     if(!youthError)for(const youth of people||[])youthById.set(String(youth.id),youth);
     else console.warn('Não foi possível identificar fichas para aprovação:',youthError.message);
   }
-  // Agrupa a página carregada por igreja, mantendo os cartões e decisões originais.
+  // Contagem real de pendências por igreja, independente do filtro e da página atual.
   const churchGroups=new Map();
   if(profile.papel==='nacional'){
-    for(const polo of poloRows){
+    const pendingByPolo=new Map();
+    let pendingOffset=0,countsAvailable=true;
+    while(true){
+      const {data:pendingRows,error:pendingError}=await supabase.from('fju_solicitacoes')
+        .select('id,polo_id').eq('status','pendente').order('id',{ascending:true})
+        .range(pendingOffset,pendingOffset+999);
+      if(version!==requestsLoadVersion||currentProfile!==profile)return;
+      if(pendingError){countsAvailable=false;console.warn('Contagem de pendências indisponível:',pendingError.message);break;}
+      for(const row of pendingRows||[]){
+        const key=String(row.polo_id);
+        pendingByPolo.set(key,(pendingByPolo.get(key)||0)+1);
+      }
+      if((pendingRows||[]).length<1000)break;
+      pendingOffset+=1000;
+    }
+    const orderedPolos=[...poloRows].sort((a,b)=>
+      (pendingByPolo.get(String(b.id))||0)-(pendingByPolo.get(String(a.id))||0)
+      ||String(a.nome||'').localeCompare(String(b.nome||''),'pt-BR'));
+    for(const polo of orderedPolos){
       const entries=visible.filter(r=>String(r.polo_id)===String(polo.id));
-      if(!entries.length)continue;
+      const pending=pendingByPolo.get(String(polo.id))||0;
+      if(!entries.length&&!pending)continue;
       const group=document.createElement('details');group.className='fju-church-requests';
       const summary=document.createElement('summary');
       const name=document.createElement('strong');name.textContent=polo.nome;
       const count=document.createElement('span');count.className='fju-church-request-count';
-      const pending=entries.filter(r=>r.status==='pendente').length;
-      count.textContent=pending?String(pending):String(entries.length);
-      count.classList.toggle('is-pending',pending>0);
-      count.setAttribute('aria-label',pending?pending+' pendências nesta página':entries.length+' solicitações nesta página');
-      summary.append(name,count);group.append(summary);list.append(group);
-      churchGroups.set(String(polo.id),group);
+      count.textContent=countsAvailable?(pending?String(pending):String(entries.length)):'—';
+      count.classList.toggle('is-pending',countsAvailable&&pending>0);
+      count.setAttribute('aria-label',countsAvailable?(pending?pending+' pendências no total':entries.length+' solicitações carregadas'):'Contagem indisponível');
+      summary.append(name,count);group.append(summary);
+      if(!entries.length){const empty=document.createElement('p');empty.className='muted';empty.style.padding='0 16px 14px';empty.textContent='Nenhuma solicitação desta igreja na página atual. Selecione Pendentes ou carregue mais solicitações.';group.append(empty);}
+      list.append(group);churchGroups.set(String(polo.id),group);
     }
     const unknown=visible.filter(r=>!poloRows.some(p=>String(p.id)===String(r.polo_id)));
     if(unknown.length){
