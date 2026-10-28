@@ -156,3 +156,19 @@
  #youth-list .youth-card-extra-actions{padding:5px 0}
  #jovens .youth-list-controls{gap:6px}
 }
+
+/* Garante área de respiro para o título das fichas no modal iPhone */
+@media(max-width:700px){
+ body.fju-coordinator-dashboard #jovens{
+   padding-top:18px!important;
+   scroll-margin-top:22px;
+ }
+ body.fju-coordinator-dashboard #jovens .youth-page-header{
+   padding-top:10px!important;
+   margin-top:0!important;
+ }
+ body.fju-coordinator-dashboard #jovens .youth-page-header h2{
+   margin-top:10px!important;
+   line-height:1.25;
+ }
+}
