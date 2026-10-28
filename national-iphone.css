@@ -1,0 +1,36 @@
+/* FJU Connect National — iOS-inspired interface, exclusively for national administrator */
+body.fju-national-clean{--ios-blue:#007aff;--ios-bg:#f2f2f7;--ios-text:#1c1c1e;--ios-sub:#8e8e93;background:var(--ios-bg)!important;color:var(--ios-text)!important;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",sans-serif}
+body.fju-national-clean .fju-admin-header{background:#fff!important;color:#111827!important;border-bottom:1px solid #e5e5ea!important;box-shadow:none!important}
+body.fju-national-clean .fju-admin-header-inner{max-width:900px;margin:auto}
+body.fju-national-clean .fju-admin-workspace{background:var(--ios-bg)!important}
+body.fju-national-clean .fju-admin-content{max-width:850px!important;margin:auto}
+body.fju-national-clean #inicio{background:transparent!important;box-shadow:none!important;border:0!important;padding:16px 14px 100px!important}
+body.fju-national-clean #inicio>h2{display:none!important}
+body.fju-national-clean #inicio .fju-overview-intro{background:transparent!important;padding:10px 2px 16px!important;margin:0!important;border:0!important;box-shadow:none!important}
+body.fju-national-clean #inicio #fju-overview-title{font-size:clamp(28px,6vw,35px)!important;line-height:1.12!important;letter-spacing:-.045em!important;color:#101116!important;font-weight:800!important}
+body.fju-national-clean #inicio #fju-overview-description{font-size:13px!important;color:#777b86!important;margin-top:7px!important}
+body.fju-national-clean #inicio .fju-today-section{display:none!important}
+body.fju-national-clean #inicio .fju-priority-heading{margin:8px 2px 12px!important}
+body.fju-national-clean #inicio .fju-priority-heading h3,body.fju-national-clean #inicio .fju-actions-title{font-size:19px!important;letter-spacing:-.035em!important;font-weight:750!important;color:#191a20!important}
+body.fju-national-clean #inicio .fju-priority-heading p{display:none!important}
+body.fju-national-clean #inicio .fju-priority-refresh{background:#e5e5ea!important;color:#007aff!important;border-radius:12px!important;font-size:12px!important;box-shadow:none!important}
+body.fju-national-clean #inicio .fju-priority-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:9px!important;margin-bottom:22px!important}
+body.fju-national-clean #inicio .fju-priority-card{background:#fff!important;border:1px solid #ececf0!important;border-radius:19px!important;box-shadow:none!important;min-height:100px!important;padding:12px 10px!important;text-align:left!important}
+body.fju-national-clean #inicio .fju-priority-card strong{font-size:26px!important;letter-spacing:-.04em!important;color:#17191e!important}
+body.fju-national-clean #inicio .fju-priority-card .fju-priority-label{font-size:11px!important;color:#666b75!important}
+body.fju-national-clean #inicio .fju-priority-card span:last-child{font-size:10px!important;color:#92949c!important}
+body.fju-national-clean #inicio>.grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:9px!important;margin:0 0 22px!important}
+body.fju-national-clean #inicio>.grid .stat{min-width:0!important;min-height:105px!important;border:1px solid #ececf0!important;border-radius:19px!important;background:#fff!important;padding:13px 10px!important;box-shadow:none!important;color:#666b75!important;font-size:12px!important}
+body.fju-national-clean #inicio>.grid .stat b{font-size:25px!important;color:#15171b!important;margin-top:7px!important}
+body.fju-national-clean #inicio>.grid .stat small{display:none!important}
+body.fju-national-clean #inicio .fju-dashboard-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:11px!important}
+body.fju-national-clean #inicio .fju-national-group-title{grid-column:1/-1!important;margin:14px 2px 0!important;font-size:14px!important;color:#777a84!important;font-weight:650!important;letter-spacing:0!important;text-transform:uppercase}
+body.fju-national-clean #inicio .fju-action-card{display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:flex-start!important;gap:8px!important;position:relative!important;min-height:142px!important;border-radius:21px!important;border:1px solid #e9e9ee!important;background:#fff!important;box-shadow:none!important;padding:17px!important;color:#181a20!important;text-align:left!important}
+body.fju-national-clean #inicio .fju-action-icon{display:flex!important;align-items:center!important;justify-content:center!important;width:43px!important;height:43px!important;border-radius:13px!important;background:#eef3ff!important;color:#007aff!important;font-size:22px!important;margin:0 0 5px!important}
+body.fju-national-clean #inicio .fju-action-card strong{font-size:15px!important;line-height:1.25!important;color:#181a20!important;letter-spacing:-.015em!important}
+body.fju-national-clean #inicio .fju-action-card>span:not(.fju-action-icon):not(.fju-action-arrow):not(.fju-national-badge){font-size:11px!important;line-height:1.3!important;color:#8e8e93!important}
+body.fju-national-clean #inicio .fju-action-arrow{position:absolute!important;right:14px!important;bottom:13px!important;color:#b5b6bf!important}
+body.fju-national-clean #inicio .fju-national-badge{position:absolute!important;right:12px!important;top:12px!important;background:#ff3b30!important;color:#fff!important;border-radius:999px!important;min-width:23px!important;height:23px!important;font-size:12px!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:0 6px!important}
+body.fju-national-clean #inicio #fju-my-page,body.fju-national-clean #inicio #dashboard-note{display:none!important}
+body.fju-national-clean #inicio .fju-action-card:active,body.fju-national-clean #inicio .fju-priority-card:active{transform:scale(.98);background:#f8f9fc!important}
+@media(max-width:380px){body.fju-national-clean #inicio{padding-inline:11px!important}body.fju-national-clean #inicio .fju-action-card{padding:13px!important;min-height:135px!important}body.fju-national-clean #inicio .fju-priority-card{padding:10px 7px!important}}
