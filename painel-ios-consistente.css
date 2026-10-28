@@ -1,12 +1,11 @@
-/* Cartões iOS compactos para ambos os perfis; somente aparência. */
+/* PR 257: restaurar integralmente o estilo do Coordenador Local.
+   Somente o painel Nacional recebe cartões menores no iPhone. */
 @media(max-width:600px){
-body.fju-national-clean #inicio .fju-action-card{min-height:112px!important;padding:13px!important;gap:6px!important;border-radius:18px!important}
-body.fju-national-clean #inicio .fju-action-icon{width:40px!important;height:40px!important;margin-bottom:2px!important;background:#f1f2f6!important;color:#283b59!important}
-body.fju-national-clean #inicio .fju-dashboard-actions{gap:10px!important}
-body.fju-national-clean #inicio .fju-national-group-title{margin:10px 2px 0!important}
-body.fju-coordinator-dashboard #fju-coord-app-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
-body.fju-coordinator-dashboard .fju-coord-app{min-height:112px!important;padding:13px!important;border:1px solid #e9e9ee!important;border-radius:18px!important;background:#fff!important;align-items:flex-start!important;text-align:left!important;gap:8px!important;box-shadow:none!important}
-body.fju-coordinator-dashboard .fju-coord-app-icon{width:40px!important;height:40px!important;border-radius:12px!important;background:#f1f2f6!important;color:#283b59!important;box-shadow:none!important;border:0!important;font-size:21px!important}
-body.fju-coordinator-dashboard .fju-coord-app-label{font-size:14px!important;font-weight:700!important;min-height:0!important;max-width:100%!important;color:#181a20!important}
-body.fju-coordinator-dashboard #fju-coord-intro{margin-bottom:12px!important}
+body.fju-national-clean #inicio .fju-dashboard-actions{gap:9px!important}
+body.fju-national-clean #inicio .fju-action-card{min-height:88px!important;height:auto!important;padding:11px 12px!important;gap:4px!important;border-radius:16px!important}
+body.fju-national-clean #inicio .fju-action-icon{width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;font-size:18px!important;margin:0 0 2px!important}
+body.fju-national-clean #inicio .fju-action-icon svg{width:20px!important;height:20px!important}
+body.fju-national-clean #inicio .fju-action-card strong{font-size:13px!important;line-height:1.2!important}
+body.fju-national-clean #inicio .fju-action-card>span:not(.fju-action-icon):not(.fju-action-arrow):not(.fju-national-badge){font-size:10px!important}
+body.fju-national-clean #inicio .fju-national-group-title{margin:9px 2px 0!important}
 }
