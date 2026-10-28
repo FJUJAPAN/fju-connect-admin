@@ -135,3 +135,24 @@
 @media print{
  #youth-list .youth-card{box-shadow:none;transform:none;break-inside:avoid}
 }
+
+/* iPhone: fichas compactas com exclusão visível, sem alterar permissões */
+@media(max-width:700px){
+ #jovens .youth-page-header{gap:7px;padding:0}
+ #jovens .youth-page-subtitle{margin:3px 0 8px;line-height:1.4}
+ #jovens .youth-saved-heading{margin-top:10px}
+ #youth-list{gap:8px}
+ #youth-list .youth-card{gap:8px;padding:11px 12px;border-radius:15px;box-shadow:0 2px 8px rgba(20,42,82,.04)}
+ #youth-list .youth-card-main{gap:10px}
+ #youth-list .youth-avatar{flex:0 0 48px;width:48px;height:48px;border-radius:13px}
+ #youth-list .youth-card-name{font-size:14px;line-height:1.2;margin:0 0 3px}
+ #youth-list .youth-rank{font-size:10px;padding:3px 8px}
+ #youth-list .youth-card-metadata{font-size:11px;margin-top:3px}
+ #youth-list .youth-card-actions{display:flex;align-items:center;flex-wrap:wrap;gap:7px;padding-top:8px}
+ #youth-list .youth-card-actions button{min-height:34px;padding:6px 10px;font-size:11px;border-radius:9px}
+ #youth-list .youth-card-more{margin-left:auto}
+ #youth-list .youth-card-more summary{min-height:34px;padding:7px 5px;font-size:11px}
+ #youth-list .youth-card-actions .youth-request-delete{color:#a6323c;background:#fff1f2;border:1px solid #f4cbd0}
+ #youth-list .youth-card-extra-actions{padding:5px 0}
+ #jovens .youth-list-controls{gap:6px}
+}
