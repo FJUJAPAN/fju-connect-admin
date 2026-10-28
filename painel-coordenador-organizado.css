@@ -136,3 +136,6 @@ body.fju-coordinator-dashboard #fju-coord-personal-title[hidden],
 body.fju-coordinator-dashboard #fju-coord-personal-hint[hidden]{display:none!important}
 body.fju-coordinator-dashboard #fju-coord-personal-detail:not([hidden]){display:block!important;margin:8px 0 16px;padding:18px 16px;border-radius:18px;background:#fff;box-shadow:0 4px 20px rgba(20,35,60,.07)}
 body.fju-coordinator-dashboard .fju-coord-personal-back{display:inline-flex;align-items:center;border:0;background:#eef2f7;color:#20314a;border-radius:12px;padding:10px 16px;font-weight:700;margin-bottom:16px;cursor:pointer}
+
+body.fju-coordinator-dashboard #fju-coord-app-shell>#fju-my-page[hidden]{display:none!important}
+body.fju-coordinator-dashboard #fju-coord-personal-detail:not([hidden]){min-height:220px;box-sizing:border-box}
