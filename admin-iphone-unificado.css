@@ -1,0 +1,17 @@
+/* FJU Connect Japan: ajustes compartilhados para iPhone */
+@media(max-width:600px){
+ html,body{max-width:100%;overflow-x:clip}
+ .wrap{min-width:0;padding-left:16px;padding-right:16px}
+ .panel{min-width:0;padding:16px;border-radius:18px}
+ .panel h1,.panel h2,.panel h3,header h1,header h2{max-width:100%;overflow-wrap:anywhere;line-height:1.25}
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ .grid>*,.stat{min-width:0}
+ .stat{padding:14px 12px;border-radius:16px}
+ .actions{gap:10px}
+ button,.actions button,.tabs button{min-height:44px}
+ input,select,textarea{max-width:100%;font-size:16px}
+ .tabs{gap:8px}
+ img,svg{max-width:100%}
+ .report-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:360px){.wrap{padding-left:12px;padding-right:12px}.panel{padding:13px}.grid{gap:9px}.stat{padding:12px 9px}}
