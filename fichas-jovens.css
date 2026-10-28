@@ -172,3 +172,31 @@
    line-height:1.25;
  }
 }
+
+/* Equilibra os espaços acima do voltar e entre voltar/título no iPhone */
+@media(max-width:700px){
+ body.fju-coordinator-dashboard #jovens.panel:not(.hidden){
+   margin-top:0!important;
+   padding-top:0!important;
+   scroll-margin-top:0!important;
+ }
+ body.fju-coordinator-dashboard #jovens>.fju-back-dashboard{
+   display:inline-flex;
+   margin:0 0 12px!important;
+   padding:9px 12px!important;
+   min-height:38px!important;
+ }
+ body.fju-coordinator-dashboard #jovens .youth-page-header{
+   margin-top:0!important;
+   padding:0!important;
+   margin-bottom:12px!important;
+ }
+ body.fju-coordinator-dashboard #jovens .youth-page-header h2{
+   margin:0 0 4px!important;
+   padding:0!important;
+   line-height:1.25!important;
+ }
+ body.fju-coordinator-dashboard #jovens .youth-page-subtitle{
+   margin:0!important;
+ }
+}
