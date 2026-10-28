@@ -91,3 +91,39 @@ body.fju-coordinator-dashboard #fju-coord-account-settings{display:inline-flex;a
 .fju-coordinator-dashboard #fju-coord-personal-detail[hidden]{display:none!important}
 .fju-coordinator-dashboard #fju-coord-personal-detail h4{margin:0 0 8px}
 .fju-coordinator-dashboard #fju-coord-personal-detail p{font-size:13px;line-height:1.5}
+
+/* Corrige espaçamento vertical entre a 1ª e 2ª linha de aplicativos no iPhone.
+   Esta é a grade real do coordenador, não a grade antiga do painel nacional. */
+body.fju-coordinator-dashboard #fju-coord-app-shell,
+body.fju-coordinator-dashboard #fju-coord-app-grid{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  align-content:start!important;
+  justify-content:initial!important;
+}
+body.fju-coordinator-dashboard #fju-coord-app-grid{
+  display:grid!important;
+  grid-template-rows:none!important;
+  grid-auto-rows:max-content!important;
+  align-items:start!important;
+  row-gap:12px!important;
+}
+body.fju-coordinator-dashboard #fju-coord-app-grid>.fju-coord-app{
+  align-self:start!important;
+  height:auto!important;
+  min-height:0!important;
+}
+body.fju-coordinator-dashboard #fju-coord-personal-area{
+  height:auto!important;
+  min-height:0!important;
+  margin-top:18px!important;
+}
+body.fju-coordinator-dashboard .fju-coord-personal-grid{
+  grid-template-rows:none!important;
+  grid-auto-rows:max-content!important;
+  align-content:start!important;
+  align-items:start!important;
+  height:auto!important;
+  min-height:0!important;
+}
