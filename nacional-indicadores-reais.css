@@ -1,0 +1,6 @@
+@media(max-width:700px){
+body.fju-national-clean #inicio .fju-dashboard-actions>.fju-action-card:has(.fju-real-metric){height:108px!important;min-height:108px!important;max-height:108px!important;align-content:center!important;flex-wrap:wrap!important;position:relative!important;padding-bottom:34px!important}
+body.fju-national-clean #inicio .fju-dashboard-actions>.fju-action-card .fju-real-metric{display:block!important;position:absolute!important;left:60px!important;bottom:9px!important;font-size:23px!important;line-height:1!important;font-weight:850!important;color:#14213b!important;letter-spacing:-.04em!important}
+body.fju-national-clean #inicio .fju-dashboard-actions>.fju-action-card:has(.fju-real-metric):after{content:'';position:absolute;right:13px;bottom:13px;width:27px;height:24px;opacity:.8;background:linear-gradient(to top,#4b98fc 0 35%,transparent 35%) left bottom/5px 100% no-repeat,linear-gradient(to top,#4b98fc 0 56%,transparent 56%) 8px bottom/5px 100% no-repeat,linear-gradient(to top,#4b98fc 0 76%,transparent 76%) 16px bottom/5px 100% no-repeat,linear-gradient(to top,#4b98fc 0 96%,transparent 96%) 24px bottom/4px 100% no-repeat}
+body.fju-national-clean #inicio .fju-dashboard-actions>.fju-action-card:has(.fju-real-metric) strong{font-size:11px!important}
+}
