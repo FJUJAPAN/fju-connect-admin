@@ -1,0 +1,24 @@
+/* FJU Connect: layout do Nacional baseado na referência aprovada; sem números fictícios. */
+@media(max-width:700px){
+body.fju-national-clean #inicio{background:#f5f7ff!important}
+body.fju-national-clean #inicio .fju-actions-title{font-size:19px!important;line-height:1.2!important;margin:14px 0 12px!important}
+body.fju-national-clean #inicio .fju-dashboard-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;align-items:stretch!important}
+body.fju-national-clean #inicio .fju-national-group-title{grid-column:1/-1!important;margin:14px 2px 1px!important;font-size:12px!important;letter-spacing:.05em!important;color:#727c91!important}
+body.fju-national-clean #inicio .fju-action-card{box-sizing:border-box!important;display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;align-content:center!important;align-items:center!important;justify-content:flex-start!important;min-width:0!important;width:100%!important;min-height:86px!important;height:auto!important;padding:12px 10px!important;gap:5px 8px!important;border-radius:19px!important;background:#fff!important;border:1px solid #edf0f7!important;box-shadow:0 5px 16px #1329500a!important;text-align:left!important}
+body.fju-national-clean #inicio .fju-action-card .fju-action-icon{box-sizing:border-box!important;display:grid!important;place-items:center!important;flex:0 0 37px!important;width:37px!important;height:37px!important;min-width:37px!important;min-height:37px!important;margin:0!important;border-radius:12px!important}
+body.fju-national-clean #inicio .fju-action-card .fju-action-icon svg{width:22px!important;height:22px!important}
+body.fju-national-clean #inicio .fju-action-card strong{display:block!important;flex:1 1 calc(100% - 47px)!important;min-width:0!important;font-size:12px!important;line-height:1.22!important;font-weight:700!important;color:#17243c!important;overflow-wrap:anywhere!important}
+body.fju-national-clean #inicio .fju-action-card>span:not(.fju-action-icon):not(.fju-action-arrow):not(.fju-national-badge){display:none!important}
+body.fju-national-clean #inicio .fju-action-card .fju-action-arrow{display:none!important}
+body.fju-national-clean #inicio .fju-action-card .fju-national-badge{position:absolute!important;top:5px!important;right:6px!important}
+body.fju-national-clean #inicio .fju-action-card:active{transform:scale(.98)}
+body.fju-national-clean #inicio .fju-action-card:first-of-type .fju-action-icon{background:linear-gradient(145deg,#63baff,#0871f7)!important}
+body.fju-national-clean #inicio .fju-action-card:nth-of-type(2) .fju-action-icon{background:linear-gradient(145deg,#63e4c0,#11ad85)!important}
+body.fju-national-clean #inicio .fju-action-card:nth-of-type(3) .fju-action-icon{background:linear-gradient(145deg,#b38aff,#6d39ed)!important}
+body.fju-national-clean #inicio .fju-action-card:nth-of-type(4) .fju-action-icon{background:linear-gradient(145deg,#ff8baa,#f12d69)!important}
+body.fju-national-clean #inicio .fju-action-card:nth-of-type(5) .fju-action-icon{background:linear-gradient(145deg,#ffdf75,#f7a42c)!important}
+body.fju-national-clean #inicio .fju-priority-grid{gap:9px!important}
+body.fju-national-clean #inicio .fju-priority-card{min-height:94px!important;border-radius:18px!important;background:#fff!important}
+body.fju-national-clean #inicio .fju-priority-card strong{font-size:23px!important}
+body.fju-national-clean #inicio .fju-priority-card .fju-priority-label{font-size:12px!important}
+}
