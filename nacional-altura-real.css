@@ -1,0 +1,12 @@
+/* Correção de altura real: não apenas min-height. Exclusivo Nacional iPhone. */
+@media(max-width:700px){
+body.fju-national-clean #inicio .fju-dashboard-actions{grid-auto-rows:min-content!important;align-items:start!important;align-content:start!important;gap:10px!important}
+body.fju-national-clean #inicio .fju-dashboard-actions>.fju-action-card{box-sizing:border-box!important;aspect-ratio:auto!important;block-size:94px!important;height:94px!important;min-block-size:94px!important;min-height:94px!important;max-block-size:94px!important;max-height:94px!important;overflow:hidden!important;align-self:start!important;justify-self:stretch!important;padding:12px 10px!important;display:flex!important;flex-direction:row!important;align-items:center!important;align-content:center!important;justify-content:flex-start!important;gap:8px!important}
+body.fju-national-clean #inicio .fju-dashboard-actions>.fju-action-card .fju-action-icon{flex:0 0 40px!important;width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important;margin:0!important}
+body.fju-national-clean #inicio .fju-dashboard-actions>.fju-action-card strong{flex:1 1 0!important;font-size:12px!important;text-align:left!important;line-height:1.22!important;hyphens:none!important;word-break:normal!important}
+body.fju-national-clean #inicio .fju-dashboard-actions>.fju-national-group-title{height:auto!important;min-height:0!important;max-height:none!important;align-self:start!important}
+body.fju-national-clean #inicio .fju-national-hero{display:block!important;position:relative!important;overflow:hidden!important;padding:23px 20px!important;margin:0 0 16px!important;min-height:112px!important;border-radius:22px!important;color:#fff!important;background:radial-gradient(circle at 82% 50%,#246ce3 0%,#123b93 32%,#0a2056 68%,#091735 100%)!important;box-shadow:0 12px 28px #0b286d30!important}
+body.fju-national-clean #inicio .fju-national-hero:before{content:'◉';position:absolute;right:-5px;top:-70px;font-size:220px;line-height:1;color:#5a96ff28;pointer-events:none}
+body.fju-national-clean #inicio .fju-national-hero h2{position:relative;margin:0 0 8px!important;font-size:25px!important;color:#fff!important;font-weight:800!important}
+body.fju-national-clean #inicio .fju-national-hero p{position:relative;margin:0!important;font-size:13px!important;color:#e1eaff!important}
+}
