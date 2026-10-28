@@ -165,7 +165,7 @@
   const personal=document.createElement('section');personal.id='fju-coord-personal-area';
   const title=document.createElement('h3');title.id='fju-coord-personal-title';personal.append(title);
   const grid=document.createElement('div');grid.className='fju-coord-personal-grid';personal.append(grid);
-  const items=[['journey','🌱'],['checkin','📍'],['personalNotifications','🔔']];
+  const items=[['checkin','📍'],['personalNotifications','🔔']];
   items.forEach(([key,emoji])=>{
     const a=document.createElement('a');a.className='fju-coord-personal-link';
     if(key==='checkin')a.href='https://fjujapan.github.io/fju-connect/check-in/';
