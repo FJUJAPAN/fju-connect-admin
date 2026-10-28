@@ -123,6 +123,12 @@
  function showPersonalDetail(key){
   const panel=$('fju-coord-personal-detail');if(!panel)return;
   panel.replaceChildren();panel.hidden=false;
+  $('fju-coord-app-grid').hidden=true;
+  $('fju-coord-intro').hidden=true;
+  const personalGrid=document.querySelector('.fju-coord-personal-grid');if(personalGrid)personalGrid.hidden=true;
+  const personalTitle=$('fju-coord-personal-title');if(personalTitle)personalTitle.hidden=true;
+  const personalHint=$('fju-coord-personal-hint');if(personalHint)personalHint.hidden=true;
+  const back=document.createElement('button');back.type='button';back.className='fju-coord-personal-back';back.textContent=lang()==='ja'?'← 戻る':lang()==='en'?'← Back':'← Voltar';back.addEventListener('click',()=>{panel.hidden=true;panel.replaceChildren();$('fju-coord-app-grid').hidden=false;$('fju-coord-intro').hidden=false;if(personalGrid)personalGrid.hidden=false;if(personalTitle)personalTitle.hidden=false;if(personalHint)personalHint.hidden=false;$('fju-coord-personal-area')?.scrollIntoView({block:'start',behavior:'smooth'});});panel.append(back);
   const heading=document.createElement('h4');heading.textContent=t()[key];panel.append(heading);
   const note=document.createElement('p');
   if(key==='journey'){
@@ -151,8 +157,7 @@
       const list=document.createElement('ul');projects.forEach(name=>{const item=document.createElement('li');item.textContent=name;list.append(item);});panel.append(list);
     }).catch(()=>{if(panel.isConnected)note.textContent=lang()==='ja'?'承認済みのプロジェクトを確認できません。':lang()==='en'?'Unable to verify approved projects.':'Não foi possível verificar os projetos aprovados.';});
   }
-  const link=document.createElement('a');link.href='https://fjujapan.github.io/fju-connect/';link.textContent=t().openPersonal;panel.append(link);
-  panel.scrollIntoView({block:'nearest',behavior:'smooth'});
+  panel.scrollIntoView({block:'start',behavior:'smooth'});
  }
  function buildPersonalArea(section){
   if($('fju-coord-personal-area'))return;
