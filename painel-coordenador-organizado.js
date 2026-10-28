@@ -125,10 +125,11 @@
   panel.replaceChildren();panel.hidden=false;
   $('fju-coord-app-grid').hidden=true;
   $('fju-coord-intro').hidden=true;
+  const account=$('fju-my-page');if(account)account.hidden=true;
   const personalGrid=document.querySelector('.fju-coord-personal-grid');if(personalGrid)personalGrid.hidden=true;
   const personalTitle=$('fju-coord-personal-title');if(personalTitle)personalTitle.hidden=true;
   const personalHint=$('fju-coord-personal-hint');if(personalHint)personalHint.hidden=true;
-  const back=document.createElement('button');back.type='button';back.className='fju-coord-personal-back';back.textContent=lang()==='ja'?'← 戻る':lang()==='en'?'← Back':'← Voltar';back.addEventListener('click',()=>{panel.hidden=true;panel.replaceChildren();$('fju-coord-app-grid').hidden=false;$('fju-coord-intro').hidden=false;if(personalGrid)personalGrid.hidden=false;if(personalTitle)personalTitle.hidden=false;if(personalHint)personalHint.hidden=false;$('fju-coord-personal-area')?.scrollIntoView({block:'start',behavior:'smooth'});});panel.append(back);
+  const back=document.createElement('button');back.type='button';back.className='fju-coord-personal-back';back.textContent=lang()==='ja'?'← 戻る':lang()==='en'?'← Back':'← Voltar';back.addEventListener('click',()=>{panel.hidden=true;panel.replaceChildren();$('fju-coord-app-grid').hidden=false;$('fju-coord-intro').hidden=false;if(personalGrid)personalGrid.hidden=false;if(personalTitle)personalTitle.hidden=false;if(personalHint)personalHint.hidden=false;if(account)account.hidden=false;$('fju-coord-personal-area')?.scrollIntoView({block:'start',behavior:'smooth'});});panel.append(back);
   const heading=document.createElement('h4');heading.textContent=t()[key];panel.append(heading);
   const note=document.createElement('p');
   if(key==='journey'){
