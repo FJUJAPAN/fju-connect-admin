@@ -10,7 +10,7 @@
 <title>FJU Connect JAPAN · Admin</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="stylesheet" href="./cards-coordenadores.css?v=20261023b">
-<link rel="stylesheet" href="./fichas-jovens.css">
+<link rel="stylesheet" href="./fichas-jovens.css?v=20261028-compact-delete-1">
 <link rel="stylesheet" href="./fichas-complementos.css?v=20261026-ficha">
 <meta name="theme-color" content="#081e3b">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1670,10 +1670,13 @@ function renderYouth(){
       const extra=document.createElement('div');extra.className='youth-card-extra-actions';
       const request=document.createElement('button');request.type='button';request.className='secondary';
       request.textContent='Solicitar edição';request.onclick=()=>editYouth(r.id);
+      extra.append(request);more.append(summary,extra);actions.append(more);
       const remove=document.createElement('button');remove.type='button';
-      remove.className='secondary youth-request-delete';remove.textContent='Solicitar exclusão';
+      remove.className='secondary youth-request-delete';remove.textContent='Excluir';
+      remove.title='Solicitar exclusão da ficha para aprovação nacional';
+      remove.setAttribute('aria-label','Solicitar exclusão da ficha de '+(r.nome_completo||'jovem'));
       remove.onclick=()=>void requestYouthChange(r,remove);
-      extra.append(request,remove);more.append(summary,extra);actions.append(more);
+      actions.append(remove);
     }
     card.append(main,actions);list.append(card);
     if(youthCardPhotoObserver)youthCardPhotoObserver.observe(avatar);
