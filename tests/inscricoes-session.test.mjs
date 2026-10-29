@@ -26,6 +26,7 @@ function setup(){
      if(functionName==='fju_listar_inscricoes_polo_detalhadas'){
        const next=deferred();requests.push(next);return next.promise;
      }
+     if(functionName==='fju_listar_pedidos_patente_inicial')return Promise.resolve({data:[],error:null});
      if(functionName==='fju_decidir_inscricao_jovem'){
        actions.push(args);return Promise.resolve({data:'jovem-aprovado',error:null});
      }
