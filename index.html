@@ -2910,8 +2910,12 @@ async function loadYouthSignups(){
  if(error){status.textContent='Não foi possível consultar inscrições: '+error.message;status.classList.add('error');return;}
  status.classList.remove('error');
  const rows=Array.isArray(data)?data:[];
+ const pendingRankBySignup=new Map();
  const {data:rankRequests,error:rankError}=await supabase.rpc('fju_listar_pedidos_patente_inicial');
  if(version!==signupLoadVersion||currentProfile!==profile)return;
+ if(!rankError&&Array.isArray(rankRequests)){
+   for(const request of rankRequests)pendingRankBySignup.set(String(request.inscricao_id),request);
+ }
  if(!rankError&&Array.isArray(rankRequests)&&rankRequests.length){
    const section=document.createElement('section');section.className='fju-signup-rank-requests';
    const heading=document.createElement('h3');heading.textContent=profile.papel==='nacional'?'Patentes aguardando aprovação Nacional':'Patentes enviadas ao Nacional';section.append(heading);
@@ -2967,10 +2971,18 @@ async function loadYouthSignups(){
   const rankLabel=document.createElement('label');rankLabel.textContent='Patente inicial';
   const rank=document.createElement('select');rank.id='fju-signup-rank-'+item.id;rankLabel.htmlFor=rank.id;rank.setAttribute('aria-label','Patente inicial de '+(item.nome||'jovem'));
   for(const value of ['Inconstante','Firme','CPO','Colaborador','Obreiro','Coordenador']){const opt=document.createElement('option');opt.value=value;opt.textContent=value;rank.append(opt);}
+  const pendingRank=pendingRankBySignup.get(String(item.id));
+  if(pendingRank){
+    rank.value=pendingRank.patente;
+    rank.disabled=true;
+    const notice=document.createElement('p');notice.className='message';
+    notice.textContent='Patente solicitada: '+pendingRank.patente+' — aguardando decisão Nacional. Utilize o pedido acima para aprovar ou rejeitar.';
+    controls.append(notice);
+  }
   const approve=document.createElement('button');approve.type='button';approve.textContent='Aceitar e criar ficha';
   const requestNational=document.createElement('button');requestNational.type='button';requestNational.className='secondary';requestNational.textContent='Solicitar aprovação Nacional';
   const elevated=['CPO','Colaborador','Obreiro','Coordenador'];
-  const syncRankAction=()=>{const need=profile.papel==='coordenador'&&elevated.includes(rank.value);approve.hidden=need;requestNational.hidden=!need;};
+  const syncRankAction=()=>{const need=profile.papel==='coordenador'&&elevated.includes(rank.value);approve.hidden=need||!!pendingRank;requestNational.hidden=!need||!!pendingRank;};
   rank.addEventListener('change',syncRankAction);syncRankAction();
   requestNational.addEventListener('click',async()=>{
     if(currentProfile!==profile||!card.isConnected)return;
@@ -2984,6 +2996,7 @@ async function loadYouthSignups(){
     void refreshAdminPriorities(profile,profileRequest);
   });
   const reject=document.createElement('button');reject.type='button';reject.className='secondary';reject.textContent='Rejeitar';
+  if(pendingRank)reject.hidden=true;
   const feedback=document.createElement('p');feedback.className='message';feedback.setAttribute('role','status');
   approve.addEventListener('click',async()=>{
     if(currentProfile!==profile||!card.isConnected)return;
