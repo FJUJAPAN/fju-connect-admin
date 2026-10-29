@@ -2910,6 +2910,30 @@ async function loadYouthSignups(){
  if(error){status.textContent='Não foi possível consultar inscrições: '+error.message;status.classList.add('error');return;}
  status.classList.remove('error');
  const rows=Array.isArray(data)?data:[];
+ const {data:rankRequests,error:rankError}=await supabase.rpc('fju_listar_pedidos_patente_inicial');
+ if(version!==signupLoadVersion||currentProfile!==profile)return;
+ if(!rankError&&Array.isArray(rankRequests)&&rankRequests.length){
+   const section=document.createElement('section');section.className='fju-signup-rank-requests';
+   const heading=document.createElement('h3');heading.textContent=profile.papel==='nacional'?'Patentes aguardando aprovação Nacional':'Patentes enviadas ao Nacional';section.append(heading);
+   for(const request of rankRequests){
+     const entry=document.createElement('div');entry.className='fju-signup-card';
+     const info=document.createElement('p');info.textContent=(request.nome||'Jovem')+' — '+request.patente+' · Aguardando decisão';entry.append(info);
+     if(profile.papel==='nacional'){
+       const actions=document.createElement('div');actions.className='actions';
+       for(const ok of [true,false]){
+         const btn=document.createElement('button');btn.type='button';btn.textContent=ok?'Aprovar patente e criar ficha':'Rejeitar pedido';if(!ok)btn.className='secondary';
+         btn.addEventListener('click',async()=>{
+           if(currentProfile!==profile||!confirm((ok?'Aprovar':'Rejeitar')+' patente '+request.patente+' de '+request.nome+'?'))return;
+           for(const b of actions.querySelectorAll('button'))b.disabled=true;
+           const {error}=await supabase.rpc('fju_decidir_patente_inicial',{p_pedido_id:request.id,p_aprovar:ok});
+           if(error){info.textContent='Erro: '+error.message;for(const b of actions.querySelectorAll('button'))b.disabled=false;return;}
+           await loadYouthSignups();void refreshAdminPriorities(profile,profileRequest);
+         });actions.append(btn);
+       }entry.append(actions);
+     }section.append(entry);
+   }list.append(section);
+ }
+
  count.textContent=rows.length+' pendente(s)';
  status.textContent=rows.length?'Confira as solicitações abaixo.':'Nenhuma inscrição pendente para seu polo.';
  for(const item of rows){
@@ -2944,6 +2968,21 @@ async function loadYouthSignups(){
   const rank=document.createElement('select');rank.id='fju-signup-rank-'+item.id;rankLabel.htmlFor=rank.id;rank.setAttribute('aria-label','Patente inicial de '+(item.nome||'jovem'));
   for(const value of ['Inconstante','Firme','CPO','Colaborador','Obreiro','Coordenador']){const opt=document.createElement('option');opt.value=value;opt.textContent=value;rank.append(opt);}
   const approve=document.createElement('button');approve.type='button';approve.textContent='Aceitar e criar ficha';
+  const requestNational=document.createElement('button');requestNational.type='button';requestNational.className='secondary';requestNational.textContent='Solicitar aprovação Nacional';
+  const elevated=['CPO','Colaborador','Obreiro','Coordenador'];
+  const syncRankAction=()=>{const need=profile.papel==='coordenador'&&elevated.includes(rank.value);approve.hidden=need;requestNational.hidden=!need;};
+  rank.addEventListener('change',syncRankAction);syncRankAction();
+  requestNational.addEventListener('click',async()=>{
+    if(currentProfile!==profile||!card.isConnected)return;
+    if(!confirm('Solicitar '+rank.value+' para '+item.nome+' ao Nacional?'))return;
+    requestNational.disabled=true;feedback.textContent='Enviando solicitação…';
+    const {error}=await supabase.rpc('fju_solicitar_patente_inicial',{p_inscricao_id:item.id,p_patente:rank.value,p_dados:extraForm.read()});
+    if(currentProfile!==profile||!card.isConnected)return;
+    if(error){feedback.textContent='Não foi possível enviar: '+error.message;requestNational.disabled=false;return;}
+    feedback.textContent='Solicitação enviada ao Nacional. A ficha ainda não foi criada.';
+    requestNational.textContent='Aguardando Nacional';
+    void refreshAdminPriorities(profile,profileRequest);
+  });
   const reject=document.createElement('button');reject.type='button';reject.className='secondary';reject.textContent='Rejeitar';
   const feedback=document.createElement('p');feedback.className='message';feedback.setAttribute('role','status');
   approve.addEventListener('click',async()=>{
@@ -3004,7 +3043,7 @@ async function loadYouthSignups(){
   const identity=document.createElement('div');identity.className='fju-signup-identity';
   const badge=document.createElement('span');badge.className='fju-signup-badge';badge.textContent='● Aguardando análise';
   identity.append(badge,name,meta);head.append(avatar,identity);
-  const actionRow=document.createElement('div');actionRow.className='fju-signup-action-row';actionRow.append(approve,reject);
+  const actionRow=document.createElement('div');actionRow.className='fju-signup-action-row';actionRow.append(approve,requestNational,reject);
   controls.append(rankLabel,rank,actionRow);card.append(head,details,projects,expanded,controls,feedback);list.append(card);
  }
  filterSignups();
