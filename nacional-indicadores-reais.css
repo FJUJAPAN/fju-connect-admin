@@ -4,3 +4,20 @@ body.fju-national-clean #inicio .fju-dashboard-actions>.fju-action-card .fju-rea
 body.fju-national-clean #inicio .fju-dashboard-actions>.fju-action-card:has(.fju-real-metric):after{content:'';position:absolute;right:13px;bottom:13px;width:27px;height:24px;opacity:.8;background:linear-gradient(to top,#4b98fc 0 35%,transparent 35%) left bottom/5px 100% no-repeat,linear-gradient(to top,#4b98fc 0 56%,transparent 56%) 8px bottom/5px 100% no-repeat,linear-gradient(to top,#4b98fc 0 76%,transparent 76%) 16px bottom/5px 100% no-repeat,linear-gradient(to top,#4b98fc 0 96%,transparent 96%) 24px bottom/4px 100% no-repeat}
 body.fju-national-clean #inicio .fju-dashboard-actions>.fju-action-card:has(.fju-real-metric) strong{font-size:11px!important}
 }
+
+/* Central de aprovações: navegação iOS por igreja */
+body.fju-national-clean #autorizacoes.fju-approval-center{max-width:850px;margin:auto;padding:16px!important;background:transparent!important;border:0!important;box-shadow:none!important}
+#autorizacoes .fju-approval-header{background:#fff;border:1px solid #e5e9f1;border-radius:20px;padding:18px;margin-bottom:12px}
+#autorizacoes .fju-approval-header h2{margin:0 0 4px;font-size:24px;line-height:1.2}
+#autorizacoes .fju-approval-tabs{position:sticky;top:0;z-index:5;display:grid;grid-template-columns:1fr 1fr;padding:5px;border-radius:15px;background:#e9edf4;gap:5px;margin-bottom:12px}
+#autorizacoes .fju-approval-tabs button{min-height:46px;font-size:14px}
+#autorizacoes .fju-church-requests{border-radius:17px;margin:8px 0;border:1px solid #e2e7ef;box-shadow:0 2px 9px #12233d0a}
+#autorizacoes .fju-church-requests>summary{min-height:60px;padding:14px 16px;gap:8px}
+#autorizacoes .fju-church-requests>summary strong{font-size:15px;line-height:1.3}
+#autorizacoes .fju-church-request-count.is-pending{background:#ff3b30;color:#fff;min-width:26px;text-align:center;box-shadow:0 2px 7px #ff3b3030}
+#autorizacoes .fju-church-requests[open]>summary{background:#f4f7fc;border-bottom:1px solid #e2e7ef}
+#autorizacoes .fju-church-requests>.report-card{margin:10px!important;border-radius:13px;padding:13px}
+#autorizacoes .authorization-actions button{min-height:44px;border-radius:12px}
+#autorizacoes .authorization-filters{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:6px;padding-bottom:5px}
+#autorizacoes .authorization-filters button{white-space:nowrap;min-height:40px;border-radius:11px}
+@media(max-width:540px){#autorizacoes.fju-approval-center{padding:10px!important}#autorizacoes .fju-approval-header{padding:15px}#autorizacoes .fju-church-requests>summary{padding:13px}}
