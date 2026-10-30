@@ -2995,15 +2995,15 @@ async function loadYouthSignups(){
     for(const row of data||[]){const option=document.createElement('option');option.value=row.id;option.textContent=row.nome_completo+' — '+(row.nascimento||'Nascimento não informado');linkSelect.append(option);}
     linkHint.textContent=(data||[]).length+' ficha(s) encontradas. Confira nome e nascimento antes de vincular.';
   });
-  linkSelect.addEventListener('change',()=>{linkApprove.disabled=!linkSelect.value;});
+  linkSelect.addEventListener('change',()=>{linkApprove.disabled=!linkSelect.value||!!pendingRank;});
   linkApprove.addEventListener('click',async()=>{
-    const option=linkSelect.selectedOptions[0];if(!linkSelect.value||currentProfile!==profile||!card.isConnected)return;
+    const option=linkSelect.selectedOptions[0];if(pendingRank||!linkSelect.value||currentProfile!==profile||!card.isConnected)return;
     if(!confirm('Vincular a conta de '+item.nome+' à ficha '+option.textContent+'? Os dados da ficha serão preservados.'))return;
-    linkApprove.disabled=true;linkLoad.disabled=true;approve.disabled=true;reject.disabled=true;
+    linkApprove.disabled=true;linkLoad.disabled=true;linkSelect.disabled=true;approve.disabled=true;reject.disabled=true;
     feedback.textContent='Vinculando à ficha existente…';
     const {error}=await supabase.rpc('fju_vincular_inscricao_ficha_existente',{p_inscricao_id:item.id,p_jovem_id:linkSelect.value});
     if(currentProfile!==profile||!card.isConnected)return;
-    if(error){feedback.textContent='Não foi possível vincular: '+error.message;linkApprove.disabled=false;linkLoad.disabled=false;approve.disabled=false;reject.disabled=false;return;}
+    if(error){feedback.textContent='Não foi possível vincular: '+error.message;linkApprove.disabled=false;linkLoad.disabled=false;linkSelect.disabled=false;approve.disabled=false;reject.disabled=false;return;}
     await loadYouthSignups();status.textContent='Conta vinculada à ficha existente. Nenhuma ficha duplicada foi criada.';
     void refreshAdminPriorities(profile,profileRequest);
   });
