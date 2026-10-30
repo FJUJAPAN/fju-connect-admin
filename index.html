@@ -3001,9 +3001,9 @@ async function loadYouthSignups(){
     if((data||[]).length===100)linkHint.textContent='Lista limitada a 100 fichas. Se não encontrar o jovem, consulte a lista de fichas antes de vincular.';
     if((data||[]).length<100)linkHint.textContent=(data||[]).length+' ficha(s) encontradas. Confira nome e nascimento antes de vincular.';
   });
-  linkSelect.addEventListener('change',()=>{linkApprove.disabled=!linkSelect.value||!!pendingRank;});
+  linkSelect.addEventListener('change',()=>{linkApprove.disabled=!linkSelect.value;});
   linkApprove.addEventListener('click',async()=>{
-    const option=linkSelect.selectedOptions[0];if(pendingRank||!linkSelect.value||currentProfile!==profile||!card.isConnected)return;
+    const option=linkSelect.selectedOptions[0];if(!linkSelect.value||currentProfile!==profile||!card.isConnected)return;
     if(!confirm('Vincular a conta de '+item.nome+' à ficha '+option.textContent+'? Os dados da ficha serão preservados.'))return;
     linkApprove.disabled=true;linkLoad.disabled=true;linkSelect.disabled=true;approve.disabled=true;reject.disabled=true;
     feedback.textContent='Vinculando à ficha existente…';
@@ -3013,7 +3013,7 @@ async function loadYouthSignups(){
     await loadYouthSignups();status.textContent='Conta vinculada à ficha existente. Nenhuma ficha duplicada foi criada.';
     void refreshAdminPriorities(profile,profileRequest);
   });
-  if(pendingRank){linkLoad.disabled=true;linkSelect.disabled=true;linkApprove.disabled=true;linkHint.textContent='Há uma solicitação de patente aguardando o Nacional. Aguarde a decisão antes de vincular.';}
+  if(pendingRank){linkHint.textContent='Pedido de patente '+pendingRank.patente+' pendente no Nacional. Você pode vincular a ficha agora; a patente só mudará após aprovação Nacional.';}
   linkBox.append(linkTitle,linkHint,linkSearch,linkLoad,linkSelect,linkApprove);
   const approve=document.createElement('button');approve.type='button';approve.textContent='Aceitar e criar ficha';
   const requestNational=document.createElement('button');requestNational.type='button';requestNational.className='secondary';requestNational.textContent='Solicitar aprovação Nacional';
