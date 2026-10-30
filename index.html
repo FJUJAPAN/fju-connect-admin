@@ -2979,6 +2979,35 @@ async function loadYouthSignups(){
     notice.textContent='Patente solicitada: '+pendingRank.patente+' — aguardando decisão Nacional. Utilize o pedido acima para aprovar ou rejeitar.';
     controls.append(notice);
   }
+  const linkBox=document.createElement('div');linkBox.style.cssText='margin:12px 0;padding:12px;border:1px solid #d8e3f2;border-radius:14px;background:#f8fbff';
+  const linkTitle=document.createElement('strong');linkTitle.textContent='Já possui ficha?';
+  const linkHint=document.createElement('p');linkHint.className='muted';linkHint.textContent='Selecione uma ficha da mesma igreja para vincular a conta. A ficha e a patente serão preservadas.';
+  const linkSelect=document.createElement('select');linkSelect.setAttribute('aria-label','Ficha existente para '+item.nome);
+  const linkDefault=document.createElement('option');linkDefault.value='';linkDefault.textContent='Selecione uma ficha existente';linkSelect.append(linkDefault);
+  const linkLoad=document.createElement('button');linkLoad.type='button';linkLoad.className='secondary';linkLoad.textContent='Buscar fichas da igreja';
+  const linkApprove=document.createElement('button');linkApprove.type='button';linkApprove.className='secondary';linkApprove.textContent='Vincular à ficha existente';linkApprove.disabled=true;
+  linkLoad.addEventListener('click',async()=>{
+    linkLoad.disabled=true;linkHint.textContent='Carregando fichas da igreja…';
+    const {data,error}=await supabase.from('fju_jovens').select('id,nome_completo,nascimento').eq('polo_id',item.polo_id).is('excluido_em',null).order('nome_completo').limit(1000);
+    if(currentProfile!==profile||!card.isConnected)return;
+    linkLoad.disabled=false;linkSelect.replaceChildren(linkDefault);linkApprove.disabled=true;
+    if(error){linkHint.textContent='Não foi possível consultar fichas: '+error.message;return;}
+    for(const row of data||[]){const option=document.createElement('option');option.value=row.id;option.textContent=row.nome_completo+' — '+(row.nascimento||'Nascimento não informado');linkSelect.append(option);}
+    linkHint.textContent=(data||[]).length+' ficha(s) encontradas. Confira nome e nascimento antes de vincular.';
+  });
+  linkSelect.addEventListener('change',()=>{linkApprove.disabled=!linkSelect.value;});
+  linkApprove.addEventListener('click',async()=>{
+    const option=linkSelect.selectedOptions[0];if(!linkSelect.value||currentProfile!==profile||!card.isConnected)return;
+    if(!confirm('Vincular a conta de '+item.nome+' à ficha '+option.textContent+'? Os dados da ficha serão preservados.'))return;
+    linkApprove.disabled=true;linkLoad.disabled=true;approve.disabled=true;reject.disabled=true;
+    feedback.textContent='Vinculando à ficha existente…';
+    const {error}=await supabase.rpc('fju_vincular_inscricao_ficha_existente',{p_inscricao_id:item.id,p_jovem_id:linkSelect.value});
+    if(currentProfile!==profile||!card.isConnected)return;
+    if(error){feedback.textContent='Não foi possível vincular: '+error.message;linkApprove.disabled=false;linkLoad.disabled=false;approve.disabled=false;reject.disabled=false;return;}
+    await loadYouthSignups();status.textContent='Conta vinculada à ficha existente. Nenhuma ficha duplicada foi criada.';
+    void refreshAdminPriorities(profile,profileRequest);
+  });
+  linkBox.append(linkTitle,linkHint,linkLoad,linkSelect,linkApprove);
   const approve=document.createElement('button');approve.type='button';approve.textContent='Aceitar e criar ficha';
   const requestNational=document.createElement('button');requestNational.type='button';requestNational.className='secondary';requestNational.textContent='Solicitar aprovação Nacional';
   const elevated=['CPO','Colaborador','Obreiro','Coordenador'];
@@ -3057,7 +3086,7 @@ async function loadYouthSignups(){
   const badge=document.createElement('span');badge.className='fju-signup-badge';badge.textContent='● Aguardando análise';
   identity.append(badge,name,meta);head.append(avatar,identity);
   const actionRow=document.createElement('div');actionRow.className='fju-signup-action-row';actionRow.append(approve,requestNational,reject);
-  controls.append(rankLabel,rank,actionRow);card.append(head,details,projects,expanded,controls,feedback);list.append(card);
+  controls.append(rankLabel,rank,actionRow);card.append(head,details,projects,expanded,linkBox,controls,feedback);list.append(card);
  }
  filterSignups();
 }
