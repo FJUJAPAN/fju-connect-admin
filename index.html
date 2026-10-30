@@ -2022,7 +2022,7 @@ async function loadYouthRequests(){
         const key=String(row.polo_id);
         pendingByPolo.set(key,(pendingByPolo.get(key)||0)+1);
       }
-      if((pendingRows||[]).length<1000)break;
+      if((pendingRows||[]).length<100)break;
       pendingOffset+=1000;
     }
     const orderedPolos=[...poloRows].sort((a,b)=>
@@ -2984,17 +2984,22 @@ async function loadYouthSignups(){
   const linkHint=document.createElement('p');linkHint.className='muted';linkHint.textContent='Selecione uma ficha da mesma igreja para vincular a conta. A ficha e a patente serão preservadas.';
   const linkSelect=document.createElement('select');linkSelect.setAttribute('aria-label','Ficha existente para '+item.nome);
   const linkDefault=document.createElement('option');linkDefault.value='';linkDefault.textContent='Selecione uma ficha existente';linkSelect.append(linkDefault);
+  const linkSearch=document.createElement('input');linkSearch.type='search';linkSearch.placeholder='Buscar pelo nome da ficha';linkSearch.setAttribute('aria-label','Buscar ficha existente pelo nome');
   const linkLoad=document.createElement('button');linkLoad.type='button';linkLoad.className='secondary';linkLoad.textContent='Buscar fichas da igreja';
   const linkApprove=document.createElement('button');linkApprove.type='button';linkApprove.className='secondary';linkApprove.textContent='Vincular à ficha existente';linkApprove.disabled=true;
   linkLoad.addEventListener('click',async()=>{
     linkLoad.disabled=true;linkSelect.disabled=true;linkHint.textContent='Carregando fichas da igreja…';
-    const {data,error}=await supabase.from('fju_jovens').select('id,nome_completo,nascimento').eq('polo_id',item.polo_id).is('excluido_em',null).order('nome_completo').limit(1000);
+    const searchName=linkSearch.value.trim();
+    if(!searchName){linkLoad.disabled=false;linkSelect.disabled=false;linkHint.textContent='Digite parte do nome da ficha antes de buscar.';return;}
+    const safeName=searchName.replace(/[%,_]/g,'').trim();
+    if(safeName.length<2){linkLoad.disabled=false;linkSelect.disabled=false;linkHint.textContent='Digite pelo menos duas letras do nome.';return;}
+    const {data,error}=await supabase.from('fju_jovens').select('id,nome_completo,nascimento').eq('polo_id',item.polo_id).is('excluido_em',null).ilike('nome_completo','%'+safeName+'%').order('nome_completo').limit(100);
     if(currentProfile!==profile||!card.isConnected)return;
     linkLoad.disabled=false;linkSelect.disabled=false;linkSelect.replaceChildren(linkDefault);linkApprove.disabled=true;
     if(error){linkHint.textContent='Não foi possível consultar fichas: '+error.message;return;}
     for(const row of data||[]){const option=document.createElement('option');option.value=row.id;option.textContent=row.nome_completo+' — '+(row.nascimento||'Nascimento não informado');linkSelect.append(option);}
-    if((data||[]).length===1000)linkHint.textContent='Lista limitada a 1000 fichas. Se não encontrar o jovem, consulte a lista de fichas antes de vincular.';
-    if((data||[]).length<1000)linkHint.textContent=(data||[]).length+' ficha(s) encontradas. Confira nome e nascimento antes de vincular.';
+    if((data||[]).length===100)linkHint.textContent='Lista limitada a 100 fichas. Se não encontrar o jovem, consulte a lista de fichas antes de vincular.';
+    if((data||[]).length<100)linkHint.textContent=(data||[]).length+' ficha(s) encontradas. Confira nome e nascimento antes de vincular.';
   });
   linkSelect.addEventListener('change',()=>{linkApprove.disabled=!linkSelect.value||!!pendingRank;});
   linkApprove.addEventListener('click',async()=>{
@@ -3009,7 +3014,7 @@ async function loadYouthSignups(){
     void refreshAdminPriorities(profile,profileRequest);
   });
   if(pendingRank){linkLoad.disabled=true;linkSelect.disabled=true;linkApprove.disabled=true;linkHint.textContent='Há uma solicitação de patente aguardando o Nacional. Aguarde a decisão antes de vincular.';}
-  linkBox.append(linkTitle,linkHint,linkLoad,linkSelect,linkApprove);
+  linkBox.append(linkTitle,linkHint,linkSearch,linkLoad,linkSelect,linkApprove);
   const approve=document.createElement('button');approve.type='button';approve.textContent='Aceitar e criar ficha';
   const requestNational=document.createElement('button');requestNational.type='button';requestNational.className='secondary';requestNational.textContent='Solicitar aprovação Nacional';
   const elevated=['CPO','Colaborador','Obreiro','Coordenador'];
