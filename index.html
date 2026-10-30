@@ -3007,6 +3007,7 @@ async function loadYouthSignups(){
     await loadYouthSignups();status.textContent='Conta vinculada à ficha existente. Nenhuma ficha duplicada foi criada.';
     void refreshAdminPriorities(profile,profileRequest);
   });
+  if(pendingRank){linkLoad.disabled=true;linkSelect.disabled=true;linkApprove.disabled=true;linkHint.textContent='Há uma solicitação de patente aguardando o Nacional. Aguarde a decisão antes de vincular.';}
   linkBox.append(linkTitle,linkHint,linkLoad,linkSelect,linkApprove);
   const approve=document.createElement('button');approve.type='button';approve.textContent='Aceitar e criar ficha';
   const requestNational=document.createElement('button');requestNational.type='button';requestNational.className='secondary';requestNational.textContent='Solicitar aprovação Nacional';
