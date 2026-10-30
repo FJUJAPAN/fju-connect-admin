@@ -2987,13 +2987,14 @@ async function loadYouthSignups(){
   const linkLoad=document.createElement('button');linkLoad.type='button';linkLoad.className='secondary';linkLoad.textContent='Buscar fichas da igreja';
   const linkApprove=document.createElement('button');linkApprove.type='button';linkApprove.className='secondary';linkApprove.textContent='Vincular à ficha existente';linkApprove.disabled=true;
   linkLoad.addEventListener('click',async()=>{
-    linkLoad.disabled=true;linkHint.textContent='Carregando fichas da igreja…';
+    linkLoad.disabled=true;linkSelect.disabled=true;linkHint.textContent='Carregando fichas da igreja…';
     const {data,error}=await supabase.from('fju_jovens').select('id,nome_completo,nascimento').eq('polo_id',item.polo_id).is('excluido_em',null).order('nome_completo').limit(1000);
     if(currentProfile!==profile||!card.isConnected)return;
-    linkLoad.disabled=false;linkSelect.replaceChildren(linkDefault);linkApprove.disabled=true;
+    linkLoad.disabled=false;linkSelect.disabled=false;linkSelect.replaceChildren(linkDefault);linkApprove.disabled=true;
     if(error){linkHint.textContent='Não foi possível consultar fichas: '+error.message;return;}
     for(const row of data||[]){const option=document.createElement('option');option.value=row.id;option.textContent=row.nome_completo+' — '+(row.nascimento||'Nascimento não informado');linkSelect.append(option);}
-    linkHint.textContent=(data||[]).length+' ficha(s) encontradas. Confira nome e nascimento antes de vincular.';
+    if((data||[]).length===1000)linkHint.textContent='Lista limitada a 1000 fichas. Se não encontrar o jovem, consulte a lista de fichas antes de vincular.';
+    if((data||[]).length<1000)linkHint.textContent=(data||[]).length+' ficha(s) encontradas. Confira nome e nascimento antes de vincular.';
   });
   linkSelect.addEventListener('change',()=>{linkApprove.disabled=!linkSelect.value||!!pendingRank;});
   linkApprove.addEventListener('click',async()=>{
