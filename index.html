@@ -340,6 +340,14 @@ body.fju-admin-shell{min-height:100dvh;overscroll-behavior-y:none;-webkit-tap-hi
 .fju-youth-id{display:block;font-size:12px;font-weight:700;color:#617396;letter-spacing:.02em;margin:3px 0 5px}.fju-youth-id:empty{display:none}
 
 .youth-back-dashboard{display:inline-flex;align-items:center;gap:6px;margin:0 0 16px;padding:10px 16px;border-radius:12px;font-weight:700}.youth-page-header{align-items:center}
+
+/* Fichas: dedicated page view, not a panel embedded in the dashboard. */
+#app.fju-fichas-mode .fju-admin-workspace{display:block!important;grid-template-columns:none!important;min-height:100vh}
+#app.fju-fichas-mode #fju-admin-sidebar,#app.fju-fichas-mode #fju-admin-menu-overlay,#app.fju-fichas-mode .fju-content-toolbar{display:none!important}
+#app.fju-fichas-mode .fju-admin-content{width:100%!important;max-width:1080px!important;margin:0 auto!important;padding:20px 16px 90px!important;min-width:0!important}
+#app.fju-fichas-mode #jovens{display:block!important;margin:0!important;max-width:none!important}
+#app.fju-fichas-mode #jovens.hidden{display:none!important}
+#app.fju-fichas-mode .youth-back-dashboard{margin-bottom:20px!important}
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023g">
@@ -3384,6 +3392,7 @@ function activateMainTab(button){
     else item.removeAttribute('aria-current');
   });
   document.querySelectorAll('#app section.panel').forEach(panel=>panel.classList.toggle('hidden',panel.id!==sectionId));
+  el('app').classList.toggle('fju-fichas-mode',sectionId==='jovens');
   if(window.matchMedia('(max-width:700px)').matches){button.scrollIntoView({behavior:'auto',block:'nearest',inline:'nearest'});}
   const label=button.querySelector('.fju-nav-label-desktop')?.textContent?.trim()||'Painel de controle';
   el('fju-dashboard-heading').textContent=label;
