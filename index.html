@@ -374,6 +374,10 @@ body.fju-admin-shell{min-height:100dvh;overscroll-behavior-y:none;-webkit-tap-hi
 #app.fju-module-page section.panel:not(.hidden){display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;overflow:visible!important}
 #app.fju-module-page .fju-module-return{display:inline-flex;align-items:center;gap:8px;margin:0 0 22px;padding:12px 18px;background:#e4e9f3;border:0;border-radius:14px;color:#203459;font-weight:750;font-size:16px;cursor:pointer}
 @media(max-width:700px){#app.fju-module-page .fju-admin-content{padding:18px 14px 80px!important}#app.fju-module-page section.panel:not(.hidden){min-width:0!important}#app.fju-module-page section.panel input,#app.fju-module-page section.panel select,#app.fju-module-page section.panel button{max-width:100%}}
+
+/* Full-screen standalone modules, including when linked from an embedded dashboard. */
+#app.fju-module-page .fju-admin-content{min-height:100vh!important}
+#app.fju-module-page section.panel:not(.hidden){border-radius:0!important}
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023g">
@@ -1493,6 +1497,11 @@ async function loadProfile(user){
   configureWeeklyReportAccess();
   if(data.papel==='nacional')void loadNationalReportOverview();else el('national-report-panel').classList.add('hidden');
   show('app');
+  const requestedModule=new URLSearchParams(location.search).get('module');
+  if(['inscricoes','relatorios'].includes(requestedModule)){
+    const tab=document.querySelector('#main-nav [data-tab="'+requestedModule+'"]');
+    if(tab&&!tab.hidden)activateMainTab(tab);
+  }
   void refreshAdminPriorities(data,requestId);
   void coordinatorCards.load(user,data,poloNome);
   youthInitialization=initializeYouth();
@@ -3329,7 +3338,15 @@ adminMobileMedia.addEventListener('change',()=>setAdminMenuOpen(false));
 document.querySelectorAll('.fju-dashboard-actions [data-open-tab]').forEach(shortcut=>{
   shortcut.addEventListener('click',()=>{
     const tab=document.querySelector('#main-nav [data-tab="'+shortcut.dataset.openTab+'"]');
-    if(tab&&!tab.hidden)tab.click();
+    if(tab&&!tab.hidden){
+      const module=shortcut.dataset.openTab;
+      if(['inscricoes','relatorios'].includes(module)){
+        const destination=new URL(window.location.href);
+        destination.searchParams.set('module',module);
+        destination.searchParams.delete('embed');
+        window.top.location.assign(destination.toString());
+      }else tab.click();
+    }
   });
 });
 /* Atalhos contextuais: usam os botões existentes, mantendo o mesmo fluxo. */
@@ -3423,7 +3440,10 @@ function activateMainTab(button){
   el('app').classList.toggle('fju-module-page',isModulePage);
   if(isModulePage&&!targetPanel.querySelector(':scope > .fju-module-return')){
     const back=document.createElement('button');back.type='button';back.className='fju-module-return';back.textContent='← Voltar';
-    back.addEventListener('click',()=>document.querySelector('#main-nav [data-tab="inicio"]')?.click());
+    back.addEventListener('click',()=>{
+      if(new URLSearchParams(location.search).has('module')){const url=new URL(location.href);url.searchParams.delete('module');window.top.location.assign(url.toString());}
+      else document.querySelector('#main-nav [data-tab="inicio"]')?.click();
+    });
     targetPanel.prepend(back);
   }
   if(window.matchMedia('(max-width:700px)').matches){button.scrollIntoView({behavior:'auto',block:'nearest',inline:'nearest'});}
