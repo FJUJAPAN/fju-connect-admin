@@ -3742,9 +3742,9 @@ async function openEditor(){
    if(rule.type===CSSRule.STYLE_RULE){
     const selectors=rule.selectorText.split(',').map(selector=>{
      let sel=selector.trim();
-     if(/^(?:html|:root|header)(?:\\b|[.#:\\s>])/i.test(sel))return '';
-     if(/^body(?!\\.fju-admin-editor)/i.test(sel))return '';
-     sel=sel.replace(/^(?:body)?\\.fju-admin-editor(?=[\\s.#:>]|$)/,scope);
+     if(/^(?:html|:root|header)(?:\b|[.#:\s>])/i.test(sel))return '';
+     if(/^body(?!\.fju-admin-editor)/i.test(sel))return '';
+     sel=sel.replace(/^(?:body)?\.fju-admin-editor(?=[\s.#:>]|$)/,scope);
      return sel.startsWith(scope)?sel:scope+' '+sel;
     }).filter(Boolean);
     return selectors.length?selectors.join(',')+'{'+rule.style.cssText+'}':'';
@@ -3752,7 +3752,7 @@ async function openEditor(){
    if(rule.type===CSSRule.MEDIA_RULE)return '@media '+rule.conditionText+'{'+scopeRules(rule.cssRules)+'}';
    if(rule.type===CSSRule.SUPPORTS_RULE)return '@supports '+rule.conditionText+'{'+scopeRules(rule.cssRules)+'}';
    return '';
-  }).join('\\n');
+  }).join('\n');
  }
  const sourceStyles=[...doc.querySelectorAll('style')].filter(sheet=>!sheet.id||!/header|navigation|shell|sticky/i.test(sheet.id)).map(sheet=>sheet.textContent);
  sourceStyles.push(await themeResponse.text());
