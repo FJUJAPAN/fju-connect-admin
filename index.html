@@ -1803,7 +1803,7 @@ async function loadYouthPhoto(id){
   }
   // Preservar e reutilizar a foto original de inscrição quando a cópia oficial falhou.
   if(!blob){
-   const linkedUser=[...fjuIdByUser.entries()].find(([uid,fid])=>fid===fjuIdByYouth.get(String(id)))?.[0];
+   const {data:linkedUser,error:linkError}=await supabase.rpc('fju_usuario_foto_por_jovem',{p_jovem_id:id});
    if(linkedUser){
     const result=await supabase.storage.from('fju-inscricoes-fotos').download(linkedUser+'/perfil.jpg');
     if(!result.error)blob=result.data;
@@ -1890,7 +1890,7 @@ async function loadYouthCardThumbnail(id,avatar,version){
     // A linked signup may have the original portrait in the private signup bucket.
     // Keep the original object intact and reuse it for the approved youth card.
     if(!data){
-      const linkedUser=[...fjuIdByUser.entries()].find(([userId,fjuId])=>fjuId===fjuIdByYouth.get(String(id)))?.[0];
+      const {data:linkedUser}=await supabase.rpc('fju_usuario_foto_por_jovem',{p_jovem_id:id});
       if(linkedUser){
         const result=await supabase.storage.from('fju-inscricoes-fotos').download(linkedUser+'/perfil.jpg');
         if(!result.error)data=result.data;
