@@ -1968,9 +1968,20 @@ async function loadYouthRequests(){
   el('requests-message').textContent='Consultando solicitações...';
   const accessByRequest=await administrativeAccess.requestsByRank();
   if(version!==requestsLoadVersion||currentProfile!==profile)return;
+  // Keep deleted profiles in the audit database, but omit their authorizations.
+  const excludedIds=[];
+  for(let offset=0;;offset+=500){
+    const {data:deleted,error:deletedError}=await supabase.from('fju_jovens')
+      .select('id').not('excluido_em','is',null).order('id').range(offset,offset+499);
+    if(version!==requestsLoadVersion||currentProfile!==profile)return;
+    if(deletedError){message('requests-message','Não foi possível filtrar fichas excluídas: '+deletedError.message,true);return;}
+    excludedIds.push(...(deleted||[]).map(row=>row.id));
+    if((deleted||[]).length<500)break;
+  }
   const baseQuery=(fields,options)=> {
     let query=supabase.from('fju_solicitacoes').select(fields,options);
     if(profile.papel==='coordenador')query=query.eq('polo_id',profile.polo_id);
+    if(excludedIds.length)query=query.not('jovem_id','in','('+excludedIds.join(',')+')');
     return query;
   };
   // O status é filtrado no Supabase ANTES da paginação; pedidos antigos pendentes
@@ -2032,8 +2043,10 @@ async function loadYouthRequests(){
     const pendingByPolo=new Map();
     let pendingOffset=0,countsAvailable=true;
     while(true){
-      const {data:pendingRows,error:pendingError}=await supabase.from('fju_solicitacoes')
-        .select('id,polo_id').eq('status','pendente').order('id',{ascending:true})
+      let pendingQuery=supabase.from('fju_solicitacoes')
+        .select('id,polo_id').eq('status','pendente').order('id',{ascending:true});
+      if(excludedIds.length)pendingQuery=pendingQuery.not('jovem_id','in','('+excludedIds.join(',')+')');
+      const {data:pendingRows,error:pendingError}=await pendingQuery
         .range(pendingOffset,pendingOffset+999);
       if(version!==requestsLoadVersion||currentProfile!==profile)return;
       if(pendingError){countsAvailable=false;console.warn('Contagem de pendências indisponível:',pendingError.message);break;}
