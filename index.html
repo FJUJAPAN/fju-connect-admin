@@ -779,7 +779,7 @@ document.addEventListener('DOMContentLoaded',function(){
 </form>
 </div>
 <p id="youth-message" class="message" role="status" aria-live="polite"></p>
-<div class="youth-saved-heading"><h3>Fichas cadastradas</h3><span id="youth-visible-count" class="youth-saved-count">Carregando...</span></div>
+<div id="photo-repair-ui" hidden><button type="button" id="photo-repair-run" class="secondary">Recuperar fotos das fichas</button><p id="photo-repair-status" role="status"></p></div><div class="youth-saved-heading"><h3>Fichas cadastradas</h3><span id="youth-visible-count" class="youth-saved-count">Carregando...</span></div>
 <div id="youth-list-polo-wrap" class="youth-polo-filter"><label for="youth-list-polo">Visualizar fichas da igreja</label><select id="youth-list-polo"><option value="">Selecione uma igreja</option></select></div>
 <div class="youth-list-controls"><div><label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite o nome do jovem" type="search" autocomplete="off"></div><button type="button" id="youth-refresh" class="secondary">Atualizar</button></div>
 <div id="youth-detail" class="panel hidden" style="margin:0 0 14px;border:1px solid #dce3ef"></div><div id="youth-list" aria-label="Fichas salvas"></div>
@@ -1789,26 +1789,20 @@ async function initializeYouth(){
 let youthPhotoLoadVersion=0;
 let fjuPhotoRepairStarted=false;
 async function fjuRestoreApprovedPhotos(){
- if(fjuPhotoRepairStarted||currentProfile?.papel!=='nacional')return;
- fjuPhotoRepairStarted=true;
+ if(currentProfile?.papel!=='nacional')return;
+ const box=el('photo-repair-ui'),button=el('photo-repair-run'),status=el('photo-repair-status');
+ box.hidden=false;
+ if(fjuPhotoRepairStarted)return;
+ fjuPhotoRepairStarted=true;button.disabled=true;status.textContent='Verificando fotos…';
  try{
   const {data,error}=await supabase.functions.invoke('fju-restaurar-fotos-fichas',{body:{}});
-  if(error||data?.error)throw Error(data?.error||error?.message||'Erro na restauração');
-  console.info('Fotos conferidas e restauradas:',data);
-  const count=el('youth-visible-count');
-  if(count&&currentProfile?.papel==='nacional'){
-   const extra='Fotos: '+(data.restored||0)+' recuperadas; '+(data.already||0)+' já presentes'+(data.failed?'; '+data.failed+' falhas':'');
-   count.textContent=(count.textContent||'')+' · '+extra;
-  }
-  if(data.restored&&currentProfile?.papel==='nacional'&&el('youth-list-polo')?.value)void loadYouth();
-  if(data.failed)fjuPhotoRepairStarted=false;
- }catch(err){
-  fjuPhotoRepairStarted=false;
-  console.warn('Não foi possível restaurar fotos das fichas:',err);
-  const count=el('youth-visible-count');
-  if(count)count.textContent=(count.textContent||'')+' · Recuperação indisponível: '+err.message;
- }
+  if(error||data?.error)throw Error(data?.error||error?.message||'Erro desconhecido');
+  status.textContent=(data.total||0)+' fichas verificadas: '+(data.restored||0)+' recuperadas, '+(data.already||0)+' presentes, '+(data.missing||0)+' sem original, '+(data.failed||0)+' falhas.';
+  if(data.restored&&el('youth-list-polo')?.value)void loadYouth();
+ }catch(e){status.textContent='Erro na recuperação: '+e.message;}
+ finally{fjuPhotoRepairStarted=false;button.disabled=false;}
 }
+el('photo-repair-run').addEventListener('click',()=>void fjuRestoreApprovedPhotos());
 
 async function loadYouthPhoto(id){
  const photoLoad=++youthPhotoLoadVersion,profile=currentProfile;
@@ -1867,7 +1861,7 @@ async function compactarFoto100KB(file){
 }
 let youthLoadVersion=0;
 async function loadYouth(){
-  if(currentProfile?.papel==='nacional')void fjuRestoreApprovedPhotos();
+  if(currentProfile?.papel==='nacional')(el('photo-repair-ui').hidden=false);
   const profile=currentProfile;
   if(!profile)return;
   const loadVersion=++youthLoadVersion;
@@ -3676,7 +3670,7 @@ function activateMainTab(button){
   const sectionId=button.dataset.tab;
   const targetPanel=sectionId?el(sectionId):null;
   if(!targetPanel||!document.querySelector('#app')?.contains(targetPanel))return;
-  if(sectionId==='jovens'&&currentProfile?.papel==='nacional')void fjuRestoreApprovedPhotos();
+  if(sectionId==='jovens'&&currentProfile?.papel==='nacional')(el('photo-repair-ui').hidden=false);
   if(sectionId==='inscricoes')void loadYouthSignups();
   if(sectionId==='autorizacoes'){void loadYouthRequests();void administrativeAccess.refresh();if(currentProfile?.papel==='nacional')void fjuLoadComplementApprovals();}
   if(sectionId==='lideranca')void coordinatorCards.refresh();
