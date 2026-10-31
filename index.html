@@ -418,6 +418,7 @@ body #fju-fichas-return-fixed[hidden]{display:none!important}
 #jovens .fju-church-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 #jovens .fju-church-heading h3{margin:0!important}
 #jovens #youth-print-list{display:inline-flex!important;visibility:visible!important;opacity:1!important;position:relative!important;z-index:5!important;flex-shrink:0;align-items:center;justify-content:center;padding:11px 15px!important;min-height:43px!important;background:#173e79!important;color:#fff!important;border-radius:12px!important;font-size:14px!important;font-weight:800!important}
+#jovens #youth-print-toolbar:not([hidden]){display:flex!important;justify-content:flex-end!important;margin:8px 0 14px!important}#jovens #youth-print-toolbar[hidden]{display:none!important}#jovens #youth-print-toolbar button{display:inline-flex!important;background:#173e79!important;color:#fff!important;border-radius:12px!important;padding:12px 16px!important;font-weight:800!important}
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023g">
@@ -778,7 +779,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <div><h2>Fichas dos jovens</h2><p id="youth-page-subtitle" class="youth-page-subtitle">Consulte as fichas da sua igreja. Abra o formulário somente quando precisar cadastrar ou solicitar uma alteração.</p></div>
 <button type="button" id="youth-add-toggle" aria-expanded="false" aria-controls="youth-entry-panel"><span class="youth-add-icon" aria-hidden="true">+</span><span id="youth-add-toggle-label">Adicionar ficha</span></button>
 </div>
-<div id="fju-church-picker" class="fju-church-picker"><div class="fju-church-heading"><h3>Escolha a igreja</h3><button type="button" id="youth-print-list" class="secondary">🖨 Imprimir lista</button></div><div id="fju-church-buttons" class="fju-church-buttons" aria-label="Igrejas"></div></div>
+<div id="fju-church-picker" class="fju-church-picker"><div class="fju-church-heading"><h3>Escolha a igreja</h3></div><div id="fju-church-buttons" class="fju-church-buttons" aria-label="Igrejas"></div></div>
 <div id="youth-entry-panel" class="hidden">
 <div class="youth-entry-heading"><h3 id="youth-form-title">Nova ficha</h3><button type="button" id="youth-form-close" class="secondary">Fechar</button></div>
 <p class="youth-page-subtitle">Preencha os dados do jovem. Alterações de fichas existentes feitas pelo coordenador dependem de aprovação nacional.</p>
@@ -806,7 +807,7 @@ document.addEventListener('DOMContentLoaded',function(){
 </form>
 </div>
 <p id="youth-message" class="message" role="status" aria-live="polite"></p>
-<div id="photo-repair-ui" hidden><button type="button" id="photo-repair-run" class="secondary">Recuperar fotos das fichas</button><p id="photo-repair-status" role="status"></p></div><div class="youth-saved-heading"><h3>Fichas cadastradas</h3><span id="youth-visible-count" class="youth-saved-count">Carregando...</span></div>
+<div id="photo-repair-ui" hidden><button type="button" id="photo-repair-run" class="secondary">Recuperar fotos das fichas</button><p id="photo-repair-status" role="status"></p></div><div class="youth-saved-heading"><h3>Fichas cadastradas</h3><span id="youth-visible-count" class="youth-saved-count">Carregando...</span></div><div id="youth-print-toolbar" hidden><button type="button" id="youth-print-list" class="secondary">🖨 Imprimir lista desta igreja</button></div>
 <div id="youth-list-polo-wrap" class="youth-polo-filter"><label for="youth-list-polo">Visualizar fichas da igreja</label><select id="youth-list-polo"><option value="">Selecione uma igreja</option></select></div>
 <div class="youth-list-controls"><div><label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite o nome do jovem" type="search" autocomplete="off"></div><button type="button" id="youth-refresh" class="secondary">Atualizar</button></div>
 <div id="youth-detail" class="panel hidden" style="margin:0 0 14px;border:1px solid #dce3ef"></div><div id="youth-list" aria-label="Fichas salvas"></div>
@@ -1994,12 +1995,14 @@ function renderYouth(){
   const polo=el('youth-list-polo').value;
   if(!polo){
     count.textContent='Selecione uma igreja';
+    el('youth-print-toolbar').hidden=true;
     el('youth-print-list').disabled=false;
     const empty=document.createElement('div');empty.className='youth-empty';
     empty.textContent='Selecione uma igreja para visualizar as fichas cadastradas.';
     list.append(empty);return;
   }
   const rows=youthRows.filter(r=>String(r.polo_id)===polo&&(r.nome_completo||'').toLocaleLowerCase().includes(term));
+  el('youth-print-toolbar').hidden=!polo;
   count.textContent=rows.length+' '+(rows.length===1?'ficha':'fichas');
   el('youth-print-list').disabled=false;
   if(!rows.length){
@@ -2721,9 +2724,9 @@ async function fjuPrintYouthChurchList(){
  if(!polo){youthMessage('Selecione uma igreja antes de imprimir.',true);return;}
  const rows=youthRows.filter(r=>String(r.polo_id)===polo).sort((a,b)=>(a.nome_completo||'').localeCompare(b.nome_completo||'','pt-BR'));
  if(!rows.length){youthMessage('Esta igreja não possui fichas para imprimir.',true);return;}
- const popup=window.open('','_blank');
- if(!popup){youthMessage('Permita abrir a janela de impressão no navegador.',true);return;}
- popup.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Preparando lista</title></head><body><p>Preparando lista com fotos…</p></body></html>');
+ const popup=window.open('about:blank','_blank');
+ if(!popup){youthMessage('O navegador bloqueou a janela. Autorize pop-ups e tente novamente.',true);return;}
+ popup.document.open();popup.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Preparando lista</title></head><body><p>Preparando lista com fotos…</p></body></html>');popup.document.close();
  const button=el('youth-print-list');button.disabled=true;button.textContent='Preparando fotos…';
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const age=value=>{
