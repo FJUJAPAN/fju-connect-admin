@@ -1799,11 +1799,11 @@ async function fjuRestoreApprovedPhotos(){
   for(const item of items||[]){
    const source=await supabase.storage.from('fju-inscricoes-fotos').download(item.usuario_id+'/perfil.jpg');
    if(source.error||!source.data){failed++;first ||= source.error?.message||'Foto indisponível';continue;}
-   const target=await supabase.storage.from('fju-fotos').upload(item.jovem_id+'/perfil.jpg',source.data,{contentType:'image/jpeg'});
+   const target=await supabase.storage.from('fju-fotos').upload(item.jovem_id+'/perfil.jpg',source.data,{contentType:'image/jpeg',upsert:false});
    if(target.error){failed++;first ||= target.error.message;}else ok++;
    status.textContent=ok+' de '+items.length+' fotos restauradas…';
   }
-  status.textContent=ok+' fotos recuperadas; '+failed+' falhas.'+(first?' Erro: '+first:'');
+  status.textContent='Recuperação v4: '+ok+' fotos recuperadas; '+failed+' falhas.'+(first?' Primeiro erro: '+first:'');
   if(ok&&el('youth-list-polo')?.value)void loadYouth();
  }catch(e){status.textContent='Erro: '+e.message;}
  finally{fjuPhotoRepairStarted=false;button.disabled=false;}
