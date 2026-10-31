@@ -1620,21 +1620,29 @@ function clearYouthCardPhotos(){
 }
 async function loadYouthCardThumbnail(id,avatar,version){
   try{
-    const {data:files,error}=await supabase.storage.from('fju-fotos').list(id,{limit:20});
-    if(error||version!==youthCardRenderVersion)return;
-    const photo=(files||[]).find(file=>/^perfil\.(jpg|png|webp)$/.test(file.name));
-    if(!photo)return;
-    const {data,error:photoError}=await supabase.storage.from('fju-fotos').download(id+'/'+photo.name);
-    if(photoError||!data||version!==youthCardRenderVersion||!avatar.isConnected)return;
-    const url=URL.createObjectURL(data);
-    youthCardPhotoUrls.push(url);
-    const img=document.createElement('img');
-    img.src=url;img.alt='Foto do jovem';img.decoding='async';
+    const store=supabase.storage.from('fju-fotos');
+    const {data:files,error}=await store.list(id,{limit:20});
+    if(version!==youthCardRenderVersion)return;
+    const photo=(!error&&files||[]).find(file=>/^perfil\.(jpg|png|webp)$/.test(file.name));
+    let data=null;
+    if(photo){
+      const result=await store.download(id+'/'+photo.name);
+      if(!result.error)data=result.data;
+    }
+    // A linked signup may have the original portrait in the private signup bucket.
+    // Keep the original object intact and reuse it for the approved youth card.
+    if(!data){
+      const linkedUser=[...fjuIdByUser.entries()].find(([userId,fjuId])=>fjuId===fjuIdByYouth.get(String(id)))?.[0];
+      if(linkedUser){
+        const result=await supabase.storage.from('fju-inscricoes-fotos').download(linkedUser+'/perfil.jpg');
+        if(!result.error)data=result.data;
+      }
+    }
+    if(!data||version!==youthCardRenderVersion||!avatar.isConnected)return;
+    const url=URL.createObjectURL(data);youthCardPhotoUrls.push(url);
+    const img=document.createElement('img');img.src=url;img.alt='Foto do jovem';img.decoding='async';
     avatar.replaceChildren(img);
-  }catch(err){
-    // A ausência de foto ou a falta de permissão não impede abrir a ficha.
-    console.warn('Miniatura indisponível',err);
-  }
+  }catch(err){console.warn('Miniatura indisponível',err);}
 }
 function youthCardRank(r){
   if(r.categoria==='inconstante')return 'Inconstante';
