@@ -336,6 +336,8 @@ body.fju-admin-shell{min-height:100dvh;overscroll-behavior-y:none;-webkit-tap-hi
 .fju-header-account-menu .fju-session-info{min-width:0;overflow-wrap:anywhere}
 .fju-header-account-menu .fju-session-actions{display:flex!important;flex-wrap:wrap;justify-content:flex-end;width:100%}
 @media(max-width:700px){.fju-header-account-menu{position:fixed;top:112px;right:12px;width:min(340px,calc(100vw - 24px))}}
+
+.fju-youth-id{display:block;font-size:12px;font-weight:700;color:#617396;letter-spacing:.02em;margin:3px 0 5px}.fju-youth-id:empty{display:none}
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023g">
@@ -1083,6 +1085,7 @@ const show=(id)=>{
 };
 const message=(id,msg,error=false)=>{el(id).textContent=msg;el(id).className='message '+(error?'error':'success')};
 let recoveryMode=false;
+let fjuIdByYouth=new Map(),fjuIdByUser=new Map();
 let profileRequest=0; let youthRows=[]; let photoUrl=null;
 let youthInitialization=Promise.resolve();
 async function countRows(table,profile=null){
@@ -1595,6 +1598,12 @@ async function loadYouth(){
     if(!data||data.length<batchSize)break;
   }
   if(loadVersion!==youthLoadVersion||currentProfile!==profile)return;
+  const {data:idRows,error:idError}=await supabase.rpc('fju_listar_ids');
+  if(loadVersion!==youthLoadVersion||currentProfile!==profile)return;
+  if(!idError){
+    fjuIdByYouth=new Map((idRows||[]).filter(x=>x.jovem_id).map(x=>[String(x.jovem_id),x.fju_id]));
+    fjuIdByUser=new Map((idRows||[]).filter(x=>x.usuario_id).map(x=>[String(x.usuario_id),x.fju_id]));
+  }else console.warn('FJU ID indisponível:',idError.message);
   youthRows=all;renderYouth();youthMessage(`${youthRows.length} ficha(s) carregada(s) da igreja selecionada.`);
 }
 /* Fotos das fichas são carregadas somente quando o card entra na área visível.
@@ -1683,7 +1692,9 @@ function renderYouth(){
     const countryName=document.createElement('span');
     countryName.textContent=country?.textContent||r.nacionalidade_iso2||'Nacionalidade não informada';
     metadata.append(countryName);
-    info.append(name,rank,metadata);
+    const idLabel=document.createElement('span');idLabel.className='fju-youth-id';
+    idLabel.textContent=fjuIdByYouth.get(String(r.id))||'';
+    info.append(name,idLabel,rank,metadata);
     main.append(avatar,info);
     main.setAttribute('role','button');main.tabIndex=0;main.setAttribute('aria-label','Abrir ficha de '+(r.nome_completo||'jovem'));main.onclick=()=>viewYouth(r.id);main.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();viewYouth(r.id);}};
     const actions=document.createElement('div');actions.className='youth-card-actions';
