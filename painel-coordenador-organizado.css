@@ -139,3 +139,11 @@ body.fju-coordinator-dashboard .fju-coord-personal-back{display:inline-flex;alig
 
 body.fju-coordinator-dashboard #fju-coord-app-shell>#fju-my-page[hidden]{display:none!important}
 body.fju-coordinator-dashboard #fju-coord-personal-detail:not([hidden]){min-height:220px;box-sizing:border-box}
+
+/* Fichas is a standalone screen: the coordinator dashboard must not remain visible. */
+body.fju-coordinator-dashboard #inicio.hidden{display:none!important}
+body.fju-coordinator-dashboard #app.fju-fichas-mode #inicio{display:none!important}
+body.fju-coordinator-dashboard #app.fju-fichas-mode #fju-coord-app-shell,
+body.fju-coordinator-dashboard #app.fju-fichas-mode #fju-coord-home-return{display:none!important}
+body.fju-coordinator-dashboard #app.fju-fichas-mode .fju-content-toolbar{display:none!important}
+body.fju-coordinator-dashboard #app.fju-fichas-mode .fju-admin-content{max-width:1080px!important;padding-top:18px!important}
