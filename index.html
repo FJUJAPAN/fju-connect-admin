@@ -386,6 +386,13 @@ body.fju-admin-shell>.fju-admin-header .fju-admin-header-inner{display:flex!impo
 body.fju-admin-shell>.fju-admin-header .fju-admin-header-tools{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:8px!important;flex-shrink:0!important}
 body.fju-admin-shell>.fju-admin-header .fju-header-account,body.fju-admin-shell>.fju-admin-header #fju-admin-language-settings{visibility:visible!important}
 @media(max-width:700px){body.fju-admin-shell>.fju-admin-header .fju-admin-header-inner{gap:6px!important}body.fju-admin-shell>.fju-admin-header .fju-admin-header-tools{gap:6px!important}}
+
+/* Central de Aprovações: cada tipo de solicitação na sua própria aba */
+#autorizacoes .fju-request-zone[hidden],#autorizacoes #fju-complement-approvals[hidden]{display:none!important}
+#autorizacoes .fju-approval-tabs{grid-template-columns:1fr 1fr;gap:8px}
+#autorizacoes .fju-approval-tabs button{font-size:clamp(12px,3.3vw,16px);line-height:1.25;white-space:normal;min-width:0;padding:12px 8px}
+#autorizacoes .fju-request-zone{min-width:0;width:100%}
+#autorizacoes #fju-complement-approvals{margin-top:28px;border-top:1px solid #dce3ef;padding-top:20px}
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023g">
@@ -782,7 +789,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <div class="fju-signups-toolbar"><div><label for="inscricoes-search">Buscar jovem ou projeto</label><input id="inscricoes-search" type="search" autocomplete="off" placeholder="Nome, projeto ou nacionalidade"></div><button type="button" id="inscricoes-refresh" class="secondary">↻ Atualizar</button></div>
 <p id="inscricoes-visible-count" class="muted" aria-live="polite"></p><p id="inscricoes-message" class="message" role="status"></p>
 <div id="inscricoes-list" class="fju-signups-list"></div></section><section id="autorizacoes" class="panel hidden fju-approval-center"><header class="fju-approval-header"><h2>Central de aprovações</h2><p>Solicitações organizadas por igreja.</p></header>
-<nav class="fju-approval-tabs" aria-label="Seções da central de aprovações"><button type="button" class="active" data-approval-tab="fju-request-fichas" aria-pressed="true">Fichas</button><button type="button" data-approval-tab="fju-request-acessos" aria-pressed="false">Coordenadores</button></nav>
+<nav class="fju-approval-tabs" aria-label="Seções da central de aprovações"><button type="button" class="active" data-approval-tab="fju-request-fichas" aria-pressed="true">Solicitações de fichas</button><button type="button" data-approval-tab="fju-request-acessos" aria-pressed="false">Acesso de coordenadores</button></nav>
 <div id="fju-request-fichas" class="fju-request-zone">
   <div class="fju-request-zone-heading"><div><span class="fju-zone-num">01</span><h3 id="fju-request-fichas-heading">Alterações de fichas</h3></div><p id="fju-request-fichas-intro">Pedidos de edição, patente e exclusão.</p></div>
   <div class="fju-request-actions"><button type="button" id="requests-refresh" class="secondary">Atualizar solicitações</button></div><p id="requests-message" class="message" role="status"></p><div class="authorization-filters" id="requests-filters"><button type="button" data-request-filter="pendente" class="active">Pendentes</button><button type="button" data-request-filter="aprovada">Aprovadas</button><button type="button" data-request-filter="rejeitada">Rejeitadas</button><button type="button" data-request-filter="todas">Todas</button></div><div id="requests-list" class="report-list"></div>
@@ -2070,7 +2077,7 @@ async function fjuLoadComplementApprovals(){
  let section=el('fju-complement-approvals');
  if(!section){
   section=document.createElement('section');section.id='fju-complement-approvals';section.className='fju-complement-approvals';
-  const parent=el('autorizacoes');parent.append(section);
+  const parent=el('fju-request-fichas');parent.append(section);
  }
  section.replaceChildren();
  const h=document.createElement('h3');h.textContent='Informações complementares das fichas';section.append(h);
