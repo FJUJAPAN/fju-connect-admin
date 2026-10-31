@@ -3732,25 +3732,40 @@ async function openEditor(){
  const fragment=document.createDocumentFragment();
  for(const node of [...doc.body.children]){if(node.tagName==='HEADER'||node.tagName==='SCRIPT')continue;fragment.appendChild(document.importNode(node,true))}
  container.replaceChildren(back,fragment);
- // Do not import editor page-level CSS into the admin shell: it overrides
- // the dashboard header, body, html and Safari safe-area styles.
- // Scope only editor form rules to the inline container.
- for(const sheet of [...doc.querySelectorAll('style')]){
-  if(sheet.id&&/header|navigation|shell|sticky/i.test(sheet.id))continue;
-  let css=sheet.textContent||'';
-  // Avoid global selectors and at-rules whose effects escape the editor.
-  css=css.replace(/(^|})\s*(?:html|body|:root|header|\*)\s*\{[^{}]*\}/gm,'$1');
-  css=css.replace(/(^|})\s*([^@{}][^{}]*)\{/g,(whole,prefix,selectors)=>{
-   const scoped=selectors.split(',').map(sel=>sel.trim()).filter(sel=>sel&&!/^(?:html|body|:root|header|\*)\b/i.test(sel)).map(sel=>'#fju-materias-inline '+sel);
-   return scoped.length?prefix+' '+scoped.join(', ')+'{':prefix+' /* discarded global editor selector */ .fju-editor-never-match{';
-  });
-  const clone=document.createElement('style');clone.textContent=css;document.head.appendChild(clone);addedStyles.push(clone)
+ // Parse CSS rules, including nested media queries, without applying global styles.
+ // Keep the existing dashboard header; import both editor form and light-theme rules.
+ const themeResponse=await fetch('./materias-painel-claro.css?v=inline316',{cache:'no-store'});
+ if(!themeResponse.ok)throw Error('Falha ao carregar o visual do editor');
+ const scope='#fju-materias-inline';
+ function scopeRules(rules){
+  return [...rules].map(rule=>{
+   if(rule.type===CSSRule.STYLE_RULE){
+    const selectors=rule.selectorText.split(',').map(selector=>{
+     let sel=selector.trim();
+     if(/^(?:html|:root|header)(?:\\b|[.#:\\s>])/i.test(sel))return '';
+     if(/^body(?!\\.fju-admin-editor)/i.test(sel))return '';
+     sel=sel.replace(/^(?:body)?\\.fju-admin-editor(?=[\\s.#:>]|$)/,scope);
+     return sel.startsWith(scope)?sel:scope+' '+sel;
+    }).filter(Boolean);
+    return selectors.length?selectors.join(',')+'{'+rule.style.cssText+'}':'';
+   }
+   if(rule.type===CSSRule.MEDIA_RULE)return '@media '+rule.conditionText+'{'+scopeRules(rule.cssRules)+'}';
+   if(rule.type===CSSRule.SUPPORTS_RULE)return '@supports '+rule.conditionText+'{'+scopeRules(rule.cssRules)+'}';
+   return '';
+  }).join('\\n');
+ }
+ const sourceStyles=[...doc.querySelectorAll('style')].filter(sheet=>!sheet.id||!/header|navigation|shell|sticky/i.test(sheet.id)).map(sheet=>sheet.textContent);
+ sourceStyles.push(await themeResponse.text());
+ for(const css of sourceStyles){
+  const parser=document.createElement('style');parser.media='not all';parser.textContent=css;document.head.appendChild(parser);
+  let scoped;try{scoped=scopeRules(parser.sheet.cssRules)}finally{parser.remove()}
+  const clone=document.createElement('style');clone.textContent=scoped;document.head.appendChild(clone);addedStyles.push(clone);
  }
  const source=doc.querySelector('script[type="module"]');if(!source)throw Error('Módulo do editor não encontrado');
  moduleScript=document.createElement('script');moduleScript.type='module';moduleScript.textContent=source.textContent;document.body.appendChild(moduleScript);loaded=true;
  }catch(e){container.textContent='Não foi possível abrir Matérias: '+e.message}
 }
-document.addEventListener('click',function(e){const a=e.target.closest('a[href]');if(!a)return;const href=a.getAttribute('href')||'';if(!/^\.\/materias\.html(?:[?#].*)?$/.test(href))return;e.preventDefault();previousUrl=location.href;history.pushState({fjuEditor:true},'',location.pathname+'?modulo=materias');openEditor()});
+document.addEventListener('click',function(e){const a=e.target.closest('a[href]');if(!a)return;if(e.defaultPrevented||e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||a.hasAttribute('download')||(a.target&&a.target!=='_self'))return;const url=new URL(a.href,location.href),editorUrl=new URL('./materias.html',location.href);if(url.origin!==editorUrl.origin||url.pathname!==editorUrl.pathname)return;e.preventDefault();previousUrl=location.href;const destination=new URL(location.pathname,location.href);destination.search=url.search;destination.searchParams.set('modulo','materias');history.pushState({fjuEditor:true},'',destination);openEditor()});
 window.addEventListener('popstate',function(){if(container&&!container.hidden&&!new URLSearchParams(location.search).has('modulo'))closeEditor()});
 window.addEventListener('resize',topOffset);
 if(new URLSearchParams(location.search).get('modulo')==='materias')window.addEventListener('load',openEditor,{once:true});
