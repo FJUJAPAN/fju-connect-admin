@@ -338,6 +338,8 @@ body.fju-admin-shell{min-height:100dvh;overscroll-behavior-y:none;-webkit-tap-hi
 @media(max-width:700px){.fju-header-account-menu{position:fixed;top:112px;right:12px;width:min(340px,calc(100vw - 24px))}}
 
 .fju-youth-id{display:block;font-size:12px;font-weight:700;color:#617396;letter-spacing:.02em;margin:3px 0 5px}.fju-youth-id:empty{display:none}
+
+.youth-back-dashboard{display:inline-flex;align-items:center;gap:6px;margin:0 0 16px;padding:10px 16px;border-radius:12px;font-weight:700}.youth-page-header{align-items:center}
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023g">
@@ -514,9 +516,10 @@ body.fju-admin-shell{min-height:100dvh;overscroll-behavior-y:none;-webkit-tap-hi
 </div>
 </section>
 <section id="jovens" class="panel hidden">
+<button type="button" id="youth-back-dashboard" class="secondary youth-back-dashboard" aria-label="Voltar ao Painel de Controle">← Voltar</button>
 <div class="youth-page-header">
 <div><h2>Fichas dos jovens</h2><p id="youth-page-subtitle" class="youth-page-subtitle">Consulte as fichas da sua igreja. Abra o formulário somente quando precisar cadastrar ou solicitar uma alteração.</p></div>
-<button type="button" id="youth-add-toggle" aria-expanded="false" aria-controls="youth-entry-panel"><span class="youth-add-icon" aria-hidden="true">+</span><span id="youth-add-toggle-label">Adicionar jovem</span></button>
+<button type="button" id="youth-add-toggle" aria-expanded="false" aria-controls="youth-entry-panel"><span class="youth-add-icon" aria-hidden="true">+</span><span id="youth-add-toggle-label">Adicionar ficha</span></button>
 </div>
 <div id="youth-entry-panel" class="hidden">
 <div class="youth-entry-heading"><h3 id="youth-form-title">Nova ficha</h3><button type="button" id="youth-form-close" class="secondary">Fechar</button></div>
@@ -1502,7 +1505,7 @@ function setYouthFormOpen(open,editing=false,scroll=false){
   const panel=el('youth-entry-panel'),toggle=el('youth-add-toggle');
   panel.classList.toggle('hidden',!open);
   toggle.setAttribute('aria-expanded',String(open));
-  el('youth-add-toggle-label').textContent=open?'Fechar cadastro':'Adicionar jovem';
+  el('youth-add-toggle-label').textContent=open?'Fechar cadastro':'Adicionar ficha';
   toggle.querySelector('.youth-add-icon').textContent=open?'×':'+';
   el('youth-form-title').textContent=editing
     ?(currentProfile?.papel==='coordenador'?'Solicitar alteração':'Editar ficha')
@@ -1512,6 +1515,12 @@ function setYouthFormOpen(open,editing=false,scroll=false){
     :'Salvar ficha';
   if(open&&scroll)panel.scrollIntoView({behavior:'smooth',block:'start'});
 }
+el('youth-back-dashboard').addEventListener('click',()=>{
+  if(!el('youth-entry-panel').classList.contains('hidden')){resetYouth();setYouthFormOpen(false);}
+  const dashboardTab=document.querySelector('#main-nav [data-tab="dashboard"]');
+  if(dashboardTab&&!dashboardTab.hidden)dashboardTab.click();
+  else document.querySelector('[data-open-tab="dashboard"]')?.click();
+});
 el('youth-add-toggle').addEventListener('click',()=>{
   const open=el('youth-entry-panel').classList.contains('hidden');
   resetYouth();
