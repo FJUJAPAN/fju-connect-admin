@@ -1789,21 +1789,23 @@ async function initializeYouth(){
 let youthPhotoLoadVersion=0;
 let fjuPhotoRepairStarted=false;
 async function fjuRestoreApprovedPhotos(){
- if(currentProfile?.papel!=='nacional')return;
- const box=el('photo-repair-ui'),button=el('photo-repair-run'),status=el('photo-repair-status');
- box.hidden=false;
- if(fjuPhotoRepairStarted)return;
+ if(currentProfile?.papel!=='nacional'||fjuPhotoRepairStarted)return;
+ const button=el('photo-repair-run'),status=el('photo-repair-status');
  fjuPhotoRepairStarted=true;button.disabled=true;status.textContent='Verificando fotos…';
  try{
-  const {data,error}=await supabase.functions.invoke('fju-restaurar-fotos-fichas',{body:{}});
-  if(error||data?.error){
-   let detail=data?.error||error?.message||'Erro desconhecido';
-   if(error?.context?.json){try{const body=await error.context.json();detail=body?.error||detail;}catch(_){}}
-   throw Error(detail);
+  const {data:items,error}=await supabase.rpc('fju_listar_fotos_pendentes_restauracao');
+  if(error)throw error;
+  let ok=0,failed=0,first='';
+  for(const item of items||[]){
+   const source=await supabase.storage.from('fju-inscricoes-fotos').download(item.usuario_id+'/perfil.jpg');
+   if(source.error||!source.data){failed++;first ||= source.error?.message||'Foto indisponível';continue;}
+   const target=await supabase.storage.from('fju-fotos').upload(item.jovem_id+'/perfil.jpg',source.data,{contentType:'image/jpeg'});
+   if(target.error){failed++;first ||= target.error.message;}else ok++;
+   status.textContent=ok+' de '+items.length+' fotos restauradas…';
   }
-  status.textContent=(data.total||0)+' fichas verificadas: '+(data.restored||0)+' recuperadas, '+(data.already||0)+' presentes, '+(data.missing||0)+' sem original, '+(data.failed||0)+' falhas.';
-  if(data.restored&&el('youth-list-polo')?.value)void loadYouth();
- }catch(e){status.textContent='Erro na recuperação: '+e.message;}
+  status.textContent=ok+' fotos recuperadas; '+failed+' falhas.'+(first?' Erro: '+first:'');
+  if(ok&&el('youth-list-polo')?.value)void loadYouth();
+ }catch(e){status.textContent='Erro: '+e.message;}
  finally{fjuPhotoRepairStarted=false;button.disabled=false;}
 }
 el('photo-repair-run').addEventListener('click',()=>void fjuRestoreApprovedPhotos());
