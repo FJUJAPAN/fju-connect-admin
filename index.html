@@ -1809,6 +1809,13 @@ async function loadYouthPhoto(id){
     if(!result.error)blob=result.data;
    }
   }
+  if(!blob&&stillCurrent()){
+   const {data:linkedUser}=await supabase.rpc('fju_usuario_foto_por_jovem',{p_jovem_id:id});
+   if(linkedUser){
+    const {data:signed}=await supabase.storage.from('fju-inscricoes-fotos').createSignedUrl(linkedUser+'/perfil.jpg',600);
+    if(signed?.signedUrl&&stillCurrent()){preview.src=signed.signedUrl;preview.classList.remove('hidden');return;}
+   }
+  }
   if(!blob||!stillCurrent())return;
   photoUrl=URL.createObjectURL(blob);preview.src=photoUrl;preview.classList.remove('hidden');
  }catch(error){if(stillCurrent())youthMessage('Não foi possível carregar a foto: '+error.message,true);}
@@ -1895,6 +1902,15 @@ async function loadYouthCardThumbnail(id,avatar,version){
         const result=await supabase.storage.from('fju-inscricoes-fotos').download(linkedUser+'/perfil.jpg');
         if(!result.error)data=result.data;
       }
+    }
+    if(!data){
+     const {data:linkedUser}=await supabase.rpc('fju_usuario_foto_por_jovem',{p_jovem_id:id});
+     if(linkedUser){
+       const {data:signed}=await supabase.storage.from('fju-inscricoes-fotos').createSignedUrl(linkedUser+'/perfil.jpg',600);
+       if(signed?.signedUrl&&version===youthCardRenderVersion&&avatar.isConnected){
+         const img=document.createElement('img');img.src=signed.signedUrl;img.alt='Foto do jovem';img.decoding='async';avatar.replaceChildren(img);return;
+       }
+     }
     }
     if(!data||version!==youthCardRenderVersion||!avatar.isConnected)return;
     const url=URL.createObjectURL(data);youthCardPhotoUrls.push(url);
