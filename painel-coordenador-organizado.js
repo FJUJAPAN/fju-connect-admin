@@ -218,12 +218,19 @@
   const intro=document.createElement('p');intro.id='fju-coord-intro';section.append(intro);
   const apps=document.createElement('div');apps.id='fju-coord-app-grid';section.append(apps);
   for(const [key,emoji,color] of appDef){
-   const b=document.createElement('button');b.type='button';b.id='fju-coord-app-'+key;
+   const isPageLink=['cadastros','relatorios','materias'].includes(key);
+   const b=document.createElement(isPageLink?'a':'button');
+   if(isPageLink){
+     const url=new URL(key==='materias'?'./materias.html':location.pathname,location.href);
+     if(key!=='materias')url.searchParams.set('module',key==='cadastros'?'inscricoes':'relatorios');
+     b.href=url.toString();
+   }else b.type='button';
+   b.id='fju-coord-app-'+key;
    b.className='fju-coord-app';b.setAttribute('aria-expanded','false');
    const icon=document.createElement('span');icon.className='fju-coord-app-icon fju-coord-'+color;icon.textContent=emoji;icon.setAttribute('aria-hidden','true');
    const badge=document.createElement('span');badge.className='fju-coord-app-badge';badge.hidden=true;icon.append(badge);
    const label=document.createElement('span');label.className='fju-coord-app-label';
-   b.append(icon,label);b.addEventListener('click',()=>{if(key==='fichas'){resetHome();nav('jovens');return;}
+   b.append(icon,label);if(!isPageLink)b.addEventListener('click',()=>{if(key==='fichas'){resetHome();nav('jovens');return;}
     if(key==='cadastros'||key==='relatorios'){
       const url=new URL(location.href);url.searchParams.set('module',key==='cadastros'?'inscricoes':'relatorios');
       location.assign(url.toString());return;
