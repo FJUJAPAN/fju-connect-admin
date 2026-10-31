@@ -3344,8 +3344,7 @@ document.querySelectorAll('.fju-dashboard-actions [data-open-tab]').forEach(shor
         const destination=new URL(window.location.href);
         destination.searchParams.set('module',module);
         destination.searchParams.delete('embed');
-        const opened=window.open(destination.toString(),'_blank');
-        if(!opened)window.location.assign(destination.toString());
+        window.location.assign(destination.toString());
       }else tab.click();
     }
   });
@@ -3359,8 +3358,7 @@ document.querySelectorAll('.fju-daily-button[data-action-tab]').forEach(button=>
     if(!target)return;
     if(['inscricoes','relatorios'].includes(button.dataset.actionTab)){
       const url=new URL(location.href);url.searchParams.set('module',button.dataset.actionTab);url.searchParams.delete('embed');
-      const opened=window.open(url.toString(),'_blank');
-      if(!opened)location.assign(url.toString());
+      window.location.assign(url.toString());
       return;
     }
     target.click();
