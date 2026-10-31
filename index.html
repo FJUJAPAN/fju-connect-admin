@@ -3705,4 +3705,46 @@ verify.addEventListener('submit',async e=>{e.preventDefault();if(!sentPhone)retu
 <div id="fju-request-confirmation" role="dialog" aria-modal="true" aria-label="Solicitação enviada"><div class="fju-confirm-card"><span style="font-size:46px" aria-hidden="true">✅</span><strong>Solicitação enviada para aprovação!</strong><p>O pedido foi encaminhado ao Administrador Nacional. Aguarde a análise.</p><button type="button" id="fju-request-confirmation-return">Voltar ao Painel de Controle</button></div></div>
 <script id="fju-request-confirmation-script">
 (()=>{const overlay=document.getElementById('fju-request-confirmation');let timer=null;const go=()=>{clearTimeout(timer);overlay.classList.remove('is-visible');const btn=document.querySelector('[data-open-tab="dashboard"],[data-open-tab="inicio"],[data-open-tab="painel"]');if(btn)btn.click();else{const home=document.querySelector('[data-action-tab="dashboard"],[data-action-tab="inicio"]');if(home)home.click();else location.href='./';}};document.getElementById('fju-request-confirmation-return').addEventListener('click',go);let last='';const success=/^(?:Pedido enviado ao Administrador Nacional|Pedido de patente Coordenador e acesso administrativo enviado ao Nacional|Solicitação enviada\. A ficha original|Solicitação de exclusão enviada para aprovação nacional|Solicitação enviada\. O evento aparecerá após a aprovação nacional)/i;const check=()=>{const elements=document.querySelectorAll('#youth-message,#special-event-message,#requests-message,.message');for(const el of elements){const t=(el.textContent||'').trim();if(success.test(t)&&t!==last){last=t;overlay.classList.add('is-visible');clearTimeout(timer);timer=setTimeout(go,3800)}}};new MutationObserver(check).observe(document.body,{subtree:true,childList:true,characterData:true});})();
-</script><script src="./dashboard-badges.js?v=20261025"></script><script src="./painel-coordenador-organizado.js?v=20261031-native-links-291"></script><script src="./graficos-relatorios-coordenador.js?v=20261026-evolucao"></script><script src="./national-dashboard-organized.js?v=20261028b"></script><script src="./ios-futuro-icones.js?v=20261028-1"></script><script src="./nacional-indicadores-reais.js?v=20261028-262"></script></body></html>
+</script><script src="./dashboard-badges.js?v=20261025"></script><script src="./painel-coordenador-organizado.js?v=20261031-native-links-291"></script><script src="./graficos-relatorios-coordenador.js?v=20261026-evolucao"></script><script src="./national-dashboard-organized.js?v=20261028b"></script><script src="./ios-futuro-icones.js?v=20261028-1"></script><script src="./nacional-indicadores-reais.js?v=20261028-262"></script><style id="fju-inline-materias-shell">
+body.fju-materias-open{overflow:hidden!important}
+#fju-materias-inline{position:fixed;inset:var(--fju-inline-top,64px) 0 0;z-index:9000;overflow:auto;background:#f4f6fb;overscroll-behavior:contain}
+#fju-materias-inline[hidden]{display:none!important}
+#fju-materias-inline .fju-admin-header,#fju-materias-inline .fju-editor-dashboard-return{display:none!important}
+#fju-materias-inline .fju-editor-inline-back{position:sticky;top:0;z-index:5;padding:10px 16px;background:#f4f6fb}
+#fju-materias-inline .fju-editor-inline-back button{border:0;border-radius:12px;padding:12px 16px;background:#e4e9f3;color:#20385f;font-weight:700}
+</style>
+<script id="fju-inline-materias-controller">
+(function(){
+let loaded=false,container=null,addedStyles=[],moduleScript=null,previousUrl=null;
+function topOffset(){const h=document.querySelector('body.fju-admin-shell > header.fju-admin-header');document.documentElement.style.setProperty('--fju-inline-top',(h?Math.ceil(h.getBoundingClientRect().bottom):64)+'px')}
+function closeEditor(){if(!container)return;container.hidden=true;document.body.classList.remove('fju-materias-open');if(previousUrl){history.replaceState(null,'',previousUrl);previousUrl=null}}
+async function openEditor(){
+ topOffset();
+ if(!container){container=document.createElement('main');container.id='fju-materias-inline';container.setAttribute('aria-label','Editor de matérias e eventos');document.body.appendChild(container)}
+ container.hidden=false;document.body.classList.add('fju-materias-open');
+ if(loaded)return;
+ container.innerHTML='<p style="padding:24px">Carregando Matérias…</p>';
+ try{
+ const response=await fetch('./materias.html?v=inline314',{cache:'no-store'});if(!response.ok)throw Error('Falha ao carregar o editor');
+ const html=await response.text(),doc=new DOMParser().parseFromString(html,'text/html');
+ // Mount the actual editor DOM in the same document, never an iframe.
+ const back=document.createElement('div');back.className='fju-editor-inline-back';const btn=document.createElement('button');btn.type='button';btn.textContent='← Painel de Controle';btn.onclick=closeEditor;back.appendChild(btn);
+ const fragment=document.createDocumentFragment();
+ for(const node of [...doc.body.children]){if(node.tagName==='HEADER'||node.tagName==='SCRIPT')continue;fragment.appendChild(document.importNode(node,true))}
+ container.replaceChildren(back,fragment);
+ for(const sheet of [...doc.querySelectorAll('link[rel="stylesheet"],style')]){
+  if(sheet.tagName==='LINK'&&sheet.getAttribute('href')?.includes('admin-brand.css'))continue;
+  const clone=document.importNode(sheet,true);if(clone.tagName==='LINK'){clone.href=new URL(sheet.getAttribute('href'),response.url).href}
+  // Editor styles apply only while the editor is open.
+  clone.media='all';document.head.appendChild(clone);addedStyles.push(clone)
+ }
+ const source=doc.querySelector('script[type="module"]');if(!source)throw Error('Módulo do editor não encontrado');
+ moduleScript=document.createElement('script');moduleScript.type='module';moduleScript.textContent=source.textContent;document.body.appendChild(moduleScript);loaded=true;
+ }catch(e){container.textContent='Não foi possível abrir Matérias: '+e.message}
+}
+document.addEventListener('click',function(e){const a=e.target.closest('a[href]');if(!a)return;const href=a.getAttribute('href')||'';if(!/^\.\/materias\.html(?:[?#].*)?$/.test(href))return;e.preventDefault();previousUrl=location.href;history.pushState({fjuEditor:true},'',location.pathname+'?modulo=materias');openEditor()});
+window.addEventListener('popstate',function(){if(container&&!container.hidden&&!new URLSearchParams(location.search).has('modulo'))closeEditor()});
+window.addEventListener('resize',topOffset);
+if(new URLSearchParams(location.search).get('modulo')==='materias')window.addEventListener('load',openEditor,{once:true});
+})();
+</script></body></html>
