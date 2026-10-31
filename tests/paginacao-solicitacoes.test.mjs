@@ -23,6 +23,7 @@ function fixture(){
       order(){return api;},
       in(){return Promise.resolve({data:[],error:null});},
       range(start,end){
+        if(table==='fju_jovens')return Promise.resolve({data:[],error:null,count:0});
         trace.push({table,filters:[...state.filters],start,end});
         const status=state.filters.find(([field])=>field==='status')?.[1];
         const count=status?totals[status]:Object.values(totals).reduce((a,b)=>a+b,0);
