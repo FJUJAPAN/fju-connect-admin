@@ -393,6 +393,18 @@ body.fju-admin-shell>.fju-admin-header .fju-header-account,body.fju-admin-shell>
 #autorizacoes .fju-approval-tabs button{font-size:clamp(12px,3.3vw,16px);line-height:1.25;white-space:normal;min-width:0;padding:12px 8px}
 #autorizacoes .fju-request-zone{min-width:0;width:100%}
 #autorizacoes #fju-complement-approvals{margin-top:28px;border-top:1px solid #dce3ef;padding-top:20px}
+
+/* Fichas: navegação por igreja em duas colunas */
+#jovens .fju-church-picker{margin:12px 0 18px;padding:0}
+#jovens .fju-church-picker h3{font-size:17px;font-weight:800;margin:0 0 10px}
+#jovens .fju-church-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#jovens .fju-church-buttons button{position:relative;min-width:0;min-height:60px;padding:12px 32px 12px 12px;text-align:left;border-radius:14px;font-size:14px;line-height:1.25;overflow-wrap:anywhere;background:#fff;border:1px solid #d9e1ed;color:#20304b;font-weight:750;box-shadow:0 2px 7px #223a5510}
+#jovens .fju-church-buttons button.is-selected{border:2px solid #d92747;background:#fff3f6}
+#jovens .fju-church-alert{position:absolute;right:7px;top:7px;min-width:21px;height:21px;padding:0 5px;border-radius:99px;background:#db2145;color:#fff;font-size:11px;font-weight:850;display:inline-flex;align-items:center;justify-content:center}
+#jovens #youth-list-polo-wrap{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important}
+#jovens .youth-page-subtitle{display:none}
+#jovens .youth-saved-heading{margin-top:14px}
+#jovens #photo-repair-ui{margin:12px 0}
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023g">
@@ -780,7 +792,7 @@ document.addEventListener('DOMContentLoaded',function(){
 </div>
 <p id="youth-message" class="message" role="status" aria-live="polite"></p>
 <div id="photo-repair-ui" hidden><button type="button" id="photo-repair-run" class="secondary">Recuperar fotos das fichas</button><p id="photo-repair-status" role="status"></p></div><div class="youth-saved-heading"><h3>Fichas cadastradas</h3><span id="youth-visible-count" class="youth-saved-count">Carregando...</span></div>
-<div id="youth-list-polo-wrap" class="youth-polo-filter"><label for="youth-list-polo">Visualizar fichas da igreja</label><select id="youth-list-polo"><option value="">Selecione uma igreja</option></select></div>
+<div id="fju-church-picker" class="fju-church-picker"><h3>Escolha a igreja</h3><div id="fju-church-buttons" class="fju-church-buttons" aria-label="Igrejas"></div></div><div id="youth-list-polo-wrap" class="youth-polo-filter"><label for="youth-list-polo">Visualizar fichas da igreja</label><select id="youth-list-polo"><option value="">Selecione uma igreja</option></select></div>
 <div class="youth-list-controls"><div><label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite o nome do jovem" type="search" autocomplete="off"></div><button type="button" id="youth-refresh" class="secondary">Atualizar</button></div>
 <div id="youth-detail" class="panel hidden" style="margin:0 0 14px;border:1px solid #dce3ef"></div><div id="youth-list" aria-label="Fichas salvas"></div>
 </section>
@@ -2685,6 +2697,34 @@ el('youth-search').addEventListener('input',()=>{
 });
 el('youth-list-polo').addEventListener('change',()=>{el('youth-detail').classList.add('hidden');void loadYouth();});
 
+
+let fjuChurchPendingCounts=new Map();
+async function fjuRefreshChurchPending(){
+ if(currentProfile?.papel!=='nacional')return;
+ const counts=new Map();
+ const queries=[supabase.from('fju_solicitacoes').select('polo_id').eq('status','pendente'),supabase.from('fju_pedidos_patente_inicial').select('polo_id').eq('status','pendente')];
+ const results=await Promise.all(queries);
+ for(const result of results){if(result.error)continue;for(const p of result.data||[]){const id=String(p.polo_id);counts.set(id,(counts.get(id)||0)+1);}}
+ fjuChurchPendingCounts=counts;fjuRenderChurchButtons();
+}
+function fjuRenderChurchButtons(){
+ const holder=el('fju-church-buttons'),sel=el('youth-list-polo');if(!holder||!sel)return;
+ if(currentProfile?.papel!=='nacional'){el('fju-church-picker').hidden=true;el('youth-list-polo-wrap').style.position='static';el('youth-list-polo-wrap').style.clipPath='none';return;}
+ el('fju-church-picker').hidden=false;
+ const options=[...sel.options].filter(o=>o.value&&o.textContent.trim());
+ const selected=sel.value;
+ holder.replaceChildren();
+ for(const option of options){
+  const button=document.createElement('button');button.type='button';button.textContent=option.textContent.trim();button.classList.toggle('is-selected',option.value===selected);button.setAttribute('aria-pressed',String(option.value===selected));
+  const pending=fjuChurchPendingCounts.get(String(option.value))||0;
+  if(pending){const badge=document.createElement('span');badge.className='fju-church-alert';badge.textContent=String(pending);badge.title=pending+' solicitações pendentes';button.append(badge);}
+  button.addEventListener('click',()=>{sel.value=option.value;sel.dispatchEvent(new Event('change',{bubbles:true}));fjuRenderChurchButtons();el('youth-list')?.scrollIntoView({block:'nearest'});});
+  holder.append(button);
+ }
+}
+new MutationObserver(()=>fjuRenderChurchButtons()).observe(el('youth-list-polo'),{childList:true});
+el('youth-list-polo').addEventListener('change',()=>fjuRenderChurchButtons());
+
 // O acompanhamento nacional pertence à aba Relatório semanal, não à Visão geral.
 el('report-weekly').insertBefore(el('national-report-panel'),el('national-weekly-controls'));
 function configureWeeklyReportAccess(){
@@ -3676,7 +3716,7 @@ function activateMainTab(button){
   const sectionId=button.dataset.tab;
   const targetPanel=sectionId?el(sectionId):null;
   if(!targetPanel||!document.querySelector('#app')?.contains(targetPanel))return;
-  if(sectionId==='jovens'&&currentProfile?.papel==='nacional')(el('photo-repair-ui').hidden=false);
+  if(sectionId==='jovens'&&currentProfile?.papel==='nacional')(el('photo-repair-ui').hidden=false);if(sectionId==='jovens'){fjuRenderChurchButtons();void fjuRefreshChurchPending();}
   if(sectionId==='inscricoes')void loadYouthSignups();
   if(sectionId==='autorizacoes'){void loadYouthRequests();void administrativeAccess.refresh();if(currentProfile?.papel==='nacional')void fjuLoadComplementApprovals();}
   if(sectionId==='lideranca')void coordinatorCards.refresh();
