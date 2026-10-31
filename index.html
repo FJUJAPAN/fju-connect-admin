@@ -1666,7 +1666,7 @@ function renderYouth(){
     view.textContent='Ver ficha';view.onclick=()=>viewYouth(r.id);actions.append(view);
     if(currentProfile?.papel==='nacional'){
       const edit=document.createElement('button');edit.type='button';edit.className='secondary youth-edit-button';
-      edit.textContent='Editar';edit.onclick=()=>editYouth(r.id);actions.append(edit);
+      edit.textContent='Editar';edit.onclick=()=>editYouth(r.id);actions.append(edit);const remove=document.createElement('button');remove.type='button';remove.className='secondary youth-delete-button';remove.textContent='Excluir';remove.setAttribute('aria-label','Excluir ficha de '+(r.nome_completo||'jovem'));remove.onclick=()=>void deleteYouthNational(r,remove);actions.append(remove);
     }else{
       const more=document.createElement('details');more.className='youth-card-more';
       const summary=document.createElement('summary');summary.textContent='Mais ações ▾';
@@ -1899,6 +1899,24 @@ async function viewYouth(id){
       avatar.replaceChildren(img);
     }
   }catch(e){if(panel.classList.contains('hidden')||!panel.contains(avatar))return;const note=document.createElement('p');note.className='muted';note.textContent='Foto indisponível: '+e.message;panel.append(note);}
+}
+async function deleteYouthNational(r,button){
+  const profile=currentProfile;
+  if(profile?.papel!=='nacional')return;
+  if(!confirm('Excluir a ficha de '+r.nome_completo+'? Ela deixará de aparecer na lista de jovens.'))return;
+  if(!confirm('Confirma a exclusão desta ficha? Esta ação não pode ser desfeita pelo painel.'))return;
+  button.disabled=true;button.textContent='Excluindo…';
+  try{
+    const {data,error}=await supabase.from('fju_jovens').update({excluido_em:new Date().toISOString()}).eq('id',r.id).is('excluido_em',null).select('id');
+    if(error)throw error;
+    if(!data?.length)throw new Error('Nenhuma ficha foi alterada. Confira suas permissões.');
+    youthRows=youthRows.filter(x=>String(x.id)!==String(r.id));
+    renderYouth();
+    youthMessage('Ficha excluída da lista: '+r.nome_completo);
+  }catch(error){
+    button.disabled=false;button.textContent='Excluir';
+    youthMessage('Não foi possível excluir: '+(error?.message||'Tente novamente.'),true);
+  }
 }
 async function requestYouthChange(r,button){
   const profile=currentProfile;
