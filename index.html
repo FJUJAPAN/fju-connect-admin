@@ -406,6 +406,10 @@ body.fju-admin-shell>.fju-admin-header .fju-header-account,body.fju-admin-shell>
 #jovens .youth-saved-heading{margin-top:14px}
 #jovens #photo-repair-ui{margin:12px 0}
 #jovens .fju-church-picker{display:block!important;visibility:visible!important}#jovens .fju-church-picker[hidden]{display:none!important}#jovens .fju-church-buttons{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+
+/* Retorno independente das regras antigas que ocultam botoes de navegacao */
+#jovens>#fju-youth-return-visible{display:inline-flex!important;align-items:center!important;justify-content:center!important;position:relative!important;visibility:visible!important;opacity:1!important;z-index:30!important;max-width:100%!important;width:auto!important;margin:0 0 18px!important;padding:12px 16px!important;border-radius:12px!important;background:#dce5f5!important;color:#183353!important;border:1px solid #b8cbe5!important;font-size:15px!important;font-weight:800!important;cursor:pointer!important}
+#jovens>#youth-back-dashboard{display:none!important}
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023g">
@@ -760,6 +764,7 @@ document.addEventListener('DOMContentLoaded',function(){
 </div>
 </section>
 <section id="jovens" class="panel hidden">
+<button type="button" id="fju-youth-return-visible" aria-label="Voltar ao Painel de Controle">← Voltar ao Painel de Controle</button>
 <button type="button" id="youth-back-dashboard" class="secondary youth-back-dashboard" aria-label="Painel de Controle">← Painel de Controle</button>
 <div class="youth-page-header">
 <div><h2>Fichas dos jovens</h2><p id="youth-page-subtitle" class="youth-page-subtitle">Consulte as fichas da sua igreja. Abra o formulário somente quando precisar cadastrar ou solicitar uma alteração.</p></div>
@@ -1766,6 +1771,11 @@ function setYouthFormOpen(open,editing=false,scroll=false){
     :'Salvar ficha';
   if(open&&scroll)panel.scrollIntoView({behavior:'smooth',block:'start'});
 }
+el('fju-youth-return-visible').addEventListener('click',()=>{
+ const tab=document.querySelector('#main-nav [data-tab="inicio"]');
+ if(tab){tab.click();if(!el('inicio')?.classList.contains('hidden'))return;}
+ window.location.assign(window.location.origin+window.location.pathname);
+});
 el('youth-back-dashboard').addEventListener('click',()=>{
   if(!el('youth-entry-panel').classList.contains('hidden')){resetYouth();setYouthFormOpen(false);}
   const dashboardTab=document.querySelector('#main-nav [data-tab="inicio"]');
