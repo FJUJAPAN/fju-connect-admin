@@ -804,7 +804,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <p id="youth-message" class="message" role="status" aria-live="polite"></p>
 <div id="photo-repair-ui" hidden><button type="button" id="photo-repair-run" class="secondary">Recuperar fotos das fichas</button><p id="photo-repair-status" role="status"></p></div><div class="youth-saved-heading"><h3>Fichas cadastradas</h3><span id="youth-visible-count" class="youth-saved-count">Carregando...</span></div>
 <div id="youth-list-polo-wrap" class="youth-polo-filter"><label for="youth-list-polo">Visualizar fichas da igreja</label><select id="youth-list-polo"><option value="">Selecione uma igreja</option></select></div>
-<div class="youth-list-controls"><div><label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite o nome do jovem" type="search" autocomplete="off"></div><button type="button" id="youth-refresh" class="secondary">Atualizar</button></div>
+<div class="youth-list-controls"><div><label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite o nome do jovem" type="search" autocomplete="off"></div><button type="button" id="youth-refresh" class="secondary">Atualizar</button><button type="button" id="youth-print-list" class="secondary" disabled>🖨 Imprimir lista</button></div>
 <div id="youth-detail" class="panel hidden" style="margin:0 0 14px;border:1px solid #dce3ef"></div><div id="youth-list" aria-label="Fichas salvas"></div>
 </section>
 <section id="inscricoes" class="panel hidden"><button type="button" id="fju-inscricoes-back-dashboard" class="fju-module-return" aria-label="Painel de Controle">← Painel de Controle</button><h2>Novos cadastros de jovens</h2>
@@ -1990,12 +1990,14 @@ function renderYouth(){
   const polo=el('youth-list-polo').value;
   if(!polo){
     count.textContent='Selecione uma igreja';
+    el('youth-print-list').disabled=true;
     const empty=document.createElement('div');empty.className='youth-empty';
     empty.textContent='Selecione uma igreja para visualizar as fichas cadastradas.';
     list.append(empty);return;
   }
   const rows=youthRows.filter(r=>String(r.polo_id)===polo&&(r.nome_completo||'').toLocaleLowerCase().includes(term));
   count.textContent=rows.length+' '+(rows.length===1?'ficha':'fichas');
+  el('youth-print-list').disabled=!youthRows.some(r=>String(r.polo_id)===polo);
   if(!rows.length){
     const empty=document.createElement('div');empty.className='youth-empty';
     empty.textContent=term?'Nenhuma ficha corresponde à busca.':'Nenhuma ficha cadastrada nesta igreja.';
@@ -2708,6 +2710,25 @@ el('youth-form').addEventListener('submit',async e=>{
 el('youth-photo').addEventListener('change',e=>{++youthPhotoLoadVersion;const file=e.target.files?.[0];const preview=el('youth-photo-preview');if(!file){preview.classList.add('hidden');return;}if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){youthMessage('Escolha uma imagem JPG, PNG ou WebP de até 5 MB.',true);e.target.value='';return;}if(photoUrl)URL.revokeObjectURL(photoUrl);photoUrl=URL.createObjectURL(file);preview.src=photoUrl;preview.classList.remove('hidden');});
 el('youth-clear').onclick=resetYouth;
 el('youth-refresh').onclick=loadYouth;
+
+function fjuPrintYouthChurchList(){
+ const sel=el('youth-list-polo');
+ const polo=currentProfile?.papel==='coordenador'?String(currentProfile.polo_id):sel.value;
+ if(!polo){youthMessage('Selecione uma igreja antes de imprimir.',true);return;}
+ const rows=youthRows.filter(r=>String(r.polo_id)===polo).sort((a,b)=>(a.nome_completo||'').localeCompare(b.nome_completo||'','pt-BR'));
+ if(!rows.length){youthMessage('Esta igreja não possui fichas para imprimir.',true);return;}
+ const church=[...sel.options].find(o=>o.value===polo)?.textContent?.trim()||'Igreja';
+ const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const date=new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date());
+ const body=rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.nome_completo)+'</td><td>'+esc(r.patente||r.categoria||'—')+'</td></tr>').join('');
+ const popup=window.open('','_blank');
+ if(!popup){youthMessage('Permita abrir a janela de impressão no navegador.',true);return;}
+ popup.document.open();
+ popup.document.write('<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Lista de fichas - '+esc(church)+'</title><style>@page{size:A4;margin:15mm}body{font-family:Arial,sans-serif;color:#182438;margin:0}header{border-bottom:2px solid #172a49;margin-bottom:18px;padding-bottom:10px}h1{font-size:19px;margin:0 0 7px}p{font-size:12px;margin:3px 0;color:#526177}table{width:100%;border-collapse:collapse;font-size:11px}th,td{border-bottom:1px solid #d7dce5;padding:8px 7px;text-align:left}th{background:#eff2f7}td:first-child{width:30px}td:last-child{width:105px}tr{break-inside:avoid}.print-bar{margin:12px 0}.print-bar button{padding:10px 16px;border:0;border-radius:8px;background:#173d74;color:white;font-weight:bold}@media print{.print-bar{display:none}}</style></head><body><div class="print-bar"><button onclick="window.print()">Imprimir / Salvar PDF</button></div><header><h1>FJU JAPAN · '+esc(church)+'</h1><p>Lista de fichas · '+rows.length+' jovens · '+date+'</p></header><table><thead><tr><th>Nº</th><th>Nome completo</th><th>Patente</th></tr></thead><tbody>'+body+'</tbody></table></body></html>');
+ popup.document.close();
+}
+el('youth-print-list').addEventListener('click',fjuPrintYouthChurchList);
+
 let youthSearchTimer=null;
 el('youth-search').addEventListener('input',()=>{
   clearTimeout(youthSearchTimer);
