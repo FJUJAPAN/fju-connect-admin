@@ -3451,7 +3451,7 @@ function activateMainTab(button){
   el('app').classList.toggle('fju-fichas-mode',sectionId==='jovens');
   const isModulePage=sectionId!=='inicio'&&sectionId!=='jovens';
   el('app').classList.toggle('fju-module-page',isModulePage);
-  if(isModulePage&&!targetPanel.querySelector(':scope > .fju-module-return')){
+  if(isModulePage&&!targetPanel.querySelector(':scope > .fju-module-return')&&!targetPanel.querySelector('.fju-admin-site-link, .fju-panel-back, [data-back-to-dashboard]')&&!targetPanel.textContent.includes('← Painel de Controle')){
     const back=document.createElement('button');back.type='button';back.className='fju-module-return';back.textContent='← Voltar';
     back.addEventListener('click',()=>{
       if(new URLSearchParams(location.search).has('module')){const url=new URL(location.href);url.searchParams.delete('module');window.top.location.assign(url.toString());}
