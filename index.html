@@ -3452,7 +3452,7 @@ function activateMainTab(button){
   setAdminMenuOpen(false);
   if(window.matchMedia('(max-width:900px)').matches){
     const panel=el(sectionId);
-    if(panel&&!panel.classList.contains('hidden'))el('fju-content-toolbar').scrollIntoView({behavior:'auto',block:'start'});
+    if(panel&&!panel.classList.contains('hidden'))(el('fju-content-toolbar')||panel).scrollIntoView({behavior:'auto',block:'start'});
   }
 }
 document.querySelectorAll('[data-request-jump]').forEach(button=>{
