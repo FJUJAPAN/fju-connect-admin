@@ -1792,33 +1792,24 @@ async function fjuRestoreApprovedPhotos(){
  if(fjuPhotoRepairStarted||currentProfile?.papel!=='nacional')return;
  fjuPhotoRepairStarted=true;
  try{
-  const {data:pendentes,error}=await supabase.rpc('fju_listar_fotos_pendentes_restauracao');
-  if(error)throw error;
-  const items=pendentes||[];
-  let restored=0,failed=0;
-  // Limited concurrency to avoid saturating mobile connections.
-  let cursor=0;
-  async function worker(){
-   while(cursor<items.length){
-    const row=items[cursor++];
-    try{
-     const source=await supabase.storage.from('fju-inscricoes-fotos').download(row.usuario_id+'/perfil.jpg');
-     if(source.error||!source.data)throw source.error||Error('Foto não encontrada');
-     const target=await supabase.storage.from('fju-fotos').upload(row.jovem_id+'/perfil.jpg',source.data,{contentType:'image/jpeg',upsert:false});
-     if(target.error && !/already exists|duplicate|resource already/i.test(target.error.message||''))throw target.error;
-     restored++;
-    }catch(err){failed++;console.warn('Falha ao restaurar foto da ficha',row.jovem_id,err);}
-   }
+  const {data,error}=await supabase.functions.invoke('fju-restaurar-fotos-fichas',{body:{}});
+  if(error||data?.error)throw Error(data?.error||error?.message||'Erro na restauração');
+  console.info('Fotos conferidas e restauradas:',data);
+  const count=el('youth-visible-count');
+  if(count&&currentProfile?.papel==='nacional'){
+   const extra='Fotos: '+(data.restored||0)+' recuperadas; '+(data.already||0)+' já presentes'+(data.failed?'; '+data.failed+' falhas':'');
+   count.textContent=(count.textContent||'')+' · '+extra;
   }
-  await Promise.all(Array.from({length:Math.min(3,items.length)},()=>worker()));
-  console.info('Fotos de fichas restauradas:',restored,'pendentes:',failed);
-  if(restored&&currentProfile?.papel==='nacional'){
-   const selectedPolo=el('youth-list-polo')?.value;
-   if(selectedPolo)void loadYouth();
-  }
-  if(failed)fjuPhotoRepairStarted=false;
- }catch(err){fjuPhotoRepairStarted=false;console.warn('Recuperação de fotos indisponível:',err);}
+  if(data.restored&&currentProfile?.papel==='nacional'&&el('youth-list-polo')?.value)void loadYouth();
+  if(data.failed)fjuPhotoRepairStarted=false;
+ }catch(err){
+  fjuPhotoRepairStarted=false;
+  console.warn('Não foi possível restaurar fotos das fichas:',err);
+  const count=el('youth-visible-count');
+  if(count)count.textContent=(count.textContent||'')+' · Recuperação indisponível: '+err.message;
+ }
 }
+
 async function loadYouthPhoto(id){
  const photoLoad=++youthPhotoLoadVersion,profile=currentProfile;
  const stillCurrent=()=>photoLoad===youthPhotoLoadVersion&&currentProfile===profile&&el('youth-id').value===id;
