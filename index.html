@@ -1787,6 +1787,38 @@ async function initializeYouth(){
   resetYouth();setYouthFormOpen(false);await loadYouth();
 }
 let youthPhotoLoadVersion=0;
+let fjuPhotoRepairStarted=false;
+async function fjuRestoreApprovedPhotos(){
+ if(fjuPhotoRepairStarted||currentProfile?.papel!=='nacional')return;
+ fjuPhotoRepairStarted=true;
+ try{
+  const {data:pendentes,error}=await supabase.rpc('fju_listar_fotos_pendentes_restauracao');
+  if(error)throw error;
+  const items=pendentes||[];
+  let restored=0,failed=0;
+  // Limited concurrency to avoid saturating mobile connections.
+  let cursor=0;
+  async function worker(){
+   while(cursor<items.length){
+    const row=items[cursor++];
+    try{
+     const source=await supabase.storage.from('fju-inscricoes-fotos').download(row.usuario_id+'/perfil.jpg');
+     if(source.error||!source.data)throw source.error||Error('Foto não encontrada');
+     const target=await supabase.storage.from('fju-fotos').upload(row.jovem_id+'/perfil.jpg',source.data,{contentType:'image/jpeg',upsert:false});
+     if(target.error && !/already exists|duplicate|resource already/i.test(target.error.message||''))throw target.error;
+     restored++;
+    }catch(err){failed++;console.warn('Falha ao restaurar foto da ficha',row.jovem_id,err);}
+   }
+  }
+  await Promise.all(Array.from({length:Math.min(3,items.length)},()=>worker()));
+  console.info('Fotos de fichas restauradas:',restored,'pendentes:',failed);
+  if(restored&&currentProfile?.papel==='nacional'){
+   const selectedPolo=el('youth-list-polo')?.value;
+   if(selectedPolo)void loadYouth();
+  }
+  if(failed)fjuPhotoRepairStarted=false;
+ }catch(err){fjuPhotoRepairStarted=false;console.warn('Recuperação de fotos indisponível:',err);}
+}
 async function loadYouthPhoto(id){
  const photoLoad=++youthPhotoLoadVersion,profile=currentProfile;
  const stillCurrent=()=>photoLoad===youthPhotoLoadVersion&&currentProfile===profile&&el('youth-id').value===id;
@@ -1844,6 +1876,7 @@ async function compactarFoto100KB(file){
 }
 let youthLoadVersion=0;
 async function loadYouth(){
+  if(currentProfile?.papel==='nacional')void fjuRestoreApprovedPhotos();
   const profile=currentProfile;
   if(!profile)return;
   const loadVersion=++youthLoadVersion;
@@ -3652,6 +3685,7 @@ function activateMainTab(button){
   const sectionId=button.dataset.tab;
   const targetPanel=sectionId?el(sectionId):null;
   if(!targetPanel||!document.querySelector('#app')?.contains(targetPanel))return;
+  if(sectionId==='jovens'&&currentProfile?.papel==='nacional')void fjuRestoreApprovedPhotos();
   if(sectionId==='inscricoes')void loadYouthSignups();
   if(sectionId==='autorizacoes'){void loadYouthRequests();void administrativeAccess.refresh();if(currentProfile?.papel==='nacional')void fjuLoadComplementApprovals();}
   if(sectionId==='lideranca')void coordinatorCards.refresh();
