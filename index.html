@@ -1788,20 +1788,32 @@ async function initializeYouth(){
 }
 let youthPhotoLoadVersion=0;
 async function loadYouthPhoto(id){
-  const photoLoad=++youthPhotoLoadVersion,profile=currentProfile;
-  const stillCurrent=()=>photoLoad===youthPhotoLoadVersion&&currentProfile===profile&&el('youth-id').value===id;
-  const preview=el('youth-photo-preview');preview.classList.add('hidden');preview.removeAttribute('src');
-  if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}
-  const {data,error}=await supabase.storage.from('fju-fotos').list(id,{limit:20});
+ const photoLoad=++youthPhotoLoadVersion,profile=currentProfile;
+ const stillCurrent=()=>photoLoad===youthPhotoLoadVersion&&currentProfile===profile&&el('youth-id').value===id;
+ const preview=el('youth-photo-preview');preview.classList.add('hidden');preview.removeAttribute('src');
+ if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}
+ let blob=null;
+ try{
+  const {data:files}=await supabase.storage.from('fju-fotos').list(id,{limit:20});
   if(!stillCurrent())return;
-  if(error){youthMessage('Ficha aberta, mas não foi possível consultar a foto: '+error.message,true);return;}
-  const file=(data||[]).find(f=>/^perfil\.(jpg|png|webp)$/.test(f.name));
-  if(!file)return;
-  const result=await supabase.storage.from('fju-fotos').download(id+'/'+file.name);
-  if(!stillCurrent())return;
-  if(result.error){youthMessage('Foto indisponível: '+result.error.message,true);return;}
-  photoUrl=URL.createObjectURL(result.data);preview.src=photoUrl;preview.classList.remove('hidden');
+  const file=(files||[]).find(f=>/^perfil\.(jpg|png|webp)$/i.test(f.name));
+  if(file){
+   const result=await supabase.storage.from('fju-fotos').download(id+'/'+file.name);
+   if(!result.error)blob=result.data;
+  }
+  // Preservar e reutilizar a foto original de inscrição quando a cópia oficial falhou.
+  if(!blob){
+   const linkedUser=[...fjuIdByUser.entries()].find(([uid,fid])=>fid===fjuIdByYouth.get(String(id)))?.[0];
+   if(linkedUser){
+    const result=await supabase.storage.from('fju-inscricoes-fotos').download(linkedUser+'/perfil.jpg');
+    if(!result.error)blob=result.data;
+   }
+  }
+  if(!blob||!stillCurrent())return;
+  photoUrl=URL.createObjectURL(blob);preview.src=photoUrl;preview.classList.remove('hidden');
+ }catch(error){if(stillCurrent())youthMessage('Não foi possível carregar a foto: '+error.message,true);}
 }
+
 async function compactarFoto100KB(file){
   if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw Error('Formato de foto não suportado.');
   const bitmap=await createImageBitmap(file);
