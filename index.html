@@ -348,6 +348,15 @@ body.fju-admin-shell{min-height:100dvh;overscroll-behavior-y:none;-webkit-tap-hi
 #app.fju-fichas-mode #jovens{display:block!important;margin:0!important;max-width:none!important}
 #app.fju-fichas-mode #jovens.hidden{display:none!important}
 #app.fju-fichas-mode .youth-back-dashboard{margin-bottom:20px!important}
+
+/* Mobile Fichas page: a single, readable page without clipped controls. */
+#app.fju-fichas-mode,#app.fju-fichas-mode *{box-sizing:border-box}
+#app.fju-fichas-mode .fju-admin-content{padding:18px 14px 90px!important;max-width:100%!important;overflow:visible!important}
+#app.fju-fichas-mode #jovens{width:100%!important;min-width:0!important;overflow:visible!important;padding:20px 14px!important;border-radius:18px!important}
+#app.fju-fichas-mode #jovens .youth-back-dashboard{display:inline-flex!important;max-width:100%!important}
+#app.fju-fichas-mode #jovens .fju-back-dashboard{display:none!important}
+#app.fju-fichas-mode #jovens input,#app.fju-fichas-mode #jovens select,#app.fju-fichas-mode #jovens button{max-width:100%}
+@media(max-width:700px){#app.fju-fichas-mode .fju-admin-content{padding:14px 12px 70px!important}#app.fju-fichas-mode #jovens{padding:18px 12px!important}#app.fju-fichas-mode #jovens .youth-page-header{min-width:0!important}}
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023g">
@@ -1525,9 +1534,9 @@ function setYouthFormOpen(open,editing=false,scroll=false){
 }
 el('youth-back-dashboard').addEventListener('click',()=>{
   if(!el('youth-entry-panel').classList.contains('hidden')){resetYouth();setYouthFormOpen(false);}
-  const dashboardTab=document.querySelector('#main-nav [data-tab="dashboard"]');
+  const dashboardTab=document.querySelector('#main-nav [data-tab="inicio"]');
   if(dashboardTab&&!dashboardTab.hidden)dashboardTab.click();
-  else document.querySelector('[data-open-tab="dashboard"]')?.click();
+  else document.querySelector('#main-nav [data-tab="inicio"]')?.click();
 });
 el('youth-add-toggle').addEventListener('click',()=>{
   const open=el('youth-entry-panel').classList.contains('hidden');
@@ -3456,7 +3465,7 @@ function normalize(value){const raw=value.replace(/[\s()-]/g,'');if(/^0[789]0\d{
 form.addEventListener('submit',async e=>{e.preventDefault();const phone=normalize(number.value);if(!phone){message.textContent='Digite um celular japonês válido (070, 080 ou 090).';return}const button=form.querySelector('button');button.disabled=true;message.textContent='Enviando código…';try{const {error}=await supabase.auth.signInWithOtp({phone,options:{shouldCreateUser:false}});if(error)throw error;sentPhone=phone;verify.classList.remove('hidden');message.textContent='Se o telefone estiver vinculado a uma conta autorizada e o SMS estiver ativo, o código será enviado.';}catch(error){message.textContent='Não foi possível enviar o código: '+error.message}finally{button.disabled=false}});
 verify.addEventListener('submit',async e=>{e.preventDefault();if(!sentPhone)return;const button=verify.querySelector('button');button.disabled=true;message.textContent='Validando…';try{const {error}=await supabase.auth.verifyOtp({phone:sentPhone,token:code.value.trim(),type:'sms'});if(error)throw error;message.textContent='Código confirmado. Validando acesso…';location.reload()}catch(error){message.textContent='Código inválido ou acesso não configurado: '+error.message}finally{button.disabled=false}});
 })();
-</script><script src="./painel-icones-vetoriais.js?v=20261023"></script><script src="./voltar-painel.js?v=20261023"></script><style id="fju-request-confirmation-style">#fju-request-confirmation{position:fixed;inset:0;z-index:2147483647;background:#06142cbb;display:none;align-items:center;justify-content:center;padding:20px}#fju-request-confirmation.is-visible{display:flex}#fju-request-confirmation .fju-confirm-card{width:min(100%,420px);padding:30px 24px;border-radius:22px;background:#fff;color:#152c4b;text-align:center;box-shadow:0 25px 75px #0005}#fju-request-confirmation .fju-confirm-card strong{display:block;font-size:23px;margin:12px 0}#fju-request-confirmation .fju-confirm-card p{font-size:15px;line-height:1.5}#fju-request-confirmation button{background:#193e72;color:white;border:0;border-radius:12px;padding:14px 20px;font-weight:700;margin-top:12px}</style>
+</script><script src="./painel-icones-vetoriais.js?v=20261023"></script><script src="./voltar-painel.js?v=20261031-single-back-283"></script><style id="fju-request-confirmation-style">#fju-request-confirmation{position:fixed;inset:0;z-index:2147483647;background:#06142cbb;display:none;align-items:center;justify-content:center;padding:20px}#fju-request-confirmation.is-visible{display:flex}#fju-request-confirmation .fju-confirm-card{width:min(100%,420px);padding:30px 24px;border-radius:22px;background:#fff;color:#152c4b;text-align:center;box-shadow:0 25px 75px #0005}#fju-request-confirmation .fju-confirm-card strong{display:block;font-size:23px;margin:12px 0}#fju-request-confirmation .fju-confirm-card p{font-size:15px;line-height:1.5}#fju-request-confirmation button{background:#193e72;color:white;border:0;border-radius:12px;padding:14px 20px;font-weight:700;margin-top:12px}</style>
 <div id="fju-request-confirmation" role="dialog" aria-modal="true" aria-label="Solicitação enviada"><div class="fju-confirm-card"><span style="font-size:46px" aria-hidden="true">✅</span><strong>Solicitação enviada para aprovação!</strong><p>O pedido foi encaminhado ao Administrador Nacional. Aguarde a análise.</p><button type="button" id="fju-request-confirmation-return">Voltar ao Painel de Controle</button></div></div>
 <script id="fju-request-confirmation-script">
 (()=>{const overlay=document.getElementById('fju-request-confirmation');let timer=null;const go=()=>{clearTimeout(timer);overlay.classList.remove('is-visible');const btn=document.querySelector('[data-open-tab="dashboard"],[data-open-tab="inicio"],[data-open-tab="painel"]');if(btn)btn.click();else{const home=document.querySelector('[data-action-tab="dashboard"],[data-action-tab="inicio"]');if(home)home.click();else location.href='./';}};document.getElementById('fju-request-confirmation-return').addEventListener('click',go);let last='';const success=/^(?:Pedido enviado ao Administrador Nacional|Pedido de patente Coordenador e acesso administrativo enviado ao Nacional|Solicitação enviada\. A ficha original|Solicitação de exclusão enviada para aprovação nacional|Solicitação enviada\. O evento aparecerá após a aprovação nacional)/i;const check=()=>{const elements=document.querySelectorAll('#youth-message,#special-event-message,#requests-message,.message');for(const el of elements){const t=(el.textContent||'').trim();if(success.test(t)&&t!==last){last=t;overlay.classList.add('is-visible');clearTimeout(timer);timer=setTimeout(go,3800)}}};new MutationObserver(check).observe(document.body,{subtree:true,childList:true,characterData:true});})();
