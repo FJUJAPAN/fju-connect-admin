@@ -410,6 +410,10 @@ body.fju-admin-shell>.fju-admin-header .fju-header-account,body.fju-admin-shell>
 /* Retorno independente das regras antigas que ocultam botoes de navegacao */
 #jovens>#fju-youth-return-visible{display:inline-flex!important;align-items:center!important;justify-content:center!important;position:relative!important;visibility:visible!important;opacity:1!important;z-index:30!important;max-width:100%!important;width:auto!important;margin:0 0 18px!important;padding:12px 16px!important;border-radius:12px!important;background:#dce5f5!important;color:#183353!important;border:1px solid #b8cbe5!important;font-size:15px!important;font-weight:800!important;cursor:pointer!important}
 #jovens>#youth-back-dashboard{display:none!important}
+
+/* Botão de retorno independente do painel e seus estilos legados */
+body #fju-fichas-return-fixed:not([hidden]){display:flex!important;position:fixed!important;top:calc(env(safe-area-inset-top, 0px) + 125px)!important;left:14px!important;z-index:2147483000!important;width:auto!important;min-width:92px!important;min-height:40px!important;padding:10px 14px!important;border-radius:999px!important;background:#173f78!important;color:white!important;font-weight:800!important;font-size:14px!important;line-height:20px!important;border:1px solid #7191b8!important;box-shadow:0 4px 16px #0004!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important}
+body #fju-fichas-return-fixed[hidden]{display:none!important}
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023g">
@@ -3742,7 +3746,18 @@ function activateMainTab(button){
   });
   document.querySelectorAll('#app section.panel').forEach(panel=>panel.classList.toggle('hidden',panel.id!==sectionId));
   el('app').classList.toggle('fju-fichas-mode',sectionId==='jovens');
-  const isModulePage=sectionId!=='inicio'&&sectionId!=='jovens';
+  
+  let returnFloating=document.getElementById('fju-fichas-return-fixed');
+  if(sectionId==='jovens'){
+   if(!returnFloating){
+    returnFloating=document.createElement('button');returnFloating.id='fju-fichas-return-fixed';returnFloating.type='button';
+    returnFloating.textContent='← Voltar';returnFloating.setAttribute('aria-label','Voltar ao Painel de Controle');
+    returnFloating.addEventListener('click',()=>{const home=document.querySelector('#main-nav [data-tab="inicio"]');if(home)home.click();else window.location.assign(window.location.pathname);});
+    document.body.appendChild(returnFloating);
+   }
+   returnFloating.hidden=false;
+  }else if(returnFloating){returnFloating.hidden=true;}
+const isModulePage=sectionId!=='inicio'&&sectionId!=='jovens';
   el('app').classList.toggle('fju-module-page',isModulePage);
   if(isModulePage&&!targetPanel.querySelector(':scope > .fju-module-return')&&!targetPanel.querySelector('.fju-admin-site-link, .fju-panel-back, [data-back-to-dashboard]')&&!targetPanel.textContent.includes('← Painel de Controle')){
     const back=document.createElement('button');back.type='button';back.className='fju-module-return';back.textContent='← Painel de Controle';
