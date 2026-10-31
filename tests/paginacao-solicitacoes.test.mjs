@@ -19,6 +19,7 @@ function fixture(){
     const api={
       select(fields,opts={}){state.fields=fields;state.head=!!opts.head;return api;},
       eq(key,value){state.filters.push([key,value]);return api;},
+      not(key,operator,value){state.filters.push(['not:'+key,operator,value]);return api;},
       order(){return api;},
       in(){return Promise.resolve({data:[],error:null});},
       range(start,end){
