@@ -3732,11 +3732,19 @@ async function openEditor(){
  const fragment=document.createDocumentFragment();
  for(const node of [...doc.body.children]){if(node.tagName==='HEADER'||node.tagName==='SCRIPT')continue;fragment.appendChild(document.importNode(node,true))}
  container.replaceChildren(back,fragment);
- for(const sheet of [...doc.querySelectorAll('link[rel="stylesheet"],style')]){
-  if(sheet.tagName==='LINK'&&sheet.getAttribute('href')?.includes('admin-brand.css'))continue;
-  const clone=document.importNode(sheet,true);if(clone.tagName==='LINK'){clone.href=new URL(sheet.getAttribute('href'),response.url).href}
-  // Editor styles apply only while the editor is open.
-  clone.media='all';document.head.appendChild(clone);addedStyles.push(clone)
+ // Do not import editor page-level CSS into the admin shell: it overrides
+ // the dashboard header, body, html and Safari safe-area styles.
+ // Scope only editor form rules to the inline container.
+ for(const sheet of [...doc.querySelectorAll('style')]){
+  if(sheet.id&&/header|navigation|shell|sticky/i.test(sheet.id))continue;
+  let css=sheet.textContent||'';
+  // Avoid global selectors and at-rules whose effects escape the editor.
+  css=css.replace(/(^|})\s*(?:html|body|:root|header|\*)\s*\{[^{}]*\}/gm,'$1');
+  css=css.replace(/(^|})\s*([^@{}][^{}]*)\{/g,(whole,prefix,selectors)=>{
+   const scoped=selectors.split(',').map(sel=>sel.trim()).filter(sel=>sel&&!/^(?:html|body|:root|header|\*)\b/i.test(sel)).map(sel=>'#fju-materias-inline '+sel);
+   return scoped.length?prefix+' '+scoped.join(', ')+'{':prefix+' /* discarded global editor selector */ .fju-editor-never-match{';
+  });
+  const clone=document.createElement('style');clone.textContent=css;document.head.appendChild(clone);addedStyles.push(clone)
  }
  const source=doc.querySelector('script[type="module"]');if(!source)throw Error('Módulo do editor não encontrado');
  moduleScript=document.createElement('script');moduleScript.type='module';moduleScript.textContent=source.textContent;document.body.appendChild(moduleScript);loaded=true;
