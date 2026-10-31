@@ -378,6 +378,14 @@ body.fju-admin-shell{min-height:100dvh;overscroll-behavior-y:none;-webkit-tap-hi
 /* Full-screen standalone modules, including when linked from an embedded dashboard. */
 #app.fju-module-page .fju-admin-content{min-height:100vh!important}
 #app.fju-module-page section.panel:not(.hidden){border-radius:0!important}
+
+/* Keep the account and language controls available while scrolling on every admin screen. */
+html{scroll-padding-top:calc(82px + env(safe-area-inset-top,0px))}
+body.fju-admin-shell>.fju-admin-header{position:sticky!important;top:0!important;z-index:1000!important;isolation:isolate}
+body.fju-admin-shell>.fju-admin-header .fju-admin-header-inner{display:flex!important;align-items:center!important;justify-content:space-between!important;flex-wrap:nowrap!important}
+body.fju-admin-shell>.fju-admin-header .fju-admin-header-tools{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:8px!important;flex-shrink:0!important}
+body.fju-admin-shell>.fju-admin-header .fju-header-account,body.fju-admin-shell>.fju-admin-header #fju-admin-language-settings{visibility:visible!important}
+@media(max-width:700px){body.fju-admin-shell>.fju-admin-header .fju-admin-header-inner{gap:6px!important}body.fju-admin-shell>.fju-admin-header .fju-admin-header-tools{gap:6px!important}}
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023g">
