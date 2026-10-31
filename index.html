@@ -2715,21 +2715,50 @@ el('youth-photo').addEventListener('change',e=>{++youthPhotoLoadVersion;const fi
 el('youth-clear').onclick=resetYouth;
 el('youth-refresh').onclick=loadYouth;
 
-function fjuPrintYouthChurchList(){
+async function fjuPrintYouthChurchList(){
  const sel=el('youth-list-polo');
  const polo=currentProfile?.papel==='coordenador'?String(currentProfile.polo_id):sel.value;
  if(!polo){youthMessage('Selecione uma igreja antes de imprimir.',true);return;}
  const rows=youthRows.filter(r=>String(r.polo_id)===polo).sort((a,b)=>(a.nome_completo||'').localeCompare(b.nome_completo||'','pt-BR'));
  if(!rows.length){youthMessage('Esta igreja não possui fichas para imprimir.',true);return;}
- const church=[...sel.options].find(o=>o.value===polo)?.textContent?.trim()||'Igreja';
- const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const date=new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date());
- const body=rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.nome_completo)+'</td><td>'+esc(r.patente||r.categoria||'—')+'</td></tr>').join('');
  const popup=window.open('','_blank');
  if(!popup){youthMessage('Permita abrir a janela de impressão no navegador.',true);return;}
- popup.document.open();
- popup.document.write('<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Lista de fichas - '+esc(church)+'</title><style>@page{size:A4;margin:15mm}body{font-family:Arial,sans-serif;color:#182438;margin:0}header{border-bottom:2px solid #172a49;margin-bottom:18px;padding-bottom:10px}h1{font-size:19px;margin:0 0 7px}p{font-size:12px;margin:3px 0;color:#526177}table{width:100%;border-collapse:collapse;font-size:11px}th,td{border-bottom:1px solid #d7dce5;padding:8px 7px;text-align:left}th{background:#eff2f7}td:first-child{width:30px}td:last-child{width:105px}tr{break-inside:avoid}.print-bar{margin:12px 0}.print-bar button{padding:10px 16px;border:0;border-radius:8px;background:#173d74;color:white;font-weight:bold}@media print{.print-bar{display:none}}</style></head><body><div class="print-bar"><button onclick="window.print()">Imprimir / Salvar PDF</button></div><header><h1>FJU JAPAN · '+esc(church)+'</h1><p>Lista de fichas · '+rows.length+' jovens · '+date+'</p></header><table><thead><tr><th>Nº</th><th>Nome completo</th><th>Patente</th></tr></thead><tbody>'+body+'</tbody></table></body></html>');
- popup.document.close();
+ popup.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Preparando lista</title></head><body><p>Preparando lista com fotos…</p></body></html>');
+ const button=el('youth-print-list');button.disabled=true;button.textContent='Preparando fotos…';
+ const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const age=value=>{
+  if(!value)return '—';
+  const m=String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(!m)return '—';
+  const now=new Date(),year=Number(m[1]),month=Number(m[2]),day=Number(m[3]);
+  return String(now.getFullYear()-year-((now.getMonth()+1<month||(now.getMonth()+1===month&&now.getDate()<day))?1:0));
+ };
+ const toDataUrl=blob=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob);});
+ async function getPhoto(id){
+  try{
+   const store=supabase.storage.from('fju-fotos');
+   const {data:files}=await store.list(id,{limit:20});
+   const file=(files||[]).find(x=>/^perfil\.(jpg|jpeg|png|webp)$/i.test(x.name));
+   if(file){const {data}=await store.download(id+'/'+file.name);if(data)return await toDataUrl(data);}
+   const {data:uid}=await supabase.rpc('fju_usuario_foto_por_jovem',{p_jovem_id:id});
+   if(uid){const {data}=await supabase.storage.from('fju-inscricoes-fotos').download(uid+'/perfil.jpg');if(data)return await toDataUrl(data);}
+  }catch(e){console.warn('Foto não disponível para impressão',e);}
+  return '';
+ }
+ try{
+  const photos=[];
+  for(let start=0;start<rows.length;start+=6){
+   const batch=rows.slice(start,start+6);
+   photos.push(...await Promise.all(batch.map(r=>getPhoto(r.id))));
+  }
+  const church=[...sel.options].find(o=>o.value===polo)?.textContent?.trim()||'Igreja';
+  const date=new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date());
+  const body=rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+(photos[i]?'<img class="portrait" src="'+photos[i]+'" alt="Foto">':'<span class="no-photo">Sem foto</span>')+'</td><td>'+esc(r.nome_completo)+'</td><td>'+age(r.nascimento)+'</td><td>'+esc(r.patente||r.categoria||'—')+'</td></tr>').join('');
+  popup.document.open();
+  popup.document.write('<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Fichas · '+esc(church)+'</title><style>@page{size:A4;margin:12mm}body{font-family:Arial,sans-serif;color:#1c2940;margin:0}header{border-bottom:2px solid #253b60;margin-bottom:12px;padding-bottom:8px}h1{font-size:18px;margin:0 0 6px}p{font-size:11px;margin:3px 0;color:#526177}table{width:100%;border-collapse:collapse;font-size:11px}th,td{border-bottom:1px solid #d7dce5;padding:6px;text-align:left;vertical-align:middle}th{background:#f0f3f8}td:first-child{width:24px}td:nth-child(2){width:52px}td:nth-child(4){width:40px}td:last-child{width:85px}tr{break-inside:avoid}.portrait{width:42px;height:42px;object-fit:cover;border-radius:6px}.no-photo{font-size:9px;color:#7b8597}.print-bar{margin:12px 0}.print-bar button{padding:10px 16px;border:0;border-radius:8px;background:#173d74;color:white;font-weight:bold}@media print{.print-bar{display:none}}</style></head><body><div class="print-bar"><button onclick="window.print()">Imprimir / Salvar PDF</button></div><header><h1>FJU JAPAN · '+esc(church)+'</h1><p>Lista de fichas · '+rows.length+' jovens · '+date+'</p></header><table><thead><tr><th>Nº</th><th>Foto</th><th>Nome completo</th><th>Idade</th><th>Patente</th></tr></thead><tbody>'+body+'</tbody></table></body></html>');
+  popup.document.close();
+ }catch(e){popup.document.body.textContent='Não foi possível preparar impressão: '+(e?.message||e);}
+ finally{button.disabled=false;button.textContent='🖨 Imprimir lista';}
 }
 el('youth-print-list').addEventListener('click',fjuPrintYouthChurchList);
 
