@@ -223,7 +223,7 @@
    const icon=document.createElement('span');icon.className='fju-coord-app-icon fju-coord-'+color;icon.textContent=emoji;icon.setAttribute('aria-hidden','true');
    const badge=document.createElement('span');badge.className='fju-coord-app-badge';badge.hidden=true;icon.append(badge);
    const label=document.createElement('span');label.className='fju-coord-app-label';
-   b.append(icon,label);b.addEventListener('click',()=>{const next=activeGroup===key?null:key;resetHome();activeGroup=next;render();if(activeGroup)$('fju-coord-choices').scrollIntoView({block:'nearest',behavior:'smooth'});});
+   b.append(icon,label);b.addEventListener('click',()=>{if(key==='fichas'){resetHome();nav('jovens');return;}const next=activeGroup===key?null:key;resetHome();activeGroup=next;render();if(activeGroup)$('fju-coord-choices').scrollIntoView({block:'nearest',behavior:'smooth'});});
    apps.append(b);
   }
   const choices=document.createElement('section');choices.id='fju-coord-choices';choices.hidden=true;
