@@ -834,7 +834,7 @@ body.fju-admin-shell #app.fju-fichas-mode #jovens > #youth-back-dashboard{
   <button type="button" class="fju-priority-card" data-priority-tab="autorizacoes"><span class="fju-priority-label">✅ <span id="fju-priority-requests-label">Solicitações</span></span><strong id="fju-priority-requests" aria-live="polite">…</strong><span id="fju-priority-requests-note">Aguardando atualização</span></button>
   <button type="button" class="fju-priority-card" data-priority-tab="relatorios"><span class="fju-priority-label">📊 <span id="fju-priority-reports-label">Relatórios da semana</span></span><strong id="fju-priority-reports" aria-live="polite">…</strong><span id="fju-priority-reports-note">Aguardando atualização</span></button>
 </div><div class="grid"><div class="stat"><span id="scope-label">Igreja</span><b id="scope-count">—</b></div><div class="stat">Jovens ativos<b id="youth-count">—</b></div><button type="button" id="weekly-status-card" class="stat weekly-status-card" aria-label="Abrir relatório semanal"><span>Último relatório semanal</span><b id="pending-count">Verificando…</b><small>Toque para abrir o relatório →</small></button></div>
-<section id="fju-my-page" class="card" style="margin:12px 0;padding:16px" aria-label="Minha página"><strong>👤 Minha conta · Painel de Controle</strong><div id="my-page-role" class="muted">Aguardando autenticação…</div><div id="my-page-email" style="overflow-wrap:anywhere"></div><div id="my-page-polo" class="muted"></div><p class="muted" style="font-size:12px">Foto e patente aguardam vínculo seguro com a ficha oficial.</p></section>
+
 <div class="fju-national-hero" aria-label="Painel Nacional"><h2>Painel Nacional</h2><p>Visão geral da FJU em todo o Japão.</p></div><h3 class="fju-actions-title">Painel de Controle</h3>
 <div class="fju-dashboard-actions" aria-label="Atalhos do painel de controle">
   <button type="button" class="fju-action-card" data-open-tab="autorizacoes" data-national-title="Pedidos para aprovação" data-local-title="Minhas solicitações" data-national-desc="Decidir alterações, patentes e acessos." data-local-desc="Acompanhar solicitações enviadas ao Nacional."><span aria-hidden="true" class="fju-action-icon">✅</span><strong>Autorizações</strong><span>Solicitações e decisões</span><span aria-hidden="true" class="fju-action-arrow">→</span></button>
@@ -1797,9 +1797,6 @@ async function loadProfile(user){
   currentProfile=data;
   currentPoloNome=poloNome;
   updateAdminDashboardRole(data,poloNome);
-   el('my-page-role').textContent=role;
-   el('my-page-email').textContent=user.email||'';
-   el('my-page-polo').textContent=poloNome?'FJU '+poloNome:'Visão nacional';
   updateNotificationPermissionUI();
   configureWeeklyReportAccess();
   if(data.papel==='nacional')void loadNationalReportOverview();else el('national-report-panel').classList.add('hidden');
