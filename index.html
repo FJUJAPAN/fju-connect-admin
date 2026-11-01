@@ -2170,12 +2170,9 @@ function renderYouth(){
       const edit=document.createElement('button');edit.type='button';edit.className='secondary youth-edit-button';
       edit.textContent='Editar';edit.onclick=()=>editYouth(r.id);actions.append(edit);const remove=document.createElement('button');remove.type='button';remove.className='secondary youth-delete-button';remove.textContent='Excluir';remove.setAttribute('aria-label','Excluir ficha de '+(r.nome_completo||'jovem'));remove.onclick=()=>void deleteYouthNational(r,remove);actions.append(remove);
     }else{
-      const more=document.createElement('details');more.className='youth-card-more';
-      const summary=document.createElement('summary');summary.textContent='Mais ações ▾';
-      const extra=document.createElement('div');extra.className='youth-card-extra-actions';
-      const request=document.createElement('button');request.type='button';request.className='secondary';
-      request.textContent='Solicitar edição';request.onclick=()=>editYouth(r.id);
-      extra.append(request);more.append(summary,extra);actions.append(more);
+      const request=document.createElement('button');request.type='button';request.className='secondary youth-edit-button';
+      request.textContent='Editar';request.title='Solicitar edição da ficha para aprovação nacional';
+      request.onclick=()=>editYouth(r.id);actions.append(request);
       const remove=document.createElement('button');remove.type='button';
       remove.className='secondary youth-request-delete';remove.textContent='Excluir';
       remove.title='Solicitar exclusão da ficha para aprovação nacional';
