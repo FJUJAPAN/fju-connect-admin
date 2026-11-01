@@ -1425,6 +1425,10 @@ for(let n=0;n<=1000;n++){const option=document.createElement('option');option.va
 for(const select of document.querySelectorAll('select.weekly-quantity')){select.append(quantityOptions.cloneNode(true));select.value='0';}
 
 const show=(id)=>{
+  if(id!=='app'){
+    const accountMenu=el('fju-header-account');
+    if(accountMenu)accountMenu.open=false;
+  }
   for(const s of ['auth','recovery','app'])el(s).classList.toggle('hidden',s!==id);
   if(id!=='app'){
     el('fju-admin-context').textContent='ÁREA ADMINISTRATIVA';
