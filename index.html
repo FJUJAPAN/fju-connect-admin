@@ -889,7 +889,7 @@ body.fju-admin-shell #app.fju-fichas-mode #jovens > #youth-back-dashboard{
 <div><label for="youth-phone">Telefone</label><input id="youth-phone" maxlength="50"></div>
 <div><label for="youth-country">Nacionalidade</label><select id="youth-country"><option value="">Selecione</option><option value="BR">🇧🇷 Brasil</option><option value="JP">🇯🇵 Japão</option><option value="PH">🇵🇭 Filipinas</option><option value="PE">🇵🇪 Peru</option><option value="BO">🇧🇴 Bolívia</option><option value="PY">🇵🇾 Paraguai</option><option value="AR">🇦🇷 Argentina</option><option value="CO">🇨🇴 Colômbia</option><option value="VE">🇻🇪 Venezuela</option><option value="US">🇺🇸 Estados Unidos</option><option value="CN">🇨🇳 China</option><option value="KR">🇰🇷 Coreia do Sul</option><option value="VN">🇻🇳 Vietnã</option><option value="ID">🇮🇩 Indonésia</option><option value="NP">🇳🇵 Nepal</option><option value="IN">🇮🇳 Índia</option><option value="LK">🇱🇰 Sri Lanka</option><option value="MM">🇲🇲 Mianmar</option><option value="TH">🇹🇭 Tailândia</option><option value="PK">🇵🇰 Paquistão</option><option value="BD">🇧🇩 Bangladesh</option><option value="GB">🇬🇧 Reino Unido</option><option value="FR">🇫🇷 França</option><option value="DE">🇩🇪 Alemanha</option><option value="PT">🇵🇹 Portugal</option><option value="ES">🇪🇸 Espanha</option><option value="MX">🇲🇽 México</option><option value="NG">🇳🇬 Nigéria</option><option value="GH">🇬🇭 Gana</option><option value="OTHER">Outra nacionalidade</option></select></div>
 <div><label>Idiomas que fala (selecione um ou mais)</label><details id="youth-languages-picker"><summary id="youth-languages-summary">Selecionar idiomas</summary><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;padding:12px 4px"><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Português"> Português</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Japonês"> Japonês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Inglês"> Inglês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Espanhol"> Espanhol</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Tagalog"> Tagalog</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Hindi"> Hindi</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Nepali"> Nepali</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Indonésio"> Indonésio</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Birmanês"> Birmanês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Cingalês"> Cingalês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Coreano"> Coreano</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Chinês"> Chinês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Vietnamita"> Vietnamita</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Tailandês"> Tailandês</label><label style="display:flex;align-items:center;gap:7px"><input type="checkbox" name="youth-language" value="Outros"> Outros</label></div></details></div>
-<div><label for="youth-rank">Patente do jovem</label><select id="youth-rank" required><option value="">Selecione</option><option value="Inconstante">Normal</option><option>Firme</option><option>CPO</option><option>Colaborador</option><option>Obreiro</option><option>Coordenador</option></select></div>
+<div><label for="youth-rank">Patente do jovem</label><select id="youth-rank" required><option value="">Selecione</option><option value="Inconstante">Normal</option><option>Firme</option><option>CPO</option><option>Colaborador</option><option>Voluntário</option><option>Obreiro</option><option>Coordenador</option></select></div>
 <div><label for="youth-photo">Foto do jovem (galeria ou câmera)</label><input id="youth-photo" type="file" accept="image/jpeg,image/png,image/webp"><img id="youth-photo-preview" alt="Prévia da foto escolhida" class="hidden" style="width:90px;height:90px;object-fit:cover;border-radius:12px;margin-top:8px"><p class="muted">A foto será comprimida automaticamente para até 100 KB e enviada ao bucket privado ao salvar a ficha. Use apenas imagens fictícias nesta fase de teste.</p></div>
 </div>
 <p class="actions"><button type="submit" id="youth-submit">Salvar ficha</button><button type="button" id="youth-clear" class="secondary">Limpar formulário</button></p>
@@ -1340,7 +1340,7 @@ function translateAdminRequests(language){
  });
 }
 const adminYouthExtraI18n={
- pt:{rank:'Patente do jovem',photo:'Foto do jovem (galeria ou câmera)',save:'Salvar ficha',clear:'Limpar formulário',choose:'Selecione',photoHelp:'A foto será comprimida automaticamente para até 100 KB e enviada ao bucket privado ao salvar a ficha. Use apenas imagens fictícias nesta fase de teste.',photoAlt:'Prévia da foto escolhida',ranks:['Normal','Firme','CPO','Colaborador','Obreiro','Coordenador']},
+ pt:{rank:'Patente do jovem',photo:'Foto do jovem (galeria ou câmera)',save:'Salvar ficha',clear:'Limpar formulário',choose:'Selecione',photoHelp:'A foto será comprimida automaticamente para até 100 KB e enviada ao bucket privado ao salvar a ficha. Use apenas imagens fictícias nesta fase de teste.',photoAlt:'Prévia da foto escolhida',ranks:['Normal','Firme','CPO','Colaborador','Voluntário','Obreiro','Coordenador']},
  ja:{rank:'青年の階級',photo:'青年の写真（写真ライブラリまたはカメラ）',save:'登録内容を保存',clear:'フォームをクリア',choose:'選択してください',photoHelp:'写真は自動的に100 KB以下に圧縮され、保存時に非公開ストレージに送信されます。テスト中は架空の画像のみ使用してください。',photoAlt:'選択した写真のプレビュー',ranks:['ノーマル','堅固','CPO','協力者','奉仕者','コーディネーター']},
  en:{rank:'Youth rank',photo:'Youth photo (gallery or camera)',save:'Save record',clear:'Clear form',choose:'Select',photoHelp:'The photo will be compressed automatically to 100 KB or less and uploaded to private storage when saved. Use fictional images only during testing.',photoAlt:'Selected photo preview',ranks:['Normal','Firm','CPO','Collaborator','Worker','Coordinator']}
 };
@@ -2081,14 +2081,14 @@ function fjuVisibleRank(value){return String(value??'').trim().toLowerCase()==='
 function youthCardRank(r){
   if(r.categoria==='inconstante')return 'Normal';
   const rank=(r.patente||'').toLocaleLowerCase();
-  return ({inconstante:'Normal',normal:'Normal',firme:'Firme',cpo:'CPO',colaborador:'Colaborador',obreiro:'Obreiro',coordenador:'Coordenador'})[rank]||fjuVisibleRank(r.patente)||'Firme';
+  return ({inconstante:'Normal',normal:'Normal',firme:'Firme',cpo:'CPO',colaborador:'Colaborador',voluntario:'Voluntário',obreiro:'Obreiro',coordenador:'Coordenador'})[rank]||fjuVisibleRank(r.patente)||'Firme';
 }
 function youthCardInitials(name){
   const parts=(name||'J').trim().split(/\s+/).filter(Boolean);
   return ((parts[0]?.[0]||'J')+(parts.length>1?parts[parts.length-1][0]:'')).toLocaleUpperCase();
 }
 let fjuSelectedYouthRank='';
-const fjuYouthRankCategories=['Todos','Normal','Firme','CPO','Colaborador','Obreiro','Coordenador'];
+const fjuYouthRankCategories=['Todos','Normal','Firme','CPO','Colaborador','Voluntário','Obreiro','Coordenador'];
 function fjuRenderYouthRankCategories(){
  const holder=el('fju-youth-rank-categories');if(!holder)return;
  holder.replaceChildren();
@@ -2734,7 +2734,7 @@ function editYouth(id){
   el('youth-id').value=r.id;el('youth-polo').value=r.polo_id;
   for(const [field,key] of [['youth-name','nome_completo'],['youth-phone','telefone'],['youth-country','nacionalidade_iso2'],['youth-rank','patente']])el(field).value=r[key]||'';
   setYouthBirth(r.nascimento||'');
-  el('youth-rank').value=r.categoria==='inconstante'?'Inconstante':({'firme':'Firme','cpo':'CPO','colaborador':'Colaborador','obreiro':'Obreiro','coordenador':'Coordenador'}[r.patente]||r.patente||'');
+  el('youth-rank').value=r.categoria==='inconstante'?'Inconstante':({'firme':'Firme','cpo':'CPO','colaborador':'Colaborador','voluntario':'Voluntário','obreiro':'Obreiro','coordenador':'Coordenador'}[r.patente]||r.patente||'');
   document.querySelectorAll('input[name="youth-language"]').forEach(x=>x.checked=(r.idiomas||[]).includes(x.value));refreshYouthLanguages();
   el('youth-photo').value='';el('youth-photo').disabled=currentProfile?.papel==='coordenador';void loadYouthPhoto(r.id);youthMessage(currentProfile?.papel==='coordenador'?'Edite os campos e envie para aprovação. A ficha original não será alterada.':'Editando ficha: '+r.nome_completo);setYouthFormOpen(true,true,true);
 }
@@ -3710,7 +3710,7 @@ async function loadYouthSignups(){
    const controls=document.createElement('div');controls.className='fju-signup-controls';
   const rankLabel=document.createElement('label');rankLabel.textContent='Patente inicial';
   const rank=document.createElement('select');rank.id='fju-signup-rank-'+item.id;rankLabel.htmlFor=rank.id;rank.setAttribute('aria-label','Patente inicial de '+(item.nome||'jovem'));
-  for(const value of ['Inconstante','Firme','CPO','Colaborador','Obreiro','Coordenador']){const opt=document.createElement('option');opt.value=value;opt.textContent=(String(value).toLowerCase()==='inconstante'?'Normal':value);rank.append(opt);}
+  for(const value of ['Inconstante','Firme','CPO','Colaborador','Voluntário','Obreiro','Coordenador']){const opt=document.createElement('option');opt.value=value;opt.textContent=(String(value).toLowerCase()==='inconstante'?'Normal':value);rank.append(opt);}
   const pendingRank=pendingRankBySignup.get(String(item.id));
   if(pendingRank){
     rank.value=pendingRank.patente;
@@ -3757,7 +3757,7 @@ async function loadYouthSignups(){
   linkBox.append(linkTitle,linkHint,linkSearch,linkLoad,linkSelect,linkApprove);
   const approve=document.createElement('button');approve.type='button';approve.textContent='Aceitar e criar ficha';
   const requestNational=document.createElement('button');requestNational.type='button';requestNational.className='secondary';requestNational.textContent='Solicitar aprovação Nacional';
-  const elevated=['CPO','Colaborador','Obreiro','Coordenador'];
+  const elevated=['CPO','Colaborador','Voluntário','Obreiro','Coordenador'];
   const syncRankAction=()=>{const need=profile.papel==='coordenador'&&elevated.includes(rank.value);approve.hidden=need||!!pendingRank;requestNational.hidden=!need||!!pendingRank;};
   rank.addEventListener('change',syncRankAction);syncRankAction();
   requestNational.addEventListener('click',async()=>{
