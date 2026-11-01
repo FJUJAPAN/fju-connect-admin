@@ -1181,8 +1181,13 @@ const adminCardI18n={
 };
 function translateAdminCards(language){
  const items=adminCardI18n[language]||adminCardI18n.pt;
- document.querySelectorAll('.fju-dashboard-actions .fju-action-card').forEach((card,i)=>{
- const values=items[i];if(!values)return;
+ const cardTranslationIndex={jovens:0,relatorios:1,inscricoes:2,autorizacoes:3,lideranca:4,config:5};
+ document.querySelectorAll('.fju-dashboard-actions .fju-action-card').forEach(card=>{
+ const key=card.dataset.openTab;
+ const i=Object.prototype.hasOwnProperty.call(cardTranslationIndex,key)
+   ?cardTranslationIndex[key]
+   :(card.matches('a[href*="materias"]')?6:-1);
+ const values=i>=0?items[i]:null;if(!values)return;
  const title=card.querySelector('strong'),desc=card.querySelector('strong + span');
  if(values.length===6){
  card.dataset.nationalTitle=values[0];card.dataset.localTitle=values[1];
