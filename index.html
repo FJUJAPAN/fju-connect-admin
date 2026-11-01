@@ -3945,6 +3945,13 @@ document.addEventListener('keydown',event=>{
 adminMobileMedia.addEventListener('change',()=>setAdminMenuOpen(false));
 document.querySelectorAll('.fju-dashboard-actions [data-open-tab]').forEach(shortcut=>{
   shortcut.addEventListener('click',()=>{
+    if(shortcut.dataset.openTab==='relatorios'){
+      const destination=new URL(window.location.href);
+      destination.searchParams.set('module','relatorios');
+      destination.searchParams.delete('embed');
+      window.location.assign(destination.toString());
+      return;
+    }
     const tab=document.querySelector('#main-nav [data-tab="'+shortcut.dataset.openTab+'"]');
     if(tab&&!tab.hidden){
       const module=shortcut.dataset.openTab;
