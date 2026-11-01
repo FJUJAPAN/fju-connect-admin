@@ -480,6 +480,16 @@ body.fju-admin-shell #app.fju-fichas-mode #jovens.fju-church-roster > #youth-bac
 #jovens #fju-church-roster-add{padding:12px 13px!important;background:#293f79!important;border:0!important;color:#fff!important;border-radius:12px!important;white-space:nowrap!important;font-weight:800!important}
 #app.fju-fichas-mode #jovens.fju-church-roster .youth-saved-heading{margin-top:0!important}
 @media(max-width:450px){#jovens .fju-church-roster-title h2{font-size:21px}#jovens #fju-church-roster-add{font-size:13px;padding:10px!important}}
+
+#app.fju-fichas-mode #jovens #fju-church-pending-detail[hidden]{display:none!important}
+#app.fju-fichas-mode #jovens.fju-church-directory #fju-church-pending-detail{display:none!important}
+#app.fju-fichas-mode #jovens.fju-church-roster #fju-church-pending-detail:not([hidden]){
+ display:block!important;margin:0 0 20px;padding:15px 16px;border:1px solid #f2c7cc;border-radius:14px;background:#fff8f9;color:#283752
+}
+#jovens #fju-church-pending-detail .fju-church-pending-title{display:block;font-size:15px;color:#a42035;margin:0 0 8px}
+#jovens #fju-church-pending-detail ul{padding-left:18px;margin:8px 0 12px;line-height:1.65;font-size:14px}
+#jovens #fju-church-pending-detail button{display:inline-flex!important;background:#263c76!important;color:white!important;border-radius:10px!important;padding:10px 14px!important;font-weight:750!important}
+
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023g">
@@ -854,6 +864,7 @@ body.fju-admin-shell #app.fju-fichas-mode #jovens > #youth-back-dashboard{
  <div class="fju-church-roster-title"><span>FICHAS DA IGREJA</span><h2 id="fju-church-roster-name"></h2></div>
  <button type="button" id="fju-church-roster-add">+ Adicionar ficha</button>
 </div>
+<div id="fju-church-pending-detail" hidden aria-live="polite"></div>
 <div id="youth-entry-panel" class="hidden">
 <div class="youth-entry-heading"><h3 id="youth-form-title">Nova ficha</h3><button type="button" id="youth-form-close" class="secondary">Fechar</button></div>
 <p class="youth-page-subtitle">Preencha os dados do jovem. Alterações de fichas existentes feitas pelo coordenador dependem de aprovação nacional.</p>
@@ -2006,6 +2017,7 @@ async function loadYouth(){
     fjuIdByUser=new Map((idRows||[]).filter(x=>x.usuario_id).map(x=>[String(x.usuario_id),x.fju_id]));
   }else console.warn('FJU ID indisponível:',idError.message);
   youthRows=all;renderYouth();youthMessage(`${youthRows.length} ficha(s) carregada(s) da igreja selecionada.`);
+  if(profile.papel==='nacional')void fjuShowChurchPendingDetail(String(polo));
 }
 /* Fotos das fichas são carregadas somente quando o card entra na área visível.
    Não são usadas URLs públicas: o acesso passa pelo bucket privado e políticas RLS. */
@@ -2668,6 +2680,11 @@ async function loadYouthRequests(){
     const destination=profile.papel==='nacional'?(churchGroups.get(String(r.polo_id))||churchGroups.get('__unknown')):list;
     destination.append(card);
   }
+  if(profile.papel==='nacional'&&fjuChurchApprovalFocus){
+    const focused=churchGroups.get(fjuChurchApprovalFocus);
+    if(focused){focused.open=true;requestAnimationFrame(()=>focused.scrollIntoView({behavior:'auto',block:'start'}));}
+    fjuChurchApprovalFocus=null;
+  }
 }
 document.querySelectorAll('[data-request-filter]').forEach(btn=>btn.addEventListener('click',()=>{
   currentRequestFilter=btn.dataset.requestFilter;
@@ -2871,6 +2888,51 @@ async function fjuRefreshChurchPending(){
  for(const result of results){if(result.error)continue;for(const p of result.data||[]){const id=String(p.polo_id);counts.set(id,(counts.get(id)||0)+1);}}
  fjuChurchPendingCounts=counts;fjuRenderChurchButtons();
 }
+let fjuChurchPendingRequestVersion=0;
+let fjuChurchApprovalFocus=null;
+async function fjuShowChurchPendingDetail(poloId){
+ const view=el('fju-church-pending-detail'),version=++fjuChurchPendingRequestVersion;
+ if(!view)return;
+ view.replaceChildren();view.hidden=true;
+ if(currentProfile?.papel!=='nacional'||!poloId)return;
+ const profile=currentProfile;
+ const [requests,other]=await Promise.all([
+  supabase.from('fju_solicitacoes').select('id,jovem_id,tipo,criado_em').eq('polo_id',poloId).eq('status','pendente').order('criado_em',{ascending:false}),
+  supabase.from('fju_pedidos_patente_inicial').select('polo_id').eq('polo_id',poloId).eq('status','pendente')
+ ]);
+ if(version!==fjuChurchPendingRequestVersion||currentProfile!==profile||el('youth-list-polo').value!==poloId)return;
+ if(requests.error||other.error){
+  const msg=document.createElement('p');msg.textContent='Não foi possível consultar as pendências desta igreja.';
+  view.append(msg);view.hidden=false;return;
+ }
+ const rows=requests.data||[],otherCount=(other.data||[]).length,total=rows.length+otherCount;
+ if(!total)return;
+ const heading=document.createElement('strong');heading.className='fju-church-pending-title';
+ heading.textContent=total+' '+(total===1?'solicitação pendente':'solicitações pendentes')+' nesta igreja';
+ view.append(heading);
+ const list=document.createElement('ul');
+ for(const item of rows){
+  const li=document.createElement('li');
+  const person=youthRows.find(y=>String(y.id)===String(item.jovem_id));
+  const type=({edicao:'Edição de ficha',patente:'Alteração de patente',exclusao:'Exclusão de ficha'})[item.tipo]||'Solicitação';
+  li.textContent=(person?.nome_completo||'Jovem da igreja')+' — '+type;
+  list.append(li);
+ }
+ if(otherCount){
+  const li=document.createElement('li');li.textContent=otherCount+' solicitação(ões) de patente inicial';list.append(li);
+ }
+ view.append(list);
+ const action=document.createElement('button');action.type='button';action.textContent='Analisar na Central de Aprovações';
+ action.addEventListener('click',()=>{
+  fjuChurchApprovalFocus=String(poloId);
+  currentRequestFilter='pendente';
+  requestsVisibleLimit=Math.max(requestsVisibleLimit,500);
+  const tab=document.querySelector('#main-nav [data-tab="autorizacoes"]');
+  if(tab)tab.click();
+ });
+ view.append(action);view.hidden=false;
+}
+
 function fjuScrollChurchViewTop(){
  requestAnimationFrame(()=>{
   const panel=el('jovens');
@@ -2885,6 +2947,8 @@ function fjuUpdateChurchScreen(){
  if(!panel||!sel)return;
  const national=currentProfile?.papel==='nacional';
  const selected=national&&Boolean(sel.value);
+ const pendingDetail=el('fju-church-pending-detail');
+ if(pendingDetail){if(pendingDetail.dataset.polo!==sel.value){pendingDetail.replaceChildren();pendingDetail.hidden=true;pendingDetail.dataset.polo=sel.value;}if(!selected)pendingDetail.hidden=true;}
  panel.classList.toggle('fju-church-directory',national&&!selected);
  panel.classList.toggle('fju-church-roster',selected);
  const header=el('fju-church-roster-header');
