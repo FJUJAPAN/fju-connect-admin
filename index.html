@@ -2901,11 +2901,14 @@ async function fjuShowChurchPendingDetail(poloId){
   supabase.from('fju_pedidos_patente_inicial').select('polo_id').eq('polo_id',poloId).eq('status','pendente')
  ]);
  if(version!==fjuChurchPendingRequestVersion||currentProfile!==profile||el('youth-list-polo').value!==poloId)return;
- if(requests.error||other.error){
-  const msg=document.createElement('p');msg.textContent='Não foi possível consultar as pendências desta igreja.';
+ if(requests.error){
+  const msg=document.createElement('p');
+  msg.textContent='Não foi possível consultar as solicitações desta igreja: '+requests.error.message;
   view.append(msg);view.hidden=false;return;
  }
- const rows=requests.data||[],otherCount=(other.data||[]).length,total=rows.length+otherCount;
+ // A consulta de patentes iniciais é opcional e não deve ocultar pedidos de ficha.
+ if(other.error)console.warn('Patentes iniciais indisponíveis:',other.error.message);
+ const rows=requests.data||[],otherCount=other.error?0:(other.data||[]).length,total=rows.length+otherCount;
  if(!total)return;
  const heading=document.createElement('strong');heading.className='fju-church-pending-title';
  heading.textContent=total+' '+(total===1?'solicitação pendente':'solicitações pendentes')+' nesta igreja';
