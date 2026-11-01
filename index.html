@@ -3976,6 +3976,12 @@ function updateAdminDashboardRole(profile,poloNome){
     :'Preencha o relatório semanal da sua igreja e acompanhe os eventos especiais.';
   el('fju-sidebar-role').textContent=national?'Administração Nacional':'FJU '+poloNome;
   document.body.classList.toggle('fju-national-clean',national);
+  const roleHero=document.querySelector('.fju-national-hero');
+  if(roleHero){
+    roleHero.setAttribute('aria-label',national?'Painel Nacional':'Painel do Coordenador Local');
+    roleHero.querySelector('h2').textContent=national?'Painel Nacional':'Painel do Coordenador · '+poloNome;
+    roleHero.querySelector('p').textContent=national?'Visão geral da FJU em todo o Japão.':'Gerencie os jovens e as atividades da FJU '+poloNome+'.';
+  }
  el('fju-dashboard-context').textContent=national?'ADMINISTRAÇÃO NACIONAL':'COORDENAÇÃO LOCAL · '+poloNome.toUpperCase();
   el('fju-overview-title').textContent=national?'Painel Nacional FJU JAPAN':'Painel da FJU '+poloNome;
   el('fju-overview-description').textContent=national
