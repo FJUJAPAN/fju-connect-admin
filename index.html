@@ -450,6 +450,36 @@ body.fju-admin-shell>.fju-admin-header .fju-header-account,body.fju-admin-shell>
  #fju-print-preview tr{break-inside:avoid;page-break-inside:avoid}
 }
 
+
+/* Fichas: igrejas e fichas sao duas telas separadas. */
+#app.fju-fichas-mode #jovens{scroll-margin-top:125px}
+#app.fju-fichas-mode #jovens.fju-church-directory #fju-church-roster-header,
+#app.fju-fichas-mode #jovens.fju-church-directory .youth-saved-heading,
+#app.fju-fichas-mode #jovens.fju-church-directory #youth-print-toolbar,
+#app.fju-fichas-mode #jovens.fju-church-directory .youth-list-controls,
+#app.fju-fichas-mode #jovens.fju-church-directory #youth-list,
+#app.fju-fichas-mode #jovens.fju-church-directory #youth-detail,
+#app.fju-fichas-mode #jovens.fju-church-directory #photo-repair-ui{display:none!important}
+#app.fju-fichas-mode #jovens.fju-church-roster > #fju-church-picker,
+#app.fju-fichas-mode #jovens.fju-church-roster > .youth-page-header,
+body.fju-admin-shell #app.fju-fichas-mode #jovens.fju-church-roster > #youth-back-dashboard,
+#app.fju-fichas-mode #jovens.fju-church-roster #photo-repair-ui{display:none!important}
+#app.fju-fichas-mode #jovens #fju-church-roster-header[hidden]{display:none!important}
+#app.fju-fichas-mode #jovens.fju-church-roster #fju-church-roster-header:not([hidden]){
+ display:grid!important;grid-template-columns:1fr auto;gap:14px;
+ align-items:center;margin:0 0 18px;padding:0 0 15px;border-bottom:1px solid #d8e2ef
+}
+#jovens #fju-church-roster-back{
+ grid-column:1/-1;justify-self:start;display:inline-flex!important;
+ align-items:center;padding:11px 14px!important;border-radius:12px!important;
+ border:0!important;background:#e4e9f3!important;color:#20385f!important;font-weight:800!important;
+}
+#jovens .fju-church-roster-title{min-width:0}
+#jovens .fju-church-roster-title span{display:block;font-size:11px;font-weight:800;letter-spacing:.1em;color:#64738d;margin-bottom:4px}
+#jovens .fju-church-roster-title h2{font-size:25px;line-height:1.2;margin:0;color:#1c2e4f;overflow-wrap:anywhere}
+#jovens #fju-church-roster-add{padding:12px 13px!important;background:#293f79!important;border:0!important;color:#fff!important;border-radius:12px!important;white-space:nowrap!important;font-weight:800!important}
+#app.fju-fichas-mode #jovens.fju-church-roster .youth-saved-heading{margin-top:0!important}
+@media(max-width:450px){#jovens .fju-church-roster-title h2{font-size:21px}#jovens #fju-church-roster-add{font-size:13px;padding:10px!important}}
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023g">
@@ -819,6 +849,11 @@ body.fju-admin-shell #app.fju-fichas-mode #jovens > #youth-back-dashboard{
 <button type="button" id="youth-add-toggle" aria-expanded="false" aria-controls="youth-entry-panel"><span class="youth-add-icon" aria-hidden="true">+</span><span id="youth-add-toggle-label">Adicionar ficha</span></button>
 </div>
 <div id="fju-church-picker" class="fju-church-picker"><div class="fju-church-heading"><h3>Escolha a igreja</h3></div><div id="fju-church-buttons" class="fju-church-buttons" aria-label="Igrejas"></div></div>
+<div id="fju-church-roster-header" hidden>
+ <button type="button" id="fju-church-roster-back">← Todas as igrejas</button>
+ <div class="fju-church-roster-title"><span>FICHAS DA IGREJA</span><h2 id="fju-church-roster-name"></h2></div>
+ <button type="button" id="fju-church-roster-add">+ Adicionar ficha</button>
+</div>
 <div id="youth-entry-panel" class="hidden">
 <div class="youth-entry-heading"><h3 id="youth-form-title">Nova ficha</h3><button type="button" id="youth-form-close" class="secondary">Fechar</button></div>
 <p class="youth-page-subtitle">Preencha os dados do jovem. Alterações de fichas existentes feitas pelo coordenador dependem de aprovação nacional.</p>
@@ -1854,6 +1889,10 @@ async function initializeYouth(){
   if(profile.papel==='nacional'){const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Selecione uma igreja';listPolo.append(placeholder);}
   for(const polo of allowed){const option=document.createElement('option');option.value=String(polo.id);option.textContent=polo.nome;listPolo.append(option);}
   if(profile.papel==='coordenador')listPolo.value=String(profile.polo_id);
+  else {
+    const requestedChurch=new URLSearchParams(location.search).get('polo');
+    if(requestedChurch&&allowed.some(p=>String(p.id)===requestedChurch))listPolo.value=requestedChurch;
+  }
   el('youth-list-polo-wrap').classList.toggle('hidden',profile.papel==='coordenador');
   fjuRenderChurchButtons();
   if(profile.papel==='nacional')void fjuRefreshChurchPending();
@@ -2025,6 +2064,7 @@ function youthCardInitials(name){
   return ((parts[0]?.[0]||'J')+(parts.length>1?parts[parts.length-1][0]:'')).toLocaleUpperCase();
 }
 function renderYouth(){
+  fjuUpdateChurchScreen();
   clearYouthCardPhotos();
   const version=youthCardRenderVersion;
   const term=el('youth-search').value.trim().toLocaleLowerCase();
@@ -2118,6 +2158,8 @@ function resetYouthSession(){
   ++youthLoadVersion;
   clearYouthCardPhotos();
   youthRows=[];
+  el('jovens').classList.remove('fju-church-directory','fju-church-roster');
+  el('fju-church-roster-header').hidden=true;
   resetYouth();
   setYouthFormOpen(false);
   el('youth-message').textContent='';
@@ -2828,10 +2870,66 @@ async function fjuRefreshChurchPending(){
  for(const result of results){if(result.error)continue;for(const p of result.data||[]){const id=String(p.polo_id);counts.set(id,(counts.get(id)||0)+1);}}
  fjuChurchPendingCounts=counts;fjuRenderChurchButtons();
 }
+function fjuScrollChurchViewTop(){
+ requestAnimationFrame(()=>{
+  const panel=el('jovens');
+  if(!panel||panel.classList.contains('hidden'))return;
+  const header=document.querySelector('.fju-admin-header');
+  const offset=(header?.getBoundingClientRect().height||90)+14;
+  window.scrollTo({top:Math.max(0,window.scrollY+panel.getBoundingClientRect().top-offset),behavior:'auto'});
+ });
+}
+function fjuUpdateChurchScreen(){
+ const panel=el('jovens'),sel=el('youth-list-polo');
+ if(!panel||!sel)return;
+ const national=currentProfile?.papel==='nacional';
+ const selected=national&&Boolean(sel.value);
+ panel.classList.toggle('fju-church-directory',national&&!selected);
+ panel.classList.toggle('fju-church-roster',selected);
+ const header=el('fju-church-roster-header');
+ header.hidden=!selected;
+ if(selected){
+  const church=[...sel.options].find(option=>option.value===sel.value);
+  el('fju-church-roster-name').textContent=church?.textContent?.trim()||'Igreja';
+ }
+}
+function fjuReturnToChurches(){
+ const sel=el('youth-list-polo');
+ if(!sel)return;
+ const url=new URL(window.location.href);
+ url.searchParams.delete('polo');
+ window.history.pushState(window.history.state,'',url.pathname+url.search+url.hash);
+ sel.value='';
+ el('youth-search').value='';
+ el('youth-detail').classList.add('hidden');
+ resetYouth();setYouthFormOpen(false);
+ sel.dispatchEvent(new Event('change',{bubbles:true}));
+ fjuRenderChurchButtons();
+ fjuScrollChurchViewTop();
+}
+el('fju-church-roster-back').addEventListener('click',fjuReturnToChurches);
+el('fju-church-roster-add').addEventListener('click',()=>{
+ resetYouth();
+ el('youth-polo').value=el('youth-list-polo').value;
+ setYouthFormOpen(true,false,true);
+});
+window.addEventListener('popstate',()=>{
+ if(currentProfile?.papel!=='nacional'||el('jovens').classList.contains('hidden'))return;
+ const sel=el('youth-list-polo'),requested=new URLSearchParams(location.search).get('polo');
+ const allowed=requested&&[...sel.options].some(o=>o.value===requested)?requested:'';
+ if(sel.value!==allowed){
+  sel.value=allowed;
+  sel.dispatchEvent(new Event('change',{bubbles:true}));
+ }
+ fjuRenderChurchButtons();
+ fjuScrollChurchViewTop();
+});
+
 function fjuRenderChurchButtons(){
  const holder=el('fju-church-buttons'),sel=el('youth-list-polo');if(!holder||!sel)return;
- if(currentProfile?.papel!=='nacional'){el('fju-church-picker').hidden=true;el('youth-list-polo-wrap').style.position='static';el('youth-list-polo-wrap').style.clipPath='none';return;}
+ if(currentProfile?.papel!=='nacional'){fjuUpdateChurchScreen();el('fju-church-picker').hidden=true;el('youth-list-polo-wrap').style.position='static';el('youth-list-polo-wrap').style.clipPath='none';return;}
  el('fju-church-picker').hidden=false;
+ fjuUpdateChurchScreen();
  const options=[...sel.options].filter(o=>o.value&&o.textContent.trim());
  const selected=sel.value;
  holder.replaceChildren();
@@ -2839,7 +2937,16 @@ function fjuRenderChurchButtons(){
   const button=document.createElement('button');button.type='button';button.textContent=option.textContent.trim();button.classList.toggle('is-selected',option.value===selected);button.setAttribute('aria-pressed',String(option.value===selected));
   const pending=fjuChurchPendingCounts.get(String(option.value))||0;
   if(pending){const badge=document.createElement('span');badge.className='fju-church-alert';badge.textContent=String(pending);badge.title=pending+' solicitações pendentes';button.append(badge);}
-  button.addEventListener('click',()=>{sel.value=option.value;sel.dispatchEvent(new Event('change',{bubbles:true}));fjuRenderChurchButtons();el('youth-list')?.scrollIntoView({block:'nearest'});});
+  button.addEventListener('click',()=>{
+   sel.value=option.value;
+   const url=new URL(window.location.href);
+   url.searchParams.set('module','jovens');
+   url.searchParams.set('polo',option.value);
+   window.history.pushState(window.history.state,'',url.pathname+url.search+url.hash);
+   sel.dispatchEvent(new Event('change',{bubbles:true}));
+   fjuRenderChurchButtons();
+   fjuScrollChurchViewTop();
+  });
   holder.append(button);
  }
 }
