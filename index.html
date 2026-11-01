@@ -894,6 +894,7 @@ body.fju-admin-shell #app.fju-fichas-mode #jovens > #youth-back-dashboard{
 <p id="youth-message" class="message" role="status" aria-live="polite"></p>
 <div id="photo-repair-ui" hidden><button type="button" id="photo-repair-run" class="secondary">Recuperar fotos das fichas</button><p id="photo-repair-status" role="status"></p></div><div class="youth-saved-heading"><h3>Fichas cadastradas</h3><span id="youth-visible-count" class="youth-saved-count">Carregando...</span></div><div id="youth-print-toolbar" hidden><button type="button" id="youth-print-list" class="secondary">🖨 Imprimir lista desta igreja</button></div>
 <div id="youth-list-polo-wrap" class="youth-polo-filter"><label for="youth-list-polo">Visualizar fichas da igreja</label><select id="youth-list-polo"><option value="">Selecione uma igreja</option></select></div>
+<div id="fju-youth-rank-categories" aria-label="Categorias de patente" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0"></div>
 <div class="youth-list-controls"><div><label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite o nome do jovem" type="search" autocomplete="off"></div><button type="button" id="youth-refresh" class="secondary">Atualizar</button></div>
 <div id="youth-detail" class="panel hidden" style="margin:0 0 14px;border:1px solid #dce3ef"></div><div id="youth-list" aria-label="Fichas salvas"></div>
 </section>
@@ -2073,11 +2074,27 @@ function youthCardInitials(name){
   const parts=(name||'J').trim().split(/\s+/).filter(Boolean);
   return ((parts[0]?.[0]||'J')+(parts.length>1?parts[parts.length-1][0]:'')).toLocaleUpperCase();
 }
+let fjuSelectedYouthRank='';
+const fjuYouthRankCategories=['Normal','Firme','CPO','Colaborador','Obreiro','Coordenador'];
+function fjuRenderYouthRankCategories(){
+ const holder=el('fju-youth-rank-categories');if(!holder)return;
+ holder.replaceChildren();
+ for(const label of fjuYouthRankCategories){
+  const amount=youthRows.filter(r=>String(r.polo_id)===String(el('youth-list-polo').value)&&youthCardRank(r)===label).length;
+  const button=document.createElement('button');button.type='button';button.className='secondary';
+  button.style.cssText='min-height:64px;padding:12px;border-radius:14px;font-weight:750;text-align:center;white-space:normal';
+  button.textContent=label+' ('+amount+')';button.setAttribute('aria-pressed',String(fjuSelectedYouthRank===label));
+  if(fjuSelectedYouthRank===label){button.style.background='#293e79';button.style.color='white';}
+  button.onclick=()=>{fjuSelectedYouthRank=fjuSelectedYouthRank===label?'':label;renderYouth();};
+  holder.append(button);
+ }
+}
 function renderYouth(){
   fjuUpdateChurchScreen();
   clearYouthCardPhotos();
   const version=youthCardRenderVersion;
   const term=el('youth-search').value.trim().toLocaleLowerCase();
+  fjuRenderYouthRankCategories();
   const list=el('youth-list');list.replaceChildren();
   const count=el('youth-visible-count');
   const polo=el('youth-list-polo').value;
@@ -2089,14 +2106,17 @@ function renderYouth(){
     empty.textContent='Selecione uma igreja para visualizar as fichas cadastradas.';
     list.append(empty);return;
   }
-  const rows=youthRows.filter(r=>String(r.polo_id)===polo&&(r.nome_completo||'').toLocaleLowerCase().includes(term));
+  const rows=youthRows.filter(r=>String(r.polo_id)===polo&&(!fjuSelectedYouthRank||youthCardRank(r)===fjuSelectedYouthRank)&&(r.nome_completo||'').toLocaleLowerCase().includes(term));
   el('youth-print-toolbar').hidden=!polo;
   count.textContent=rows.length+' '+(rows.length===1?'ficha':'fichas');
   el('youth-print-list').disabled=false;
   if(!rows.length){
     const empty=document.createElement('div');empty.className='youth-empty';
-    empty.textContent=term?'Nenhuma ficha corresponde à busca.':'Nenhuma ficha cadastrada nesta igreja.';
+    empty.textContent=term?'Nenhuma ficha corresponde à busca.':fjuSelectedYouthRank?'Nenhum jovem nesta categoria.':'Selecione uma categoria acima para abrir as fichas.';
     list.append(empty);return;
+  }
+  if(!fjuSelectedYouthRank&&!term){
+    const hint=document.createElement('div');hint.className='youth-empty';hint.textContent='Escolha uma categoria acima para visualizar as fichas.';list.append(hint);return;
   }
   if('IntersectionObserver' in window){
     youthCardPhotoObserver=new IntersectionObserver(entries=>{
