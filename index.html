@@ -3944,10 +3944,13 @@ document.querySelectorAll('.fju-dashboard-actions [data-open-tab]').forEach(shor
     if(tab&&!tab.hidden){
       const module=shortcut.dataset.openTab;
       if(['inscricoes','relatorios'].includes(module)){
+        // Open the requested module directly instead of reloading the last active section.
         const destination=new URL(window.location.href);
         destination.searchParams.set('module',module);
         destination.searchParams.delete('embed');
-        window.location.assign(destination.toString());
+        window.history.pushState({module},'',destination.pathname+destination.search+destination.hash);
+        activateMainTab(tab);
+        window.scrollTo({top:0,behavior:'instant'});
       }else tab.click();
     }
   });
