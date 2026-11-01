@@ -2075,17 +2075,17 @@ function youthCardInitials(name){
   return ((parts[0]?.[0]||'J')+(parts.length>1?parts[parts.length-1][0]:'')).toLocaleUpperCase();
 }
 let fjuSelectedYouthRank='';
-const fjuYouthRankCategories=['Normal','Firme','CPO','Colaborador','Obreiro','Coordenador'];
+const fjuYouthRankCategories=['Todos','Normal','Firme','CPO','Colaborador','Obreiro','Coordenador'];
 function fjuRenderYouthRankCategories(){
  const holder=el('fju-youth-rank-categories');if(!holder)return;
  holder.replaceChildren();
  for(const label of fjuYouthRankCategories){
-  const amount=youthRows.filter(r=>String(r.polo_id)===String(el('youth-list-polo').value)&&youthCardRank(r)===label).length;
+  const amount=youthRows.filter(r=>String(r.polo_id)===String(el('youth-list-polo').value)&&(label==='Todos'||youthCardRank(r)===label)).length;
   const button=document.createElement('button');button.type='button';button.className='secondary';
   button.style.cssText='min-height:64px;padding:12px;border-radius:14px;font-weight:750;text-align:center;white-space:normal';
   button.textContent=label+' ('+amount+')';button.setAttribute('aria-pressed',String(fjuSelectedYouthRank===label));
   if(fjuSelectedYouthRank===label){button.style.background='#293e79';button.style.color='white';}
-  button.onclick=()=>{fjuSelectedYouthRank=fjuSelectedYouthRank===label?'':label;renderYouth();};
+  button.onclick=()=>{fjuSelectedYouthRank=label;renderYouth();};
   holder.append(button);
  }
 }
@@ -2106,7 +2106,7 @@ function renderYouth(){
     empty.textContent='Selecione uma igreja para visualizar as fichas cadastradas.';
     list.append(empty);return;
   }
-  const rows=youthRows.filter(r=>String(r.polo_id)===polo&&(!fjuSelectedYouthRank||youthCardRank(r)===fjuSelectedYouthRank)&&(r.nome_completo||'').toLocaleLowerCase().includes(term));
+  const rows=youthRows.filter(r=>String(r.polo_id)===polo&&(fjuSelectedYouthRank==='Todos'||youthCardRank(r)===fjuSelectedYouthRank)&&(r.nome_completo||'').toLocaleLowerCase().includes(term));
   el('youth-print-toolbar').hidden=!polo;
   count.textContent=rows.length+' '+(rows.length===1?'ficha':'fichas');
   el('youth-print-list').disabled=false;
