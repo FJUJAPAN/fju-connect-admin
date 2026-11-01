@@ -2901,11 +2901,14 @@ async function fjuShowChurchPendingDetail(poloId){
   supabase.from('fju_pedidos_patente_inicial').select('polo_id').eq('polo_id',poloId).eq('status','pendente')
  ]);
  if(version!==fjuChurchPendingRequestVersion||currentProfile!==profile||el('youth-list-polo').value!==poloId)return;
- if(requests.error||other.error){
-  const msg=document.createElement('p');msg.textContent='Não foi possível consultar as pendências desta igreja.';
+ if(requests.error){
+  const msg=document.createElement('p');
+  msg.textContent='Não foi possível consultar as solicitações desta igreja: '+requests.error.message;
   view.append(msg);view.hidden=false;return;
  }
- const rows=requests.data||[],otherCount=(other.data||[]).length,total=rows.length+otherCount;
+ // A consulta de patentes iniciais é opcional e não deve ocultar pedidos de ficha.
+ if(other.error)console.warn('Patentes iniciais indisponíveis:',other.error.message);
+ const rows=requests.data||[],otherCount=other.error?0:(other.data||[]).length,total=rows.length+otherCount;
  if(!total)return;
  const heading=document.createElement('strong');heading.className='fju-church-pending-title';
  heading.textContent=total+' '+(total===1?'solicitação pendente':'solicitações pendentes')+' nesta igreja';
@@ -3677,13 +3680,13 @@ async function loadYouthSignups(){
    const controls=document.createElement('div');controls.className='fju-signup-controls';
   const rankLabel=document.createElement('label');rankLabel.textContent='Patente inicial';
   const rank=document.createElement('select');rank.id='fju-signup-rank-'+item.id;rankLabel.htmlFor=rank.id;rank.setAttribute('aria-label','Patente inicial de '+(item.nome||'jovem'));
-  for(const value of ['Inconstante','Firme','CPO','Colaborador','Obreiro','Coordenador']){const opt=document.createElement('option');opt.value=value;opt.textContent=fjuVisibleRank(value);rank.append(opt);}
+  for(const value of ['Inconstante','Firme','CPO','Colaborador','Obreiro','Coordenador']){const opt=document.createElement('option');opt.value=value;opt.textContent=(String(value).toLowerCase()==='inconstante'?'Normal':value);rank.append(opt);}
   const pendingRank=pendingRankBySignup.get(String(item.id));
   if(pendingRank){
     rank.value=pendingRank.patente;
     rank.disabled=true;
     const notice=document.createElement('p');notice.className='message';
-    notice.textContent='Patente solicitada: '+fjuVisibleRank(pendingRank.patente)+' — aguardando decisão Nacional. Utilize o pedido acima para aprovar ou rejeitar.';
+    notice.textContent='Patente solicitada: '+(String(pendingRank.patente).toLowerCase()==='inconstante'?'Normal':pendingRank.patente)+' — aguardando decisão Nacional. Utilize o pedido acima para aprovar ou rejeitar.';
     controls.append(notice);
   }
   const linkBox=document.createElement('div');linkBox.style.cssText='margin:12px 0;padding:12px;border:1px solid #d8e3f2;border-radius:14px;background:#f8fbff';
