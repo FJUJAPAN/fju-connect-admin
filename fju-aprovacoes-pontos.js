@@ -29,6 +29,17 @@ function mount(){
  const section=document.createElement('section');section.id='fju-approve-points';section.hidden=true;
  section.innerHTML='<h3></h3><p class="fju-approval-intro"></p><h4 class="fju-pending-title"></h4><div class="fju-pending-list fju-approval-grid"></div><h4 class="fju-history-title"></h4><div class="fju-history-list fju-approval-grid"></div><p class="fju-message" role="status" aria-live="polite"></p>';
  home.appendChild(section);
+ let rallyOpened=false;
+ const rallyButton=document.getElementById('fju-rally-coordinator-open');
+ rallyButton?.addEventListener('click',()=>{
+   rallyOpened=!rallyOpened;
+   rallyButton.setAttribute('aria-expanded',String(rallyOpened));
+   section.hidden=!rallyOpened;
+   const points=document.getElementById('fju-admin-my-points');
+   if(points)points.style.display=rallyOpened?'flex':'none';
+   if(rallyOpened){void refresh();section.scrollIntoView({behavior:'smooth',block:'start'});}
+ });
+
  const headline=section.querySelector('h3'),intro=section.querySelector('.fju-approval-intro'),pendingTitle=section.querySelector('.fju-pending-title'),historyTitle=section.querySelector('.fju-history-title'),pendingList=section.querySelector('.fju-pending-list'),historyList=section.querySelector('.fju-history-list'),message=section.querySelector('.fju-message');
  function label(){headline.textContent=tr('title');intro.textContent=tr('intro');pendingTitle.textContent=tr('pending');historyTitle.textContent=tr('history')}
  label();
@@ -62,7 +73,7 @@ function mount(){
    const {data:{user}}=await db.auth.getUser();if(!user){section.hidden=true;return}
    const {data,error}=await db.rpc('fju_pontos_solicitacoes_polo');
    if(error){if(error.code==='42501'||/acesso_exclusivo_coordenador/.test(error.message||'')){section.hidden=true;return}throw error}
-   section.hidden=false;label();pendingList.replaceChildren();historyList.replaceChildren();
+   section.hidden=!rallyOpened;label();pendingList.replaceChildren();historyList.replaceChildren();
    const pending=(data||[]).filter(s=>s.status==='pendente'),done=(data||[]).filter(s=>s.status!=='pendente').slice(0,20);
    if(!pending.length)pendingList.append(plain(tr('empty')));else pending.forEach(s=>pendingList.append(row(s,true)));
    if(!done.length)historyList.append(plain(tr('none')));else done.forEach(s=>historyList.append(row(s,false)));
