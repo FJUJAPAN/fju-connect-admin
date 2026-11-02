@@ -2419,7 +2419,10 @@ async function deleteYouthNational(r,button){
     renderYouth();youthMessage('Ficha excluída definitivamente: '+nome);
   }catch(error){
     button.disabled=false;button.textContent='Excluir';
-    youthMessage('Exclusão não realizada: '+(error?.message||'Tente novamente.'),true);
+    const detalhe=String(error?.message||'Tente novamente.');
+    const aviso=detalhe.includes('vinculada a conta')?'Este jovem tem uma conta vinculada. A exclusão foi bloqueada para proteger o login e os dados associados. Nenhum dado foi apagado.':detalhe;
+    youthMessage('Exclusão não realizada: '+aviso,true);
+    window.alert('Exclusão não realizada. '+aviso);
   }
 }
 async function requestYouthChange(r,button){
