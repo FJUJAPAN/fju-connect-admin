@@ -276,7 +276,7 @@
  }
  function openRallyPage(){
   if(new URLSearchParams(location.search).get('module')!=='rally'||!isCoordinator)return;
-  document.body.classList.add('fju-rally-dedicated');
+  document.body.classList.add('fju-rally-dedicated','fju-rally-route');
   const root=$('inicio'),container=$('fju-rally-coordinator-content');
   if(!root||!container)return;
   if(!$('fju-rally-page-header')){
@@ -287,6 +287,7 @@
   }
   const toggle=$('fju-rally-coordinator-open');
   if(toggle&&toggle.getAttribute('aria-expanded')!=='true')toggle.click();
+  window.scrollTo(0,0);
   container.hidden=false;
   container.style.setProperty('display','block','important');
  }
