@@ -2028,7 +2028,7 @@ async function loadYouth(){
     fjuIdByYouth=new Map((idRows||[]).filter(x=>x.jovem_id).map(x=>[String(x.jovem_id),x.fju_id]));
     fjuIdByUser=new Map((idRows||[]).filter(x=>x.usuario_id).map(x=>[String(x.usuario_id),x.fju_id]));
   }else console.warn('FJU ID indisponível:',idError.message);
-  youthRows=all;renderYouth();youthMessage(`${youthRows.length} ficha(s) carregada(s) da igreja selecionada.`);
+  youthRows=all;renderYouth();if(profile.papel==='nacional')void fjuRefreshChurchYouthCounts(true);youthMessage(`${youthRows.length} ficha(s) carregada(s) da igreja selecionada.`);
   if(profile.papel==='nacional')void fjuShowChurchPendingDetail(String(polo));
 }
 /* Fotos das fichas são carregadas somente quando o card entra na área visível.
@@ -3021,6 +3021,31 @@ window.addEventListener('popstate',()=>{
  fjuScrollChurchViewTop();
 });
 
+const fjuChurchYouthCounts=new Map();
+let fjuChurchCountLoading=false;
+let fjuChurchCountUpdatedAt=0;
+async function fjuRefreshChurchYouthCounts(force=false){
+ if(currentProfile?.papel!=='nacional'||fjuChurchCountLoading)return;
+ if(!force&&Date.now()-fjuChurchCountUpdatedAt<30000)return;
+ const profile=currentProfile;
+ const select=el('youth-list-polo');
+ const ids=[...select.options].map(o=>o.value).filter(Boolean);
+ if(!ids.length)return;
+ fjuChurchCountLoading=true;
+ try{
+  const results=await Promise.all(ids.map(async id=>{
+   const {count,error}=await supabase.from('fju_jovens').select('id',{count:'exact',head:true}).eq('polo_id',id).is('excluido_em',null);
+   return {id,count,error};
+  }));
+  if(currentProfile!==profile)return;
+  for(const {id,count,error} of results){
+   if(error){console.warn('Contagem de fichas indisponível',id,error.message);continue;}
+   fjuChurchYouthCounts.set(String(id),count);
+  }
+  fjuChurchCountUpdatedAt=Date.now();
+  fjuRenderChurchButtons();
+ }finally{fjuChurchCountLoading=false;}
+}
 function fjuRenderChurchButtons(){
  const holder=el('fju-church-buttons'),sel=el('youth-list-polo');if(!holder||!sel)return;
  if(currentProfile?.papel!=='nacional'){fjuUpdateChurchScreen();el('fju-church-picker').hidden=true;el('youth-list-polo-wrap').style.position='static';el('youth-list-polo-wrap').style.clipPath='none';return;}
@@ -3030,7 +3055,7 @@ function fjuRenderChurchButtons(){
  const selected=sel.value;
  holder.replaceChildren();
  for(const option of options){
-  const button=document.createElement('button');button.type='button';button.textContent=option.textContent.trim();button.classList.toggle('is-selected',option.value===selected);button.setAttribute('aria-pressed',String(option.value===selected));
+  const button=document.createElement('button');button.type='button';button.textContent=option.textContent.trim();const total=fjuChurchYouthCounts.get(String(option.value));if(total!==undefined){const count=document.createElement('span');count.className='fju-church-youth-count';count.textContent=' ('+total+')';count.title=total+' jovens cadastrados';button.append(count);}button.classList.toggle('is-selected',option.value===selected);button.setAttribute('aria-pressed',String(option.value===selected));
   const pending=fjuChurchPendingCounts.get(String(option.value))||0;
   if(pending){const badge=document.createElement('span');badge.className='fju-church-alert';badge.textContent=String(pending);badge.title=pending+' solicitações pendentes';button.append(badge);}
   button.addEventListener('click',()=>{
@@ -3045,6 +3070,7 @@ function fjuRenderChurchButtons(){
   });
   holder.append(button);
  }
+ if(!fjuChurchCountLoading)void fjuRefreshChurchYouthCounts();
 }
 new MutationObserver(()=>fjuRenderChurchButtons()).observe(el('youth-list-polo'),{childList:true});
 el('youth-list-polo').addEventListener('change',()=>fjuRenderChurchButtons());
