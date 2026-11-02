@@ -46,9 +46,21 @@ function mount(){
    rallyContainer.style.gap='18px';
    rallyContainer.querySelectorAll('.fju-history-title,.fju-history-list').forEach(node=>node.remove());
  };
- const rallyObserver=new MutationObserver(moveRallyCards);
- if(rallyContainer)rallyObserver.observe(home,{childList:true,subtree:true});
- moveRallyCards();
+ // Keep cards in their dedicated container even when asynchronous modules refresh.
+ let arranging=false;
+ const stableMove=()=>{
+   if(arranging)return;
+   arranging=true;
+   try{moveRallyCards();}finally{arranging=false;}
+ };
+ const rallyObserver=new MutationObserver(records=>{
+   if(records.some(record=>record.addedNodes.length||record.removedNodes.length)){
+     const cards=['fju-admin-my-points','fju-local-rank','fju-approve-points'];
+     if(cards.some(id=>{const card=document.getElementById(id);return card&&card.parentElement!==rallyContainer;}))stableMove();
+   }
+ });
+ if(rallyContainer)rallyObserver.observe(document.body,{childList:true,subtree:true});
+ stableMove();
  rallyButton?.addEventListener('click',()=>{
    rallyOpened=!rallyOpened;
    document.body.classList.toggle('fju-rally-expanded',rallyOpened);
