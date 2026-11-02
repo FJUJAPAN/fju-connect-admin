@@ -231,14 +231,9 @@
    const badge=document.createElement('span');badge.className='fju-coord-app-badge';badge.hidden=true;icon.append(badge);
    const label=document.createElement('span');label.className='fju-coord-app-label';
    b.append(icon,label);if(!isPageLink)b.addEventListener('click',()=>{if(key==='rally'){
-      const container=$('fju-rally-coordinator-content');
-      const toggle=$('fju-rally-coordinator-open');
-      if(container&&toggle){
-        const opened=toggle.getAttribute('aria-expanded')==='true';
-        if(!opened)toggle.click();
-        else {container.hidden=false;container.style.setProperty('display','block','important');}
-        container.scrollIntoView({block:'start',behavior:'smooth'});
-      }
+      const url=new URL(location.href);
+      url.searchParams.set('module','rally');
+      location.assign(url.toString());
       return;
     }
     if(key==='fichas'){resetHome();nav('jovens');return;}
@@ -279,6 +274,22 @@
   })));
   built=true;
  }
+ function openRallyPage(){
+  if(new URLSearchParams(location.search).get('module')!=='rally'||!isCoordinator)return;
+  document.body.classList.add('fju-rally-dedicated');
+  const root=$('inicio'),container=$('fju-rally-coordinator-content');
+  if(!root||!container)return;
+  if(!$('fju-rally-page-header')){
+    const header=document.createElement('div');header.id='fju-rally-page-header';
+    const back=document.createElement('a');back.href=location.pathname;back.className='fju-rally-page-back';back.textContent=lang()==='ja'?'← 管理パネルへ戻る':lang()==='en'?'← Back to dashboard':'← Voltar ao Painel do Coordenador';
+    const title=document.createElement('h2');title.textContent='🏆 Rally';
+    header.append(back,title);container.before(header);
+  }
+  const toggle=$('fju-rally-coordinator-open');
+  if(toggle&&toggle.getAttribute('aria-expanded')!=='true')toggle.click();
+  container.hidden=false;
+  container.style.setProperty('display','block','important');
+ }
  function refresh(){
   const coordinator=/coordenador local/i.test($('fju-session-role')?.textContent||'');
   if(coordinator&&!built)build();
@@ -289,7 +300,7 @@
     const langTop=$('fju-admin-language-settings');if(langTop&&!coordinator){langTop.hidden=false;langTop.style.display='flex';}
     if(langTop&&coordinator&&langTop.parentElement?.id!=='fju-coord-subdetail'){langTop.hidden=true;langTop.style.display='none';}
   }
-  if(isCoordinator){const card=$('fju-my-page');if(card){card.hidden=false;card.style.display='block';}render();}
+  if(isCoordinator){const card=$('fju-my-page');if(card){card.hidden=false;card.style.display='block';}render();openRallyPage();}
  }
  $('fju-session-role')&&new MutationObserver(refresh).observe($('fju-session-role'),{subtree:true,childList:true,characterData:true});
  build();refresh();setInterval(refreshBadges,30000);
