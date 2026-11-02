@@ -494,6 +494,7 @@ body.fju-admin-shell #app.fju-fichas-mode #jovens.fju-church-roster > #youth-bac
 #jovens #fju-church-pending-detail ul{padding-left:18px;margin:8px 0 12px;line-height:1.65;font-size:14px}
 #jovens #fju-church-pending-detail button{display:inline-flex!important;background:#263c76!important;color:white!important;border-radius:10px!important;padding:10px 14px!important;font-weight:750!important}
 
+ .fju-signup-rank-requests:not(:has(.fju-signup-card)){display:none!important}.fju-inline-rank-approval{width:100%;grid-column:1/-1;border:1px solid #d6e2f0;border-radius:14px;padding:12px;margin:12px 0;background:#f4f8ff}.fju-inline-rank-approval .actions{display:flex;flex-wrap:wrap;gap:8px}
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023g">
@@ -3722,7 +3723,7 @@ async function loadYouthSignups(){
    const section=document.createElement('section');section.className='fju-signup-rank-requests';
    const heading=document.createElement('h3');heading.textContent=profile.papel==='nacional'?'Patentes aguardando aprovação Nacional':'Patentes enviadas ao Nacional';section.append(heading);
    for(const request of rankRequests){
-     const entry=document.createElement('div');entry.className='fju-signup-card';
+     const entry=document.createElement('div');entry.className='fju-signup-card';entry.dataset.requestId=String(request.id);
      const info=document.createElement('p');info.textContent=(request.nome||'Jovem')+' — '+request.patente+' · Aguardando decisão';entry.append(info);
      if(profile.papel==='nacional'){
        const actions=document.createElement('div');actions.className='actions';
@@ -3740,6 +3741,7 @@ async function loadYouthSignups(){
    }list.append(section);
  }
 
+ if(!rankError&&Array.isArray(rankRequests)){/* Os pedidos correspondentes são movidos para os cards abaixo. */}
  count.textContent=rows.length+' pendente(s)';
  status.textContent=rows.length?'Confira as solicitações abaixo.':'Nenhuma inscrição pendente para seu polo.';
  for(const item of rows){
@@ -3774,11 +3776,12 @@ async function loadYouthSignups(){
   const rank=document.createElement('select');rank.id='fju-signup-rank-'+item.id;rankLabel.htmlFor=rank.id;rank.setAttribute('aria-label','Patente inicial de '+(item.nome||'jovem'));
   for(const value of ['Inconstante','Firme','CPO','Colaborador','Voluntário','Obreiro','Coordenador']){const opt=document.createElement('option');opt.value=value;opt.textContent=(String(value).toLowerCase()==='inconstante'?'Normal':value);rank.append(opt);}
   const pendingRank=pendingRankBySignup.get(String(item.id));
+  if(pendingRank){const requestEntry=[...list.querySelectorAll('.fju-signup-rank-requests .fju-signup-card')].find(entry=>entry.dataset.requestId===String(pendingRank.id));if(requestEntry){requestEntry.classList.add('fju-inline-rank-approval');card.append(requestEntry);}}
   if(pendingRank){
     rank.value=pendingRank.patente;
     rank.disabled=true;
     const notice=document.createElement('p');notice.className='message';
-    notice.textContent='Patente solicitada: '+(String(pendingRank.patente).toLowerCase()==='inconstante'?'Normal':pendingRank.patente)+' — aguardando decisão Nacional. Utilize o pedido acima para aprovar ou rejeitar.';
+    notice.textContent='Patente solicitada: '+(String(pendingRank.patente).toLowerCase()==='inconstante'?'Normal':pendingRank.patente)+' — aguardando decisão Nacional. Utilize os botões deste card para aprovar ou rejeitar.';
     controls.append(notice);
   }
   const linkBox=document.createElement('div');linkBox.style.cssText='margin:12px 0;padding:12px;border:1px solid #d8e3f2;border-radius:14px;background:#f8fbff';
