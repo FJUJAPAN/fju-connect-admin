@@ -35,11 +35,15 @@ function mount(){
  const moveRallyCards=()=>{
    if(!rallyContainer)return;
    const order=['fju-admin-my-points','fju-local-rank','fju-approve-points'];
+   // Place elements in the correct DOM order, not only with CSS order.
+   // Other modules can insert cards asynchronously or reset their styles.
+   let next=rallyContainer.firstElementChild;
    for(const [index,id] of order.entries()){
      const card=document.getElementById(id);
      if(!card)continue;
-     if(card.parentElement!==rallyContainer)rallyContainer.appendChild(card);
-     card.style.order=String(index);
+     if(card!==next)rallyContainer.insertBefore(card,next);
+     card.style.setProperty('order',String(index),'important');
+     next=card.nextElementSibling;
    }
    rallyContainer.style.display=rallyOpened?'flex':'none';
    rallyContainer.style.flexDirection='column';
@@ -56,7 +60,9 @@ function mount(){
  const rallyObserver=new MutationObserver(records=>{
    if(records.some(record=>record.addedNodes.length||record.removedNodes.length)){
      const cards=['fju-admin-my-points','fju-local-rank','fju-approve-points'];
-     if(cards.some(id=>{const card=document.getElementById(id);return card&&card.parentElement!==rallyContainer;}))stableMove();
+     const expected=cards.map(id=>document.getElementById(id)).filter(Boolean);
+     const actual=[...rallyContainer.children].filter(el=>cards.includes(el.id));
+     if(expected.some((card,index)=>card.parentElement!==rallyContainer||actual[index]!==card))stableMove();
    }
  });
  if(rallyContainer)rallyObserver.observe(document.body,{childList:true,subtree:true});
