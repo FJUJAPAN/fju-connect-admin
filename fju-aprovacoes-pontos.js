@@ -33,6 +33,7 @@ function mount(){
  const rallyButton=document.getElementById('fju-rally-coordinator-open');
  rallyButton?.addEventListener('click',()=>{
    rallyOpened=!rallyOpened;
+   document.body.classList.toggle('fju-rally-expanded',rallyOpened);
    rallyButton.setAttribute('aria-expanded',String(rallyOpened));
    section.hidden=!rallyOpened;
    const points=document.getElementById('fju-admin-my-points');
