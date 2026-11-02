@@ -3121,12 +3121,12 @@ async function checkWeeklyReportAlreadySent(){
   const poloId=profile?.papel==='nacional'?el('weekly-polo').value:profile?.polo_id;
   if(!profile||!poloId||!date){if(!weeklyReportSubmitting){button.disabled=false;button.textContent='Salvar relatório semanal';}return;}
   if(!weeklyReportSubmitting){button.disabled=true;button.textContent='Verificando relatório…';}
-  const {data,error}=await supabase.from('fju_relatorios_semanais').select('id')
-    .eq('polo_id',poloId).eq('semana_domingo',date).limit(1);
+  const {data,error}=await supabase.rpc('fju_relatorio_semanal_ja_enviado',
+    {p_polo_id:poloId,p_semana_domingo:date});
   if(version!==weeklyReportCheckVersion||currentProfile!==profile)return;
   if(weeklyReportSubmitting)return;
   if(error){button.disabled=true;button.textContent='Consulta indisponível';message('weekly-report-message','Não foi possível verificar se a igreja já enviou o relatório: '+error.message,true);return;}
-  const sent=Boolean(data?.length);
+  const sent=data===true;
   const form=el('weekly-report-form');
   // Para coordenadores, manter visível apenas a escolha da semana e o aviso.
   // O envio continua protegido no banco pela chave única do polo + domingo.
@@ -4107,6 +4107,7 @@ function activateMainTab(button){
   const targetPanel=sectionId?el(sectionId):null;
   if(!targetPanel||!document.querySelector('#app')?.contains(targetPanel))return;
   if(sectionId==='jovens'&&currentProfile?.papel==='nacional')(el('photo-repair-ui').hidden=false);if(sectionId==='jovens'){fjuRenderChurchButtons();void fjuRefreshChurchPending();}
+  if(sectionId==='relatorios')void checkWeeklyReportAlreadySent();
   if(sectionId==='inscricoes')void loadYouthSignups();
   if(sectionId==='autorizacoes'){void loadYouthRequests();void administrativeAccess.refresh();if(currentProfile?.papel==='nacional')void fjuLoadComplementApprovals();}
   if(sectionId==='lideranca')void coordinatorCards.refresh();
