@@ -51,7 +51,7 @@ function mount(){
    section.hidden=!rallyOpened;
    const points=document.getElementById('fju-admin-my-points');
    if(points)points.style.display=rallyOpened?'flex':'none';
-   if(rallyOpened){void refresh();rallyContainer?.scrollIntoView({behavior:'smooth',block:'start'});}
+   if(rallyOpened){void refresh();if(!document.body.classList.contains('fju-rally-route'))rallyContainer?.scrollIntoView({behavior:'smooth',block:'start'});}
  });
 
  const headline=section.querySelector('h3'),intro=section.querySelector('.fju-approval-intro'),pendingTitle=section.querySelector('.fju-pending-title'),pendingList=section.querySelector('.fju-pending-list'),message=section.querySelector('.fju-message');
