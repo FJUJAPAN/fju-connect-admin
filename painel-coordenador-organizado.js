@@ -5,7 +5,7 @@
  const copy={
   pt:{
    home:'Painel de controle', intro:'Meu FJU · Todas as funções em um só lugar', back:'Voltar', returnHome:'← Painel de controle', choose:'Escolha o que deseja fazer',
-   fichas:'Fichas',cadastros:'Cadastros',relatorios:'Relatórios',materias:'Matérias e eventos',mypage:'My Page',
+   fichas:'Fichas',cadastros:'Cadastros',relatorios:'Relatórios',materias:'Matérias e eventos',rally:'Rally',mypage:'My Page',
    openFichas:'Consultar fichas',addYouth:'Cadastrar ficha de jovem',registers:'Analisar cadastros recebidos',reportFill:'Preencher relatório semanal',reportHistory:'Consultar histórico de relatórios',
    createPost:'Criar matéria',pastEvent:'Publicar evento realizado',drafts:'Meus rascunhos',myPublications:'Minhas publicações',
    journey:'Minha Jornada',checkin:'Check-in',projects:'Meus Projetos',personalNotifications:'Notificações',personalHeading:'Minha área',personalHint:'Acesse suas funções pessoais no FJU Connect',openPersonal:'Abrir no FJU Connect',profile:'Meu perfil',display:'Idioma de exibição',password:'Alterar senha',notifications:'Notificações do aparelho',
@@ -14,7 +14,7 @@
   },
   ja:{
    home:'管理パネル',intro:'マイページ · すべての機能をここから',back:'戻る',returnHome:'← 管理パネル',choose:'操作を選択してください',
-   fichas:'青年の記録',cadastros:'登録申請',relatorios:'週間報告',materias:'記事・イベント',mypage:'マイページ',
+   fichas:'青年の記録',cadastros:'登録申請',relatorios:'週間報告',materias:'記事・イベント',rally:'ラリー',mypage:'マイページ',
    openFichas:'青年の記録を確認',addYouth:'青年の記録を追加',registers:'新規登録を確認',reportFill:'週間報告を提出',reportHistory:'過去の報告を見る',
    createPost:'記事を作成',pastEvent:'終了したイベントを投稿',drafts:'下書き',myPublications:'自分の投稿',
    journey:'私の歩み',checkin:'チェックイン',projects:'参加プロジェクト',personalNotifications:'お知らせ',personalHeading:'マイエリア',personalHint:'FJU Connectで個人機能を開きます',openPersonal:'FJU Connectを開く',profile:'プロフィール',display:'表示言語',password:'パスワード変更',notifications:'端末の通知',
@@ -23,7 +23,7 @@
   },
   en:{
    home:'Dashboard',intro:'My FJU · All your tools in one place',back:'Back',returnHome:'← Dashboard',choose:'Choose an action',
-   fichas:'Youth records',cadastros:'Registrations',relatorios:'Weekly reports',materias:'Articles & events',mypage:'My Page',
+   fichas:'Youth records',cadastros:'Registrations',relatorios:'Weekly reports',materias:'Articles & events',rally:'Rally',mypage:'My Page',
    openFichas:'View youth records',addYouth:'Create youth record',registers:'Review registrations',reportFill:'Submit weekly report',reportHistory:'View report history',
    createPost:'Create article',pastEvent:'Post completed event',drafts:'My drafts',myPublications:'My publications',
    journey:'My Journey',checkin:'Check-in',projects:'My Projects',personalNotifications:'Notifications',personalHeading:'My area',personalHint:'Open personal features in FJU Connect',openPersonal:'Open FJU Connect',profile:'My profile',display:'Display language',password:'Change password',notifications:'Device notifications',
@@ -33,7 +33,7 @@
  };
  const appDef=[
   ['fichas','👥','blue'],['cadastros','📥','green'],['relatorios','📊','orange'],
-  ['materias','📰','purple']
+  ['materias','📰','purple'],['rally','🏆','orange']
  ];
  let activeGroup=null,built=false,isCoordinator=false,reportDue=false,jpLastStamp=null,jpLastOpen=false;
  const lang=()=>copy[$('fju-admin-language-select')?.value]?$('fju-admin-language-select').value:'pt';
@@ -230,7 +230,18 @@
    const icon=document.createElement('span');icon.className='fju-coord-app-icon fju-coord-'+color;icon.textContent=emoji;icon.setAttribute('aria-hidden','true');
    const badge=document.createElement('span');badge.className='fju-coord-app-badge';badge.hidden=true;icon.append(badge);
    const label=document.createElement('span');label.className='fju-coord-app-label';
-   b.append(icon,label);if(!isPageLink)b.addEventListener('click',()=>{if(key==='fichas'){resetHome();nav('jovens');return;}
+   b.append(icon,label);if(!isPageLink)b.addEventListener('click',()=>{if(key==='rally'){
+      const container=$('fju-rally-coordinator-content');
+      const toggle=$('fju-rally-coordinator-open');
+      if(container&&toggle){
+        const opened=toggle.getAttribute('aria-expanded')==='true';
+        if(!opened)toggle.click();
+        else {container.hidden=false;container.style.setProperty('display','block','important');}
+        container.scrollIntoView({block:'start',behavior:'smooth'});
+      }
+      return;
+    }
+    if(key==='fichas'){resetHome();nav('jovens');return;}
     if(key==='cadastros'||key==='relatorios'){
       const url=new URL(location.href);url.searchParams.set('module',key==='cadastros'?'inscricoes':'relatorios');
       location.assign(url.toString());return;
