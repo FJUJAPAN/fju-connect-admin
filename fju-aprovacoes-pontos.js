@@ -27,7 +27,7 @@ const style=document.createElement('style');style.textContent=`
 function mount(){
  const home=document.getElementById('inicio');if(!home||document.getElementById('fju-approve-points'))return;
  const section=document.createElement('section');section.id='fju-approve-points';section.hidden=true;
- section.innerHTML='<h3></h3><p class="fju-approval-intro"></p><h4 class="fju-pending-title"></h4><div class="fju-pending-list fju-approval-grid"></div><h4 class="fju-history-title"></h4><div class="fju-history-list fju-approval-grid"></div><p class="fju-message" role="status" aria-live="polite"></p>';
+ section.innerHTML='<h3></h3><p class="fju-approval-intro"></p><h4 class="fju-pending-title"></h4><div class="fju-pending-list fju-approval-grid"></div><p class="fju-message" role="status" aria-live="polite"></p>';
  home.appendChild(section);
  let rallyOpened=false;
  const rallyButton=document.getElementById('fju-rally-coordinator-open');
@@ -54,8 +54,8 @@ function mount(){
    if(rallyOpened){void refresh();rallyContainer?.scrollIntoView({behavior:'smooth',block:'start'});}
  });
 
- const headline=section.querySelector('h3'),intro=section.querySelector('.fju-approval-intro'),pendingTitle=section.querySelector('.fju-pending-title'),historyTitle=section.querySelector('.fju-history-title'),pendingList=section.querySelector('.fju-pending-list'),historyList=section.querySelector('.fju-history-list'),message=section.querySelector('.fju-message');
- function label(){headline.textContent=tr('title');intro.textContent=tr('intro');pendingTitle.textContent=tr('pending');historyTitle.textContent=tr('history')}
+ const headline=section.querySelector('h3'),intro=section.querySelector('.fju-approval-intro'),pendingTitle=section.querySelector('.fju-pending-title'),pendingList=section.querySelector('.fju-pending-list'),message=section.querySelector('.fju-message');
+ function label(){headline.textContent=tr('title');intro.textContent=tr('intro');pendingTitle.textContent=tr('pending')}
  label();
  function typeText(t){return copy[locale()].labels[Math.max(0,types.indexOf(t))]||t}
  const plain=(t)=>{const e=document.createElement('div');e.className='fju-approval-item';e.textContent=t;return e};
@@ -87,10 +87,9 @@ function mount(){
    const {data:{user}}=await db.auth.getUser();if(!user){section.hidden=true;return}
    const {data,error}=await db.rpc('fju_pontos_solicitacoes_polo');
    if(error){if(error.code==='42501'||/acesso_exclusivo_coordenador/.test(error.message||'')){section.hidden=true;return}throw error}
-   section.hidden=!rallyOpened;label();pendingList.replaceChildren();historyList.replaceChildren();
-   const pending=(data||[]).filter(s=>s.status==='pendente'),done=(data||[]).filter(s=>s.status!=='pendente').slice(0,20);
+   section.hidden=!rallyOpened;label();pendingList.replaceChildren();
+   const pending=(data||[]).filter(s=>s.status==='pendente');
    if(!pending.length)pendingList.append(plain(tr('empty')));else pending.forEach(s=>pendingList.append(row(s,true)));
-   if(!done.length)historyList.append(plain(tr('none')));else done.forEach(s=>historyList.append(row(s,false)));
   }catch(e){if(!section.hidden)message.textContent=tr('failed');}finally{busy=false}
  }
  db.auth.onAuthStateChange(()=>setTimeout(()=>void refresh(),250));
