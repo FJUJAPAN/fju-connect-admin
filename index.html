@@ -2405,21 +2405,21 @@ async function viewYouth(id){
   }catch(e){if(panel.classList.contains('hidden')||!panel.contains(avatar))return;const note=document.createElement('p');note.className='muted';note.textContent='Foto indisponível: '+e.message;panel.append(note);}
 }
 async function deleteYouthNational(r,button){
-  const profile=currentProfile;
-  if(profile?.papel!=='nacional')return;
-  if(!confirm('Excluir a ficha de '+r.nome_completo+'? Ela deixará de aparecer na lista de jovens.'))return;
-  if(!confirm('Confirma a exclusão desta ficha? Esta ação não pode ser desfeita pelo painel.'))return;
+  if(currentProfile?.papel!=='nacional')return;
+  const nome=String(r.nome_completo||'').trim();
+  if(!confirm('EXCLUSÃO DEFINITIVA de '+nome+'? Todos os dados associados à ficha serão apagados. Contas vinculadas exigem tratamento administrativo separado.'))return;
+  const digitado=prompt('Para confirmar, digite exatamente o nome completo: '+nome);
+  if(digitado!==nome){if(digitado!==null)youthMessage('Nome de confirmação diferente. Exclusão cancelada.',true);return;}
   button.disabled=true;button.textContent='Excluindo…';
   try{
-    const {data,error}=await supabase.from('fju_jovens').update({excluido_em:new Date().toISOString()}).eq('id',r.id).is('excluido_em',null).select('id');
+    const {data,error}=await supabase.rpc('fju_excluir_jovem_definitivo',{p_jovem_id:r.id,p_confirmacao:nome});
     if(error)throw error;
-    if(!data?.length)throw new Error('Nenhuma ficha foi alterada. Confira suas permissões.');
+    if(data!==true)throw new Error('Exclusão não confirmada pelo servidor.');
     youthRows=youthRows.filter(x=>String(x.id)!==String(r.id));
-    renderYouth();
-    youthMessage('Ficha excluída da lista: '+r.nome_completo);
+    renderYouth();youthMessage('Ficha excluída definitivamente: '+nome);
   }catch(error){
     button.disabled=false;button.textContent='Excluir';
-    youthMessage('Não foi possível excluir: '+(error?.message||'Tente novamente.'),true);
+    youthMessage('Exclusão não realizada: '+(error?.message||'Tente novamente.'),true);
   }
 }
 async function requestYouthChange(r,button){
