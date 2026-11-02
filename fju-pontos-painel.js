@@ -21,7 +21,9 @@ function mount(){
  };
  updateWords();
  const fmt=v=>Number(v||0).toLocaleString(selectedLanguage()==='ja'?'ja-JP':selectedLanguage()==='en'?'en-US':'pt-BR');
+ let busy=false;
  async function refresh(){
+  if(busy)return;busy=true;
   try{const {data:{user}}=await db.auth.getUser();if(!user){box.hidden=true;return;}
    const {data,error}=await db.rpc('fju_meus_pontos');if(error)throw error;
    const result=Array.isArray(data)?data[0]:data;if(!result)return;
@@ -29,9 +31,12 @@ function mount(){
    document.getElementById('fju-points-week').textContent=fmt(result.semanal);
    document.getElementById('fju-points-month').textContent=fmt(result.mensal);
    box.hidden=false;box.style.display='flex';
-  }catch(e){box.hidden=true;}
+  }catch(e){box.hidden=true;}finally{busy=false;}
  }
  void refresh();db.auth.onAuthStateChange(()=>setTimeout(refresh,250));
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refresh()});
+ window.addEventListener('focus',()=>{if(!document.hidden)void refresh()});
+ db.channel('fju-pontos-painel-live').on('postgres_changes',{event:'*',schema:'public',table:'fju_ranking_ciclos'},()=>{if(!document.hidden)void refresh()}).subscribe();
+ setInterval(()=>{if(!document.hidden)void refresh()},12000);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
