@@ -496,6 +496,9 @@ body.fju-admin-shell #app.fju-fichas-mode #jovens.fju-church-roster > #youth-bac
 
  .fju-signup-rank-requests:not(:has(.fju-signup-card)){display:none!important}.fju-inline-rank-approval{width:100%;grid-column:1/-1;border:1px solid #d6e2f0;border-radius:14px;padding:12px;margin:12px 0;background:#f4f8ff}.fju-inline-rank-approval .actions{display:flex;flex-wrap:wrap;gap:8px}
  .fju-signup-polo{font-weight:800;font-size:15px;letter-spacing:.035em;color:#153a69;background:#e8f1ff;border:1px solid #c6daf7;border-radius:10px;padding:10px 14px;margin-bottom:12px}
+
+/* Back action remains reachable when viewing or editing a youth record. */
+#app.fju-fichas-mode #youth-back-dashboard{position:sticky!important;top:8px!important;z-index:60!important;display:inline-flex!important;visibility:visible!important;opacity:1!important;background:#1b4e93!important;color:#fff!important;border:0!important;box-shadow:0 3px 12px #0a234b33!important;min-height:44px!important}
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023g">
@@ -990,7 +993,7 @@ document.addEventListener('click',function(event){
 </div>
 </section>
 <section id="jovens" class="panel hidden">
-<button type="button" id="youth-back-dashboard" class="secondary youth-back-dashboard" aria-label="Painel de Controle">← Painel de Controle</button>
+<button type="button" id="youth-back-dashboard" class="secondary youth-back-dashboard" aria-label="Voltar ao painel">← Voltar</button>
 <div class="youth-page-header">
 <div><h2>Fichas dos jovens</h2><p id="youth-page-subtitle" class="youth-page-subtitle">Consulte as fichas da sua igreja. Abra o formulário somente quando precisar cadastrar ou solicitar uma alteração.</p></div>
 <button type="button" id="youth-add-toggle" aria-expanded="false" aria-controls="youth-entry-panel"><span class="youth-add-icon" aria-hidden="true">+</span><span id="youth-add-toggle-label">Adicionar ficha</span></button>
