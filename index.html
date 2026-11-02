@@ -3127,9 +3127,17 @@ async function checkWeeklyReportAlreadySent(){
   if(weeklyReportSubmitting)return;
   if(error){button.disabled=true;button.textContent='Consulta indisponível';message('weekly-report-message','Não foi possível verificar se a igreja já enviou o relatório: '+error.message,true);return;}
   const sent=Boolean(data?.length);
+  const form=el('weekly-report-form');
+  // Para coordenadores, manter visível apenas a escolha da semana e o aviso.
+  // O envio continua protegido no banco pela chave única do polo + domingo.
+  const inputs=form.querySelectorAll('input,select,textarea');
+  inputs.forEach(input=>{
+    if(input.id==='weekly-report-date'||input.id==='weekly-polo')return;
+    input.disabled=sent;
+  });
   button.disabled=sent;
   button.textContent=sent?'✓ Relatório já enviado':'Salvar relatório semanal';
-  message('weekly-report-message',sent?'O relatório desta semana já foi enviado por um coordenador da igreja. Não é necessário enviar novamente.':'');
+  message('weekly-report-message',sent?'✓ Relatório desta igreja já enviado para a semana selecionada. O envio está encerrado para todos os coordenadores.':'');
 }
 el('weekly-report-date').addEventListener('change',()=>void checkWeeklyReportAlreadySent());
 el('weekly-polo').addEventListener('change',()=>void checkWeeklyReportAlreadySent());
