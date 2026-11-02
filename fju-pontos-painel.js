@@ -1,5 +1,6 @@
 import{createClient}from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 const db=createClient('https://hmacroktklgwkofxsygv.supabase.co','sb_publishable_mdkfafhpqtthwzU8Hf7u9A_rErx3MFJ');
+const css=document.createElement('style');css.textContent='#fju-admin-my-points[hidden]{display:none!important}';document.head.append(css);
 function mount(){
  const home=document.getElementById('inicio');if(!home||document.getElementById('fju-admin-my-points'))return;
  const box=document.createElement('aside');box.id='fju-admin-my-points';box.hidden=true;
