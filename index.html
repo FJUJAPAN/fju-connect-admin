@@ -495,6 +495,7 @@ body.fju-admin-shell #app.fju-fichas-mode #jovens.fju-church-roster > #youth-bac
 #jovens #fju-church-pending-detail button{display:inline-flex!important;background:#263c76!important;color:white!important;border-radius:10px!important;padding:10px 14px!important;font-weight:750!important}
 
  .fju-signup-rank-requests:not(:has(.fju-signup-card)){display:none!important}.fju-inline-rank-approval{width:100%;grid-column:1/-1;border:1px solid #d6e2f0;border-radius:14px;padding:12px;margin:12px 0;background:#f4f8ff}.fju-inline-rank-approval .actions{display:flex;flex-wrap:wrap;gap:8px}
+ .fju-signup-polo{font-weight:800;font-size:15px;letter-spacing:.035em;color:#153a69;background:#e8f1ff;border:1px solid #c6daf7;border-radius:10px;padding:10px 14px;margin-bottom:12px}
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023g">
@@ -3713,6 +3714,8 @@ async function loadYouthSignups(){
  if(error){status.textContent='Não foi possível consultar inscrições: '+error.message;status.classList.add('error');return;}
  status.classList.remove('error');
  const rows=Array.isArray(data)?data:[];
+ const {data:signupPolos}=await supabase.from('fju_polos').select('id,nome');
+ const signupPoloNames=new Map((signupPolos||[]).map(p=>[String(p.id),p.nome]));
  const pendingRankBySignup=new Map();
  const {data:rankRequests,error:rankError}=await supabase.rpc('fju_listar_pedidos_patente_inicial');
  if(version!==signupLoadVersion||currentProfile!==profile)return;
@@ -3747,6 +3750,7 @@ async function loadYouthSignups(){
  for(const item of rows){
   const card=document.createElement('article');card.className='report-card fju-signup-card';
   card.dataset.search=String([item.nome,item.nacionalidade_iso2,(item.projetos_solicitados||[]).join(' ')].join(' ')).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const poloBadge=document.createElement('div');poloBadge.className='fju-signup-polo';poloBadge.textContent='📍 POLO: '+(signupPoloNames.get(String(item.polo_id))||'Não identificado');card.append(poloBadge);
   const name=document.createElement('strong');name.className='report-card-title fju-signup-name';name.textContent=item.nome||'Nome não informado';
   const meta=document.createElement('p');meta.className='muted fju-signup-date';
   meta.textContent='Recebido em '+(item.criado_em?new Date(item.criado_em).toLocaleString('pt-BR',{timeZone:'Asia/Tokyo'}):'data indisponível');
