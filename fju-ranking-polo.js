@@ -15,7 +15,7 @@ const styles=document.createElement('style');styles.textContent=`
 #fju-local-rank .fju-local-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
 #fju-local-rank .fju-local-tabs button{border:0;border-radius:12px;background:#edf1f8;color:#17305f;padding:10px 15px;font:700 14px system-ui;cursor:pointer}
 #fju-local-rank .fju-local-tabs button[aria-pressed=true]{background:#bb2448;color:#fff}
-#fju-local-rank .fju-local-history{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:12px 0}
+#fju-local-rank .fju-local-history[hidden]{display:none!important}\n#fju-local-rank .fju-local-history{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:12px 0}
 #fju-local-rank select{max-width:100%;padding:9px 12px;border-radius:10px;border:1px solid #c7d2e2;background:white;color:#17305f}
 #fju-local-rank ol{list-style:none;margin:12px 0;padding:0;display:grid;gap:7px;max-height:480px;overflow:auto}
 #fju-local-rank li{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#f4f6fb;border-radius:11px}
