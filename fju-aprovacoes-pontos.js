@@ -34,10 +34,17 @@ function mount(){
  const rallyContainer=document.getElementById('fju-rally-coordinator-content');
  const moveRallyCards=()=>{
    if(!rallyContainer)return;
-   for(const id of ['fju-admin-my-points','fju-local-rank','fju-approve-points']){
+   const order=['fju-admin-my-points','fju-local-rank','fju-approve-points'];
+   for(const [index,id] of order.entries()){
      const card=document.getElementById(id);
-     if(card&&card.parentElement!==rallyContainer)rallyContainer.appendChild(card);
+     if(!card)continue;
+     if(card.parentElement!==rallyContainer)rallyContainer.appendChild(card);
+     card.style.order=String(index);
    }
+   rallyContainer.style.display=rallyOpened?'flex':'none';
+   rallyContainer.style.flexDirection='column';
+   rallyContainer.style.gap='18px';
+   rallyContainer.querySelectorAll('.fju-history-title,.fju-history-list').forEach(node=>node.remove());
  };
  const rallyObserver=new MutationObserver(moveRallyCards);
  if(rallyContainer)rallyObserver.observe(home,{childList:true,subtree:true});
@@ -46,7 +53,7 @@ function mount(){
    rallyOpened=!rallyOpened;
    document.body.classList.toggle('fju-rally-expanded',rallyOpened);
    moveRallyCards();
-   if(rallyContainer){rallyContainer.hidden=!rallyOpened;rallyContainer.style.setProperty('display',rallyOpened?'block':'none','important');}
+   if(rallyContainer){rallyContainer.hidden=!rallyOpened;rallyContainer.style.setProperty('display',rallyOpened?'flex':'none','important');}
    rallyButton.setAttribute('aria-expanded',String(rallyOpened));
    section.hidden=!rallyOpened;
    const points=document.getElementById('fju-admin-my-points');
