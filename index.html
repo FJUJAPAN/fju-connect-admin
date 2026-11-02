@@ -3104,7 +3104,7 @@ document.querySelector('[data-tab="relatorios"]')?.addEventListener('click',()=>
      const iso=date.toISOString().slice(0,10),item=document.createElement('button');item.type='button';item.textContent=label(iso);
      item.className=iso===field.value?'selected':'';item.setAttribute('aria-pressed',String(iso===field.value));
      if(iso>previousSundayISO()){item.disabled=true;item.title='Disponível somente no domingo desta semana';item.setAttribute('aria-label',label(iso)+' de '+first.toLocaleDateString('pt-BR',{month:'long',timeZone:'UTC'})+' — bloqueado até domingo');}
-     item.addEventListener('click',()=>{if(iso>previousSundayISO())return;field.value=iso;refreshButton();panel.classList.add('hidden');btn.setAttribute('aria-expanded','false');});
+     item.addEventListener('click',()=>{if(iso>previousSundayISO())return;field.value=iso;field.dispatchEvent(new Event('change',{bubbles:true}));refreshButton();panel.classList.add('hidden');btn.setAttribute('aria-expanded','false');});
      grid.appendChild(item);
    }
  }
