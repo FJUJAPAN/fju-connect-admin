@@ -4126,9 +4126,10 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.addEventListener('controllerchange',()=>{
     if(!updating){
       updating=true;
-      const loginVisible=!document.getElementById('auth')?.classList.contains('hidden');
-      const formHasData=Boolean(document.getElementById('email')?.value||document.getElementById('password')?.value);
-      if(!loginVisible||!formHasData)location.reload();
+      // Não recarregar uma sessão autenticada durante a atualização do service worker.
+      // No Safari iOS, recargas sucessivas podem interromper a entrada no painel.
+      // A nova versão será usada na próxima navegação/abertura do aplicativo.
+      console.info('Nova versão do FJU Connect disponível para a próxima abertura.');
     }
   });
   async function checkPwaVersion(){
