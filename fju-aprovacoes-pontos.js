@@ -31,14 +31,27 @@ function mount(){
  home.appendChild(section);
  let rallyOpened=false;
  const rallyButton=document.getElementById('fju-rally-coordinator-open');
+ const rallyContainer=document.getElementById('fju-rally-coordinator-content');
+ const moveRallyCards=()=>{
+   if(!rallyContainer)return;
+   for(const id of ['fju-admin-my-points','fju-local-rank','fju-approve-points']){
+     const card=document.getElementById(id);
+     if(card&&card.parentElement!==rallyContainer)rallyContainer.appendChild(card);
+   }
+ };
+ const rallyObserver=new MutationObserver(moveRallyCards);
+ if(rallyContainer)rallyObserver.observe(home,{childList:true,subtree:true});
+ moveRallyCards();
  rallyButton?.addEventListener('click',()=>{
    rallyOpened=!rallyOpened;
    document.body.classList.toggle('fju-rally-expanded',rallyOpened);
+   moveRallyCards();
+   if(rallyContainer){rallyContainer.hidden=!rallyOpened;rallyContainer.style.setProperty('display',rallyOpened?'block':'none','important');}
    rallyButton.setAttribute('aria-expanded',String(rallyOpened));
    section.hidden=!rallyOpened;
    const points=document.getElementById('fju-admin-my-points');
    if(points)points.style.display=rallyOpened?'flex':'none';
-   if(rallyOpened){void refresh();section.scrollIntoView({behavior:'smooth',block:'start'});}
+   if(rallyOpened){void refresh();rallyContainer?.scrollIntoView({behavior:'smooth',block:'start'});}
  });
 
  const headline=section.querySelector('h3'),intro=section.querySelector('.fju-approval-intro'),pendingTitle=section.querySelector('.fju-pending-title'),historyTitle=section.querySelector('.fju-history-title'),pendingList=section.querySelector('.fju-pending-list'),historyList=section.querySelector('.fju-history-list'),message=section.querySelector('.fju-message');
