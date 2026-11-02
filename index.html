@@ -1813,6 +1813,7 @@ async function loadProfile(user){
   updateAdminDashboardRole(data,poloNome);
   updateNotificationPermissionUI();
   configureWeeklyReportAccess();
+  void checkWeeklyReportAlreadySent();
   if(data.papel==='nacional')void loadNationalReportOverview();else el('national-report-panel').classList.add('hidden');
   show('app');
   const requestedModule=new URLSearchParams(location.search).get('module');
@@ -3103,7 +3104,7 @@ document.querySelector('[data-tab="relatorios"]')?.addEventListener('click',()=>
      const iso=date.toISOString().slice(0,10),item=document.createElement('button');item.type='button';item.textContent=label(iso);
      item.className=iso===field.value?'selected':'';item.setAttribute('aria-pressed',String(iso===field.value));
      if(iso>previousSundayISO()){item.disabled=true;item.title='Disponível somente no domingo desta semana';item.setAttribute('aria-label',label(iso)+' de '+first.toLocaleDateString('pt-BR',{month:'long',timeZone:'UTC'})+' — bloqueado até domingo');}
-     item.addEventListener('click',()=>{if(iso>previousSundayISO())return;field.value=iso;refreshButton();panel.classList.add('hidden');btn.setAttribute('aria-expanded','false');});
+     item.addEventListener('click',()=>{if(iso>previousSundayISO())return;field.value=iso;field.dispatchEvent(new Event('change',{bubbles:true}));refreshButton();panel.classList.add('hidden');btn.setAttribute('aria-expanded','false');});
      grid.appendChild(item);
    }
  }
@@ -3112,6 +3113,28 @@ document.querySelector('[data-tab="relatorios"]')?.addEventListener('click',()=>
  refreshButton();
 })();
 
+// Um relatório semanal é compartilhado por todos os coordenadores do mesmo polo.
+let weeklyReportCheckVersion=0;
+async function checkWeeklyReportAlreadySent(){
+  const profile=currentProfile,version=++weeklyReportCheckVersion;
+  const button=el('weekly-report-submit'),date=el('weekly-report-date').value;
+  const poloId=profile?.papel==='nacional'?el('weekly-polo').value:profile?.polo_id;
+  if(!profile||!poloId||!date){if(!weeklyReportSubmitting){button.disabled=false;button.textContent='Salvar relatório semanal';}return;}
+  if(!weeklyReportSubmitting){button.disabled=true;button.textContent='Verificando relatório…';}
+  const {data,error}=await supabase.from('fju_relatorios_semanais').select('id')
+    .eq('polo_id',poloId).eq('semana_domingo',date).limit(1);
+  if(version!==weeklyReportCheckVersion||currentProfile!==profile)return;
+  if(weeklyReportSubmitting)return;
+  if(error){button.disabled=true;button.textContent='Consulta indisponível';message('weekly-report-message','Não foi possível verificar se a igreja já enviou o relatório: '+error.message,true);return;}
+  const sent=Boolean(data?.length);
+  button.disabled=sent;
+  button.textContent=sent?'✓ Relatório já enviado':'Salvar relatório semanal';
+  message('weekly-report-message',sent?'O relatório desta semana já foi enviado por um coordenador da igreja. Não é necessário enviar novamente.':'');
+}
+el('weekly-report-date').addEventListener('change',()=>void checkWeeklyReportAlreadySent());
+el('weekly-polo').addEventListener('change',()=>void checkWeeklyReportAlreadySent());
+document.querySelector('[data-tab="relatorios"]')?.addEventListener('click',()=>void checkWeeklyReportAlreadySent());
+window.addEventListener('focus',()=>{if(currentProfile)void checkWeeklyReportAlreadySent();});
 // FJU JAPAN | Somente uma gravação de relatório por vez e nenhuma resposta de sessão antiga.
 let weeklyReportSubmitVersion=0;
 let weeklyReportSubmitting=false;
@@ -3155,11 +3178,18 @@ el('weekly-report-form').addEventListener('submit',async e=>{
       batizados_espirito_santo:values[5],batizados_aguas:values[6],
       total_jovens_unicos:values[7],criado_por:auth.user.id
     };
-    const {error}=await supabase.from('fju_relatorios_semanais')
-      .upsert(payload,{onConflict:'polo_id,semana_domingo'});
+    // INSERT + índice UNIQUE(polo_id, semana_domingo): impede duplicação até
+    // quando dois coordenadores tentam enviar simultaneamente.
+    const {error}=await supabase.from('fju_relatorios_semanais').insert(payload);
     if(!stillCurrent())return;
+    if(error?.code==='23505'){
+      message('weekly-report-message','O relatório desta igreja e semana já foi enviado por outro coordenador.');
+      void checkWeeklyReportAlreadySent();
+      return;
+    }
     if(error)throw error;
     message('weekly-report-message',weeklySubmitText(6));
+    void checkWeeklyReportAlreadySent();
     if(profile.papel==='nacional')void loadNationalReportOverview();
     else void loadDashboard(profile,profileRequest);
   }catch(error){
@@ -3168,6 +3198,7 @@ el('weekly-report-form').addEventListener('submit',async e=>{
     if(version===weeklyReportSubmitVersion){
       weeklyReportSubmitting=false;
       setWeeklyReportSubmitting(false);
+      void checkWeeklyReportAlreadySent();
     }
   }
 });
