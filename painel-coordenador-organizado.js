@@ -73,7 +73,7 @@
   if(langOriginal?.parentElement===slot){$('app').prepend(langOriginal);langOriginal.hidden=true;langOriginal.style.display='none';}
   const notifyOriginal=$('notification-settings');if(notifyOriginal?.parentElement===slot){$('fju-settings-notify-anchor')?.after(notifyOriginal);}
   slot.replaceChildren();slot.hidden=false;
-  const title=document.createElement('h4');title.textContent=which==='display'?t().display:t().notifications;slot.append(title);
+  if(which!=='notifications'){const title=document.createElement('h4');title.textContent=t().display;slot.append(title);}
   if(which==='display'){
    const original=$('fju-admin-language-settings');
    if(original){original.hidden=false;original.style.display='flex';slot.append(original);$('fju-admin-language-label').textContent=t().display;}
@@ -100,23 +100,7 @@
     [t().drafts,()=>location.assign(articleUrl('filtro=rascunho')),'🗂️'],
     [t().myPublications,()=>location.assign(articleUrl('')),'📑']
    ],
-   mypage:[
-    [t().profile,()=>nav('lideranca'),'👤'],
-    [t().display,()=>showDetail('display'),'🌐'],
-    [t().password,async()=>{
-      const detail=$('fju-coord-subdetail');detail.hidden=false;
-      const langNode=$('fju-admin-language-settings');
-      if(langNode?.parentElement===detail){$('app').prepend(langNode);langNode.hidden=true;langNode.style.display='none';}
-      const notifyNode=$('notification-settings');
-      if(notifyNode?.parentElement===detail)$('fju-settings-notify-anchor')?.after(notifyNode);
-      detail.replaceChildren();
-      const feedback=document.createElement('p');feedback.setAttribute('role','status');feedback.textContent='…';detail.append(feedback);
-      try{if(typeof window.fjuAdminRequestPasswordReset!=='function')throw Error('Ação indisponível');
-       await window.fjuAdminRequestPasswordReset();feedback.textContent=t().emailSent;
-      }catch(error){feedback.textContent=t().emailFail+' '+(error?.message||'');}
-     },'🔐'],
-    [t().notifications,()=>showDetail('notifications'),'🔔']
-   ]
+   mypage:[]
   };
   (records[group]||[]).forEach(([label,action,emoji])=>slot.append(btn(label,action,emoji)));
  }
@@ -200,7 +184,7 @@
     el.setAttribute('aria-expanded',String(activeGroup===key));
   });
   const panel=$('fju-coord-choices');panel.hidden=!activeGroup;
-  if(activeGroup){$('fju-coord-choices-title').textContent=tt[activeGroup];options(activeGroup);}
+  if(activeGroup){$('fju-coord-choices-title').textContent=activeGroup==='mypage'?tt.personalNotifications:tt[activeGroup];options(activeGroup);if(activeGroup==='mypage'&&!$('fju-coord-subdetail')?.querySelector('#notification-settings'))showDetail('notifications');}
   const onHome=!activeGroup&&!document.querySelector('#inicio')?.classList.contains('hidden');
   $('fju-coord-home-return').hidden=onHome;refreshBadges();
  }
