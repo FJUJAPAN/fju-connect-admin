@@ -41,6 +41,7 @@ function fixture(role='coordenador'){
    'const message=(id,text,error)=>window.__messages.push({id,text,error});'+
    'const weeklySubmitText=index=>["Selecione a igreja antes de salvar.","Selecione uma data de domingo para este relatório.","O relatório desta semana será liberado no domingo (horário do Japão).","Preencha todos os campos numéricos do relatório.","Preencha todos os campos com números inteiros iguais ou maiores que zero.","Salvando relatório...","Relatório semanal salvo com sucesso.","Não foi possível salvar: ","Falha de conexão."][index];'+
    'const previousSundayISO=()=>"2026-10-18";'+
+   'const checkWeeklyReportAlreadySent=async()=>{};'+
    'const loadDashboard=async()=>window.__refreshes.push("local");'+
    'const loadNationalReportOverview=async()=>window.__refreshes.push("nacional");'+code+
    '\nwindow.__logout=()=>{currentProfile=null;++weeklyReportSubmitVersion;weeklyReportSubmitting=false;setWeeklyReportSubmitting(false)};');
