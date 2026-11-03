@@ -2684,6 +2684,8 @@ async function fjuLoadComplementApprovals(){
 }
 
 async function viewYouth(id){
+  // A ficha administrativa completa não é uma página do My Page.
+  if(!['nacional','coordenador'].includes(currentProfile?.papel))return;
   const r=youthRows.find(x=>x.id===id);if(!r)return;
   const panel=el('youth-detail');panel.replaceChildren();panel.classList.remove('hidden');panel.classList.add('fju-direct-detail');document.body.appendChild(panel);document.body.classList.add('fju-ficha-aberta');
   if(detailPhotoUrl){URL.revokeObjectURL(detailPhotoUrl);detailPhotoUrl=null;}
@@ -2740,7 +2742,26 @@ async function viewYouth(id){
    void fjuGetRankDetails(r.id).then(dados=>{
     if(currentProfile!==detailProfile||!detailRankArea.isConnected)return;
     detailRankArea.replaceChildren();
-    fjuAppendRankDetails(detailRankArea,r,dados,false);
+    const groups=[
+      ['Dados pessoais',[['Endereço',r.endereco]]],
+      ['Vida espiritual',[['Batismo nas águas',dados.batismo_aguas],['Batismo com o Espírito Santo',dados.batismo_espirito],['Testemunho',dados.testemunho]]],
+      ['Trajetória na FJU',[['Tempo no CPO',dados.inicio_cpo&&fjuCollaboratorTenure(dados.inicio_cpo)],['Tempo como Colaborador',dados.inicio_colaborador&&fjuCollaboratorTenure(dados.inicio_colaborador)],['Tempo como Obreiro',dados.inicio_obra&&fjuCollaboratorTenure(dados.inicio_obra)],['Tempo na coordenação',dados.inicio_coordenacao_fju&&fjuCollaboratorTenure(dados.inicio_coordenacao_fju)]]],
+      ['Acompanhamento',[['Observações',dados.observacoes]]]
+    ];
+    for(const [title,entries] of groups){
+      const present=entries.filter(([,value])=>Boolean(value));
+      if(!present.length)continue;
+      const section=document.createElement('section');section.className='stat';
+      section.style.cssText='margin-top:12px;padding:16px;border-radius:14px;min-width:0';
+      const heading=document.createElement('h3');heading.textContent=title;heading.style.margin='0 0 12px';section.append(heading);
+      for(const [label,value] of present){
+        const row=document.createElement('div');row.style.cssText='margin:8px 0;overflow-wrap:anywhere';
+        const key=document.createElement('strong');key.textContent=label+': ';
+        const val=document.createElement('span');val.textContent=String(value);
+        row.append(key,val);section.append(row);
+      }
+      detailRankArea.append(section);
+    }
    }).catch(()=>{if(detailRankArea.isConnected)detailRankArea.textContent='Informações complementares indisponíveis';});
   }
   administrativeAccess.appendRequest(panel,r);
