@@ -32,6 +32,7 @@ function setup(){
      }
      throw new Error('RPC inesperada: '+functionName);
    },
+   from:table=>{assert.equal(table,'fju_polos');return {select:async()=>({data:[],error:null})};},
    storage:{from:()=>({
      createSignedUrl:async()=>({data:null,error:{message:'Foto não disponível no teste'}}),
      download:async()=>({data:null,error:{message:'Foto não disponível no teste'}})

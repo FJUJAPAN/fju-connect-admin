@@ -33,7 +33,7 @@ function fixture(role='coordenador'){
    auth:{getUser:()=>auth.promise},
    from:table=>{
      assert.equal(table,'fju_relatorios_semanais');
-     return {upsert:(payload,config)=>{calls.push({payload,config});return save.promise;}};
+     return {insert:(payload)=>{calls.push({payload});return save.promise;}};
    }
  };
  w.eval('var currentProfile=window.__profile;var profileRequest=4;'+
@@ -41,6 +41,7 @@ function fixture(role='coordenador'){
    'const message=(id,text,error)=>window.__messages.push({id,text,error});'+
    'const weeklySubmitText=index=>["Selecione a igreja antes de salvar.","Selecione uma data de domingo para este relatório.","O relatório desta semana será liberado no domingo (horário do Japão).","Preencha todos os campos numéricos do relatório.","Preencha todos os campos com números inteiros iguais ou maiores que zero.","Salvando relatório...","Relatório semanal salvo com sucesso.","Não foi possível salvar: ","Falha de conexão."][index];'+
    'const previousSundayISO=()=>"2026-10-18";'+
+   'const checkWeeklyReportAlreadySent=async()=>{};'+
    'const loadDashboard=async()=>window.__refreshes.push("local");'+
    'const loadNationalReportOverview=async()=>window.__refreshes.push("nacional");'+code+
    '\nwindow.__logout=()=>{currentProfile=null;++weeklyReportSubmitVersion;weeklyReportSubmitting=false;setWeeklyReportSubmitting(false)};');
@@ -59,7 +60,7 @@ test('Duplo envio do relatório só chama uma gravação, preservando o polo loc
    assert.equal(f.calls.length,1);
    assert.equal(f.calls[0].payload.polo_id,'polo-A');
    assert.equal(f.calls[0].payload.criado_por,'coord-A');
-   assert.equal(f.calls[0].config.onConflict,'polo_id,semana_domingo');
+   assert.equal(f.calls[0].payload.semana_domingo,'2026-10-18');
    f.save.resolve({error:null});await flush();
    assert.equal(f.d.getElementById('weekly-report-submit').disabled,false);
    assert.equal(f.refreshes.at(-1),'local');
