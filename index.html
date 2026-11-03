@@ -3351,7 +3351,7 @@ function fjuRenderChurchButtons(){
  const options=[...sel.options].filter(o=>o.value&&o.textContent.trim());
  const selected=sel.value;
  holder.replaceChildren();
- const allButton=document.createElement('button');allButton.type='button';allButton.id='fju-all-japan-button';allButton.textContent='🇯🇵 Japão inteiro — todas as igrejas';allButton.classList.toggle('is-selected',!selected);allButton.setAttribute('aria-pressed',String(!selected));
+ const allButton=document.createElement('button');allButton.type='button';allButton.id='fju-all-japan-button';allButton.textContent='Todos';allButton.classList.toggle('is-selected',!selected);allButton.setAttribute('aria-pressed',String(!selected));
  allButton.addEventListener('click',()=>{
    sel.value='';const url=new URL(window.location.href);url.searchParams.set('module','jovens');url.searchParams.delete('polo');window.history.pushState(window.history.state,'',url.pathname+url.search+url.hash);
    fjuSelectedYouthRank='Todos';sel.dispatchEvent(new Event('change',{bubbles:true}));void loadYouth();fjuScrollChurchViewTop();
