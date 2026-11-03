@@ -2463,19 +2463,6 @@ function renderYouth(){
     name.textContent=r.nome_completo||'Jovem sem nome';
     const rank=document.createElement('span');rank.className='youth-rank';
     rank.textContent=youthCardRank(r);rank.dataset.rank=rank.textContent;
-    const rankRow=document.createElement('div');rankRow.style.cssText='display:flex;align-items:center;gap:8px;flex-wrap:wrap';
-    rankRow.append(rank);
-    const tenureKey=({Colaborador:'inicio_colaborador',CPO:'inicio_cpo',Obreiro:'inicio_obra',Coordenador:'inicio_coordenacao_fju'})[youthCardRank(r)];
-    if(tenureKey&&['nacional','coordenador'].includes(currentProfile?.papel)){
-      const tenure=document.createElement('span');tenure.className='fju-rank-tenure';
-      tenure.style.cssText='font-size:12px;font-weight:700;color:#475569';
-      rankRow.append(tenure);
-      void fjuGetRankDetails(r.id).then(dados=>{
-        if(!tenure.isConnected)return;
-        const elapsed=fjuCollaboratorTenure(dados[tenureKey]);
-        tenure.textContent=elapsed?'• '+elapsed:'';
-      }).catch(()=>{});
-    }
     const metadata=document.createElement('div');metadata.className='youth-card-metadata';
     const country=[...el('youth-country').options].find(option=>option.value===(r.nacionalidade_iso2||''));
     const countryName=document.createElement('span');
@@ -2483,7 +2470,7 @@ function renderYouth(){
     metadata.append(countryName);
     const idLabel=document.createElement('span');idLabel.className='fju-youth-id';
     idLabel.textContent=fjuIdByYouth.get(String(r.id))||'';
-    info.append(name,idLabel,rankRow,metadata);
+    info.append(name,idLabel,rank,metadata);
     if(['nacional','coordenador'].includes(currentProfile?.papel)){
       const rankDetails=document.createElement('div');rankDetails.className='fju-rank-card-fields';rankDetails.textContent='Carregando informações…';info.append(rankDetails);
       const profileAtRender=currentProfile;
