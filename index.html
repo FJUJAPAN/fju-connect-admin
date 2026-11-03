@@ -2356,7 +2356,7 @@ function fjuRankDetailEntries(r,dados={}){
   add('testemunho','Testemunho');
  }
  if(['cpo','obreiro','coordenador','voluntário'].includes(rank))add('batismo_espirito','Batismo com o Espírito Santo');
- if(rank==='colaborador'){add('inicio_colaborador','Início como Colaborador');if(dados.inicio_colaborador)items.push(['Tempo como Colaborador',fjuRankMilestoneDuration(dados.inicio_colaborador)]);}
+ if(rank==='colaborador'){add('inicio_colaborador','Início como Colaborador');if(dados.inicio_colaborador)items.push(['Tempo como Colaborador',fjuCollaboratorTenure(dados.inicio_colaborador)]);}
  if(rank==='cpo'){add('inicio_cpo','Início do CPO');if(dados.inicio_cpo)items.push(['Tempo no CPO',fjuRankMilestoneDuration(dados.inicio_cpo)]);}
  if(['obreiro','coordenador'].includes(rank))add('inicio_obra','Início na Obra de Deus');
  if(rank==='coordenador'){add('inicio_coordenacao_fju','Início na coordenação FJU');if(dados.inicio_coordenacao_fju)items.push(['Tempo na coordenação',fjuRankMilestoneDuration(dados.inicio_coordenacao_fju)]);}
@@ -2466,10 +2466,10 @@ function renderYouth(){
     if(youthCardRank(r)==='Colaborador'&&['nacional','coordenador'].includes(currentProfile?.papel)){
       const tenure=document.createElement('span');tenure.className='fju-collaborator-tenure';
       tenure.style.cssText='margin-left:8px;font-size:12px;font-weight:700;color:#475569';
-      rank.append(tenure);
+      rank.after(tenure);
       void fjuGetRankDetails(r.id).then(dados=>{
         if(!tenure.isConnected)return;
-        const elapsed=fjuRankMilestoneDuration(dados.inicio_colaborador);
+        const elapsed=fjuCollaboratorTenure(dados.inicio_colaborador);
         tenure.textContent=elapsed?'• '+elapsed:'';
       }).catch(()=>{});
     }
@@ -2557,6 +2557,18 @@ const fjuComplementI18n={
  en:{fields:{endereco:'Address in Japan',testemunho:'Youth testimony',observacoes:'Follow-up notes',batismo_aguas:'Water baptism date',batismo_espirito:'Holy Spirit baptism date',inicio_cpo:'CPO start date',inicio_colaborador:'Collaborator start date',inicio_obra:'Ministry start date',inicio_coordenacao_fju:'FJU coordination start date'},signup:'＋ Complete record (testimony and details)',open:'Complete record',close:'Close details',initial:'Optional. These details are saved with the record when registration is approved.',save:'Send details to National',saveNational:'Save record details'}
 };
 const fjuComplementCopy=()=>fjuComplementI18n[el('fju-admin-language-select')?.value]||fjuComplementI18n.pt;
+function fjuCollaboratorTenure(iso){
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(iso||''))return '';
+ const [y,m,d]=iso.split('-').map(Number);
+ const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',year:'numeric',month:'numeric',day:'numeric'}).formatToParts(new Date());
+ const now=type=>Number(parts.find(part=>part.type===type)?.value);
+ let total=(now('year')-y)*12+now('month')-m;
+ if(now('day')<d)total--;
+ if(total<0)return '';
+ if(total===0)return 'menos de 1 mês';
+ const years=Math.floor(total/12),months=total%12;
+ return [years?years+' '+(years===1?'ano':'anos'):'',months?months+' '+(months===1?'mês':'meses'):''].filter(Boolean).join(' e ');
+}
 function fjuRankMilestoneDuration(iso){
  if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(iso||''))return '';
  const [year,month,day]=iso.split('-').map(Number);
@@ -2580,7 +2592,7 @@ function fjuComplementForm(initial={},rank=''){
    input.className='fju-complement-input';input.value=String(initial[key]||'');inputs[key]=input;item.append(input);
    if(['inicio_cpo','inicio_colaborador','inicio_coordenacao_fju'].includes(key)){
     const duration=document.createElement('small');duration.className='muted';
-    const refresh=()=>{duration.textContent=input.value?'Tempo: '+fjuRankMilestoneDuration(input.value):'';};
+    const refresh=()=>{duration.textContent=input.value?'Tempo: '+(key==='inicio_colaborador'?fjuCollaboratorTenure(input.value):fjuRankMilestoneDuration(input.value)):'';};
     input.addEventListener('change',refresh);refresh();item.append(duration);
    }
    const visible={inicio_cpo:['cpo'],inicio_colaborador:['colaborador'],inicio_obra:['obreiro','coordenador'],inicio_coordenacao_fju:['coordenador'],batismo_espirito:['cpo','obreiro','coordenador','voluntário','voluntario'],batismo_aguas:['firme','cpo','colaborador','obreiro','coordenador','voluntário','voluntario'],testemunho:['firme','cpo','colaborador','obreiro','coordenador','voluntário','voluntario']};
