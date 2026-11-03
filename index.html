@@ -2145,7 +2145,7 @@ el('youth-add-toggle').addEventListener('click',()=>{
   setYouthFormOpen(open,false,open);
 });
 el('youth-form-close').addEventListener('click',()=>{resetYouth();setYouthFormOpen(false);});
-function resetYouth(){const complementMount=el('fju-edit-complement-mount');if(complementMount){complementMount.hidden=true;el('fju-edit-complement-editor').replaceChildren();}++youthPhotoLoadVersion;el('youth-photo').disabled=false;if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}el('youth-form').reset();setYouthBirth('');refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';el('youth-rank').value=currentProfile?.papel==='coordenador'?'Eventual':'Firme';syncEventualYouthForm();if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
+function resetYouth(){++youthPhotoLoadVersion;const complementMount=el('fju-edit-complement-mount');if(complementMount){complementMount.hidden=true;el('fju-edit-complement-editor').replaceChildren();}el('youth-photo').disabled=false;if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}el('youth-form').reset();setYouthBirth('');refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';el('youth-rank').value=currentProfile?.papel==='coordenador'?'Eventual':'Firme';syncEventualYouthForm();if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
 async function initializeYouth(){
   const profile=currentProfile;
   if(!profile)return;
