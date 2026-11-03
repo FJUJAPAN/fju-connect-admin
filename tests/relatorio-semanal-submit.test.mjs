@@ -33,7 +33,7 @@ function fixture(role='coordenador'){
    auth:{getUser:()=>auth.promise},
    from:table=>{
      assert.equal(table,'fju_relatorios_semanais');
-     return {upsert:(payload,config)=>{calls.push({payload,config});return save.promise;}};
+     return {insert:(payload)=>{calls.push({payload});return save.promise;}};
    }
  };
  w.eval('var currentProfile=window.__profile;var profileRequest=4;'+
@@ -60,7 +60,7 @@ test('Duplo envio do relatório só chama uma gravação, preservando o polo loc
    assert.equal(f.calls.length,1);
    assert.equal(f.calls[0].payload.polo_id,'polo-A');
    assert.equal(f.calls[0].payload.criado_por,'coord-A');
-   assert.equal(f.calls[0].config.onConflict,'polo_id,semana_domingo');
+   assert.equal(f.calls[0].payload.semana_domingo,'2026-10-18');
    f.save.resolve({error:null});await flush();
    assert.equal(f.d.getElementById('weekly-report-submit').disabled,false);
    assert.equal(f.refreshes.at(-1),'local');
