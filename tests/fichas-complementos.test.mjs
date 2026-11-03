@@ -21,10 +21,10 @@ test('campos complementares são opcionais e vazios inicialmente',()=>{
  try{
   const form=f.w.__fjuForm();
   const values=form.read();
-  assert.deepEqual(Object.keys(values),['endereco','testemunho','observacoes','batismo_aguas','batismo_espirito']);
+  assert.deepEqual(Object.keys(values),['endereco','testemunho','observacoes','batismo_aguas','batismo_espirito','inicio_cpo','inicio_obra','inicio_coordenacao_fju']);
   assert.ok(Object.values(values).every(v=>v===''));
   assert.equal(form.element.querySelectorAll('textarea').length,3);
-  assert.equal(form.element.querySelectorAll('input[type=date]').length,2);
+  assert.equal(form.element.querySelectorAll('input[type=date]').length,5);
  }finally{f.cleanup()}
 });
 test('testemunho salvo é exibido como texto e não HTML',()=>{

@@ -2473,15 +2473,29 @@ const fjuComplementFields=[
  ['testemunho','Testemunho do jovem','textarea',4500],
  ['observacoes','Observações para acompanhamento','textarea',3000],
  ['batismo_aguas','Data do batismo nas águas','date',null],
- ['batismo_espirito','Data do batismo com o Espírito Santo','date',null]
+ ['batismo_espirito','Data do batismo com o Espírito Santo','date',null],
+ ['inicio_cpo','Data de início no CPO','date',null],
+ ['inicio_obra','Data de início na Obra de Deus','date',null],
+ ['inicio_coordenacao_fju','Data em que começou a cuidar da FJU','date',null]
 ];
 const fjuComplementI18n={
- pt:{fields:{endereco:'Endereço no Japão',testemunho:'Testemunho do jovem',observacoes:'Observações para acompanhamento',batismo_aguas:'Data do batismo nas águas',batismo_espirito:'Data do batismo com o Espírito Santo'},signup:'＋ Completar ficha (testemunho e mais informações)',open:'Completar ficha',close:'Fechar informações',initial:'Opcional. Se preenchido, será salvo junto da ficha ao aprovar o cadastro.',save:'Enviar informações ao Nacional',saveNational:'Salvar informações da ficha'},
- ja:{fields:{endereco:'日本の住所',testemunho:'青年の証し',observacoes:'フォローアップのメモ',batismo_aguas:'水のバプテスマの日付',batismo_espirito:'聖霊のバプテスマの日付'},signup:'＋ 青年の記録を詳しく入力',open:'記録を完成する',close:'詳細を閉じる',initial:'任意項目です。入力すると承認時に青年の記録に保存されます。',save:'全国責任者に申請',saveNational:'記録を保存'},
- en:{fields:{endereco:'Address in Japan',testemunho:'Youth testimony',observacoes:'Follow-up notes',batismo_aguas:'Water baptism date',batismo_espirito:'Holy Spirit baptism date'},signup:'＋ Complete record (testimony and details)',open:'Complete record',close:'Close details',initial:'Optional. These details are saved with the record when registration is approved.',save:'Send details to National',saveNational:'Save record details'}
+ pt:{fields:{endereco:'Endereço no Japão',testemunho:'Testemunho do jovem',observacoes:'Observações para acompanhamento',batismo_aguas:'Data do batismo nas águas',batismo_espirito:'Data do batismo com o Espírito Santo',inicio_cpo:'Data de início no CPO',inicio_obra:'Data de início na Obra de Deus',inicio_coordenacao_fju:'Data em que começou a cuidar da FJU'},signup:'＋ Completar ficha (testemunho e mais informações)',open:'Completar ficha',close:'Fechar informações',initial:'Opcional. Se preenchido, será salvo junto da ficha ao aprovar o cadastro.',save:'Enviar informações ao Nacional',saveNational:'Salvar informações da ficha'},
+ ja:{fields:{endereco:'日本の住所',testemunho:'青年の証し',observacoes:'フォローアップのメモ',batismo_aguas:'水のバプテスマの日付',batismo_espirito:'聖霊のバプテスマの日付',inicio_cpo:'CPO開始日',inicio_obra:'奉仕開始日',inicio_coordenacao_fju:'FJU担当開始日'},signup:'＋ 青年の記録を詳しく入力',open:'記録を完成する',close:'詳細を閉じる',initial:'任意項目です。入力すると承認時に青年の記録に保存されます。',save:'全国責任者に申請',saveNational:'記録を保存'},
+ en:{fields:{endereco:'Address in Japan',testemunho:'Youth testimony',observacoes:'Follow-up notes',batismo_aguas:'Water baptism date',batismo_espirito:'Holy Spirit baptism date',inicio_cpo:'CPO start date',inicio_obra:'Ministry start date',inicio_coordenacao_fju:'FJU coordination start date'},signup:'＋ Complete record (testimony and details)',open:'Complete record',close:'Close details',initial:'Optional. These details are saved with the record when registration is approved.',save:'Send details to National',saveNational:'Save record details'}
 };
 const fjuComplementCopy=()=>fjuComplementI18n[el('fju-admin-language-select')?.value]||fjuComplementI18n.pt;
-function fjuComplementForm(initial={}){
+function fjuRankMilestoneDuration(iso){
+ if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(iso||''))return '';
+ const [year,month,day]=iso.split('-').map(Number);
+ const start=new Date(year,month-1,day),todayParts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()).split('-').map(Number);
+ const today=new Date(todayParts[0],todayParts[1]-1,todayParts[2]);
+ if(start>today)return '';
+ let years=today.getFullYear()-start.getFullYear(),months=today.getMonth()-start.getMonth(),days=today.getDate()-start.getDate();
+ if(days<0){months--;days+=new Date(today.getFullYear(),today.getMonth(),0).getDate();}
+ if(months<0){years--;months+=12;}
+ return [years?years+' ano(s)':null,months+' mês(es)',days+' dia(s)'].filter(Boolean).join(', ');
+}
+function fjuComplementForm(initial={},rank=''){
  const wrap=document.createElement('div');wrap.className='fju-complement-fields';
  const inputs={};
  for(const [key,label,type,max] of fjuComplementFields){
@@ -2490,7 +2504,15 @@ function fjuComplementForm(initial={}){
    const input=document.createElement(type==='date'?'input':'textarea');
    if(type==='date'){input.type='date';input.max=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
    else{input.rows=key==='testemunho'?5:2;input.maxLength=max;}
-   input.className='fju-complement-input';input.value=String(initial[key]||'');inputs[key]=input;item.append(input);wrap.append(item);
+   input.className='fju-complement-input';input.value=String(initial[key]||'');inputs[key]=input;item.append(input);
+   if(['inicio_cpo','inicio_coordenacao_fju'].includes(key)){
+    const duration=document.createElement('small');duration.className='muted';
+    const refresh=()=>{duration.textContent=input.value?'Tempo: '+fjuRankMilestoneDuration(input.value):'';};
+    input.addEventListener('change',refresh);refresh();item.append(duration);
+   }
+   const visible={inicio_cpo:['cpo'],inicio_obra:['obreiro','coordenador'],inicio_coordenacao_fju:['coordenador'],batismo_espirito:['cpo','obreiro','coordenador','voluntário','voluntario'],batismo_aguas:['firme','cpo','colaborador','obreiro','coordenador','voluntário','voluntario'],testemunho:['firme','cpo','colaborador','obreiro','coordenador','voluntário','voluntario']};
+   if(visible[key]&&!visible[key].includes(rank.toLowerCase())&&!input.value)item.hidden=true;
+   wrap.append(item);
  }
  return {element:wrap,read:()=>Object.fromEntries(Object.entries(inputs).map(([key,input])=>[key,input.value.trim()]))};
 }
@@ -2504,7 +2526,8 @@ async function fjuOpenComplementEditor(jovemId,mount){
   if(currentProfile!==profile||!mount.isConnected)return;
   if(result.error)throw result.error;
   mount.replaceChildren();
-  const form=fjuComplementForm(result.data?.dados||{});
+  const youth=youthRows.find(r=>String(r.id)===String(jovemId));
+  const form=fjuComplementForm(result.data?.dados||{},youth?youthCardRank(youth):'');
   const intro=document.createElement('p');intro.className='muted';intro.textContent='Informações complementares da ficha. Não alteram o cadastro original nem a patente.';
   mount.append(intro,form.element);
   const pending=Boolean(result.data?.pedido_pendente);
