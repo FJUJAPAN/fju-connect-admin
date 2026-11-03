@@ -2848,19 +2848,43 @@ async function viewYouth(id){
 
 
   panel.scrollTop=0;
+  // A ficha ampliada usa as mesmas origens privadas do card: foto oficial
+  // e, quando ausente, foto original da inscrição vinculada.
   try{
-    const {data:files,error}=await supabase.storage.from('fju-fotos').list(id,{limit:20});
-    if(error)throw error;
-    const file=(files||[]).find(f=>/^perfil\.(jpg|png|webp)$/.test(f.name));
-    if(!file)return;
-    const result=await supabase.storage.from('fju-fotos').download(id+'/'+file.name);
-    if(result.error)throw result.error;
-    if(!panel.classList.contains('hidden')&&panel.contains(avatar)){
-      detailPhotoUrl=URL.createObjectURL(result.data);
-      const img=document.createElement('img');img.alt='Foto do jovem';img.src=detailPhotoUrl;
+    let blob=null, signedUrl='';
+    const official=supabase.storage.from('fju-fotos');
+    const {data:files,error:listError}=await official.list(id,{limit:20});
+    if(!listError){
+      const file=(files||[]).find(f=>/^perfil\.(jpe?g|png|webp)$/i.test(f.name));
+      if(file){
+        const downloaded=await official.download(id+'/'+file.name);
+        if(!downloaded.error)blob=downloaded.data;
+      }
+    }
+    if(!blob){
+      const {data:linkedUser,error:linkError}=await supabase.rpc('fju_usuario_foto_por_jovem',{p_jovem_id:id});
+      if(!linkError&&linkedUser){
+        const signup=supabase.storage.from('fju-inscricoes-fotos');
+        const downloaded=await signup.download(linkedUser+'/perfil.jpg');
+        if(!downloaded.error)blob=downloaded.data;
+        if(!blob){
+          const {data:signed,error:signedError}=await signup.createSignedUrl(linkedUser+'/perfil.jpg',600);
+          if(!signedError)signedUrl=signed?.signedUrl||'';
+        }
+      }
+    }
+    if(panel.classList.contains('hidden')||!panel.contains(avatar))return;
+    if(blob||signedUrl){
+      const img=document.createElement('img');
+      img.alt='Foto do jovem';
+      img.decoding='async';
+      img.src=blob?(detailPhotoUrl=URL.createObjectURL(blob)):signedUrl;
       avatar.replaceChildren(img);
     }
-  }catch(e){if(panel.classList.contains('hidden')||!panel.contains(avatar))return;const note=document.createElement('p');note.className='muted';note.textContent='Foto indisponível: '+e.message;panel.append(note);}
+  }catch(error){
+    if(panel.classList.contains('hidden')||!panel.contains(avatar))return;
+    console.warn('Foto da ficha ampliada indisponível:',error);
+  }
 }
 async function deleteYouthNational(r,button){
   if(currentProfile?.papel!=='nacional')return;
