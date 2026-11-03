@@ -2586,10 +2586,10 @@ function fjuComplementForm(initial={},rank=''){
     input.addEventListener('change',refresh);refresh();item.append(duration);
    }
    const visible={inicio_cpo:['cpo'],inicio_colaborador:['colaborador'],inicio_obra:['obreiro','coordenador'],inicio_coordenacao_fju:['coordenador'],batismo_espirito:['cpo','obreiro','coordenador','voluntário','voluntario'],batismo_aguas:['firme','cpo','colaborador','obreiro','coordenador','voluntário','voluntario'],testemunho:['firme','cpo','colaborador','obreiro','coordenador','voluntário','voluntario']};
-   if(visible[key]&&!visible[key].includes(rank.toLowerCase())&&!input.value)item.hidden=true;
+   if(visible[key]&&!visible[key].includes(String(rank||'').toLowerCase()))item.hidden=true;
    wrap.append(item);
  }
- return {element:wrap,read:()=>Object.fromEntries(Object.entries(inputs).map(([key,input])=>[key,input.value.trim()]))};
+ return {element:wrap,read:()=>Object.fromEntries(Object.entries(inputs).map(([key,input])=>[key,input.value.trim()])),setRank:(nextRank)=>{const normalized=String(nextRank||'').toLowerCase();for(const [key,input] of Object.entries(inputs)){const allowed={inicio_cpo:['cpo'],inicio_colaborador:['colaborador'],inicio_obra:['obreiro','coordenador'],inicio_coordenacao_fju:['coordenador'],batismo_espirito:['cpo','obreiro','coordenador','voluntário','voluntario'],batismo_aguas:['firme','cpo','colaborador','obreiro','coordenador','voluntário','voluntario'],testemunho:['firme','cpo','colaborador','obreiro','coordenador','voluntário','voluntario']};input.parentElement.hidden=Boolean(allowed[key]&&!allowed[key].includes(normalized));}}};
 }
 async function fjuOpenComplementEditor(jovemId,mount){
  const profile=currentProfile;
@@ -2602,7 +2602,10 @@ async function fjuOpenComplementEditor(jovemId,mount){
   if(result.error)throw result.error;
   mount.replaceChildren();
   const youth=youthRows.find(r=>String(r.id)===String(jovemId));
-  const form=fjuComplementForm(result.data?.dados||{},youth?youthCardRank(youth):'');
+  const rankSelect=el('youth-rank');
+  const form=fjuComplementForm(result.data?.dados||{},rankSelect?.value||(youth?youthCardRank(youth):''));
+  const onRankChange=()=>{if(mount.isConnected)form.setRank(rankSelect.value);else rankSelect.removeEventListener('change',onRankChange);};
+  rankSelect?.addEventListener('change',onRankChange);
   const intro=document.createElement('p');intro.className='muted';intro.textContent='Informações complementares da ficha. Não alteram o cadastro original nem a patente.';
   mount.append(intro,form.element);
   const pending=Boolean(result.data?.pedido_pendente);
