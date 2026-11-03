@@ -2356,7 +2356,7 @@ function fjuRankDetailEntries(r,dados={}){
   add('testemunho','Testemunho');
  }
  if(['cpo','obreiro','coordenador','voluntário'].includes(rank))add('batismo_espirito','Batismo com o Espírito Santo');
- if(rank==='colaborador'){add('inicio_colaborador','Início como Colaborador');if(dados.inicio_colaborador)items.push(['Tempo como Colaborador',fjuCollaboratorTenure(dados.inicio_colaborador)]);}
+ if(rank==='colaborador'&&dados.inicio_colaborador)items.push(['Tempo como Colaborador',fjuCollaboratorTenure(dados.inicio_colaborador)]);
  if(rank==='cpo'){add('inicio_cpo','Início do CPO');if(dados.inicio_cpo)items.push(['Tempo no CPO',fjuRankMilestoneDuration(dados.inicio_cpo)]);}
  if(['obreiro','coordenador'].includes(rank))add('inicio_obra','Início na Obra de Deus');
  if(rank==='coordenador'){add('inicio_coordenacao_fju','Início na coordenação FJU');if(dados.inicio_coordenacao_fju)items.push(['Tempo na coordenação',fjuRankMilestoneDuration(dados.inicio_coordenacao_fju)]);}
