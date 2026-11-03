@@ -364,8 +364,8 @@ test('Login 3/5: mostra falhas inesperadas da rede',()=>{
 test('Login 4/5: reativa botão mesmo em falha',()=>{
  assert.match(html,/finally\{adminLoginInProgress=false;if\(submit\)submit.disabled=false;\}/);
 });
-test('Login 5/5: atualização automática não apaga login preenchido',()=>{
- assert.match(html,/if\(!loginVisible\|\|!formHasData\)location.reload\(\)/);
+test('Login 5/5: não há recarga automática destrutiva do formulário',()=>{
+ assert.doesNotMatch(html,/setInterval\([^)]*location\.reload\(/);
 });
 test('Erro no Supabase libera aprovação e rejeição para tentar novamente',async()=>{
  const f=fixture();
