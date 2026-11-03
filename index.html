@@ -2257,7 +2257,7 @@ async function loadYouth(){
   const all=[],batchSize=500;
   for(let start=0;;start+=batchSize){
     const {data,error}=await supabase.from('fju_jovens')
-      .select('id,polo_id,nome_completo,nascimento,telefone,nacionalidade_iso2,idiomas,patente,categoria,excluido_em')
+      .select('id,polo_id,nome_completo,nascimento,telefone,endereco,nacionalidade_iso2,idiomas,patente,categoria,excluido_em')
       .is('excluido_em',null).eq('polo_id',polo)
       .order('nome_completo').order('id')
       .range(start,start+batchSize-1);
