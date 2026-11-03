@@ -1228,28 +1228,16 @@ document.addEventListener('DOMContentLoaded',()=>{
  if(!verificar||!executar)return;
  const reset=()=>{mergeConferencia=null;executar.hidden=true;};
  for(const id of ['merge-origem','merge-destino'])byId(id).addEventListener('input',()=>{reset();msg.textContent='';});
- async function ficha(numero){
-   const {data:ident,error:e}=await supabase.from('fju_identidades').select('jovem_id').eq('numero',numero).maybeSingle();
-   if(e)throw e;if(!ident?.jovem_id)throw Error('Ficha '+numero+' não encontrada.');
-   const {data:jovem,error:e2}=await supabase.from('fju_jovens').select('id,nome_completo,polo_id,excluido_em').eq('id',ident.jovem_id).single();
-   if(e2)throw e2;if(jovem.excluido_em)throw Error('Ficha arquivada.');
-   const {data:vinculo,error:e3}=await supabase.from('fju_vinculos_conta_jovem').select('usuario_id,ativo').eq('jovem_id',jovem.id).maybeSingle();
-   if(e3)throw e3;
-   return {...jovem,vinculo};
- }
  verificar.addEventListener('click',async()=>{
   reset();msg.textContent='Conferindo fichas…';verificar.disabled=true;
   try{
    if(!currentProfile||!['nacional','coordenador'].includes(currentProfile.papel))throw Error('Acesso restrito a Nacional e Coordenadores.');
    const origem=Number(byId('merge-origem').value),destino=Number(byId('merge-destino').value);
    if(!Number.isInteger(origem)||!Number.isInteger(destino)||origem<1||destino<1||origem===destino)throw Error('Informe dois IDs diferentes.');
-   const [a,b]=await Promise.all([ficha(origem),ficha(destino)]);
-   if(a.polo_id!==b.polo_id)throw Error('As fichas devem pertencer à mesma igreja.');
-   if(currentProfile.papel==='coordenador'&&(a.polo_id!==currentProfile.polo_id||b.polo_id!==currentProfile.polo_id))throw Error('Apenas fichas da sua igreja.');
-   if(a.vinculo)throw Error('A ficha duplicada possui vínculo de login. Não é seguro unificá-la automaticamente.');
-   if(!b.vinculo?.ativo)throw Error('Escolha como principal a ficha com login ativo.');
+   const {data:resumo,error:erro}=await supabase.rpc('fju_conferir_unificacao',{p_origem_numero:origem,p_destino_numero:destino});
+   if(erro)throw erro;
    mergeConferencia={origem,destino};
-   msg.textContent='Duplicada #'+String(origem).padStart(5,'0')+': '+a.nome_completo+' (sem login). Principal #'+String(destino).padStart(5,'0')+': '+b.nome_completo+' (login ativo). Confira os nomes antes de confirmar.';
+   msg.textContent='Duplicada #'+String(origem).padStart(5,'0')+': '+resumo.origem.nome+' (sem login). Principal #'+String(destino).padStart(5,'0')+': '+resumo.destino.nome+' (login ativo). Confira os nomes antes de confirmar.';
    executar.hidden=false;
   }catch(e){msg.textContent=e.message||String(e);}
   finally{verificar.disabled=false;}
