@@ -2674,7 +2674,7 @@ async function fjuOpenComplementEditor(jovemId,mount){
   const form=fjuComplementForm(result.data?.dados||{},rankSelect?.value||(youth?youthCardRank(youth):''));
   const onRankChange=()=>{if(mount.isConnected)form.setRank(rankSelect.value);else rankSelect.removeEventListener('change',onRankChange);};
   rankSelect?.addEventListener('change',onRankChange);
-  const intro=document.createElement('p');intro.className='muted';intro.textContent='Informações complementares da ficha. Não alteram o cadastro original nem a patente.';
+  const intro=document.createElement('p');intro.className='muted';intro.textContent='Ao salvar esta seção, a patente selecionada também será gravada. Mudanças protegidas continuam exigindo aprovação nacional.';
   mount.append(intro,form.element);
   const pending=Boolean(result.data?.pedido_pendente);
   const foot=document.createElement('p');foot.className='muted';
@@ -2689,12 +2689,12 @@ async function fjuOpenComplementEditor(jovemId,mount){
     saving=true;save.disabled=true;feedback.textContent='Salvando informações…';
     const values=form.read();
     try{
-     const fn=profile.papel==='nacional'?'fju_salvar_ficha_complementar_nacional':'fju_solicitar_ficha_complementar';
-     const {error}=await supabase.rpc(fn,{p_jovem_id:jovemId,p_dados:values});
+     const {error}=await supabase.rpc('fju_salvar_patente_complementos',{p_jovem_id:jovemId,p_patente:rankSelect.value,p_dados:values});
      if(currentProfile!==profile||!mount.isConnected)return;
      if(error)throw error;
      if(profile.papel==='nacional')fjuRankDetailsCache.delete(String(jovemId));
-     feedback.textContent=profile.papel==='nacional'?'Informações complementares salvas.':'Solicitação enviada ao Nacional. A ficha oficial ainda não foi alterada.';
+     await loadYouth();
+     feedback.textContent=profile.papel==='nacional'?'Patente e informações complementares salvas.':'Patente salva. Informações complementares enviadas ao Nacional para aprovação.';
      if(profile.papel==='nacional')save.disabled=false;
      void refreshAdminPriorities(profile,profileRequest);
     }catch(error){
