@@ -2380,8 +2380,12 @@ async function fjuGetRankDetails(id){
  fjuRankDetailsPending.set(key,request);
  try{return await request;}finally{fjuRankDetailsPending.delete(key);}
 }
+function fjuYouthLanguageFlags(languages){
+ const flags={'português':'🇧🇷','japonês':'🇯🇵','inglês':'🇬🇧','espanhol':'🇪🇸','tagalog':'🇵🇭','hindi':'🇮🇳','nepali':'🇳🇵','indonésio':'🇮🇩','birmanês':'🇲🇲','cingalês':'🇱🇰','coreano':'🇰🇷','chinês':'🇨🇳','vietnamita':'🇻🇳','tailandês':'🇹🇭'};
+ return [...new Set((Array.isArray(languages)?languages:[]).map(language=>flags[String(language).trim().toLocaleLowerCase('pt-BR')]).filter(Boolean))];
+}
 function fjuAppendRankDetails(container,r,dados,compact=false){
- const entries=fjuRankDetailEntries(r,dados);
+ const entries=compact?[fjuCurrentRankTenure(r,dados)].filter(Boolean):fjuRankDetailEntries(r,dados);
  const wrap=document.createElement('div');wrap.className=compact?'fju-rank-card-fields':'fju-rank-profile-fields';
  wrap.style.cssText='display:grid;gap:5px;margin-top:10px;font-size:13px;min-width:0';
  for(const [label,value] of entries){
@@ -2468,10 +2472,14 @@ function renderYouth(){
     const rank=document.createElement('span');rank.className='youth-rank';
     rank.textContent=youthCardRank(r);rank.dataset.rank=rank.textContent;
     const metadata=document.createElement('div');metadata.className='youth-card-metadata';
-    const country=[...el('youth-country').options].find(option=>option.value===(r.nacionalidade_iso2||''));
-    const countryName=document.createElement('span');
-    countryName.textContent=country?.textContent||r.nacionalidade_iso2||'Nacionalidade não informada';
-    metadata.append(countryName);
+    metadata.setAttribute('aria-label','Idiomas que fala');
+    const languageFlags=fjuYouthLanguageFlags(r.idiomas);
+    if(languageFlags.length){
+      for(const flag of languageFlags){const item=document.createElement('span');item.textContent=flag;metadata.append(item);}
+      metadata.title='Idiomas: '+r.idiomas.join(', ');
+    }else{
+      const empty=document.createElement('span');empty.textContent='Idiomas não informados';metadata.append(empty);
+    }
     const idLabel=document.createElement('span');idLabel.className='fju-youth-id';
     idLabel.textContent=fjuIdByYouth.get(String(r.id))||'';
     info.append(name,idLabel,rank,metadata);
