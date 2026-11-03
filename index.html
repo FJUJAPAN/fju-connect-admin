@@ -1001,7 +1001,13 @@ body.fju-ficha-aberta #youth-detail.fju-direct-detail{padding-bottom:120px!impor
 <div><h2>Fichas dos jovens</h2><p id="youth-page-subtitle" class="youth-page-subtitle">Consulte as fichas da sua igreja. Abra o formulário somente quando precisar cadastrar ou solicitar uma alteração.</p></div>
 <button type="button" id="youth-add-toggle" aria-expanded="false" aria-controls="youth-entry-panel"><span class="youth-add-icon" aria-hidden="true">+</span><span id="youth-add-toggle-label">Adicionar ficha</span></button>
 </div>
-<div id="fju-church-picker" class="fju-church-picker"><div class="fju-church-heading"><h3>Escolha a igreja</h3></div><div id="fju-church-buttons" class="fju-church-buttons" aria-label="Igrejas"></div></div>
+<details id="merge-fichas" style="margin:14px 0;padding:14px;border:1px solid #cad7eb;border-radius:14px;background:#f5f8fd">
+<summary style="cursor:pointer;font-weight:750;color:#1c3565">⇄ Unificar fichas duplicadas</summary>
+<p class="muted">Escolha a ficha sem login como origem e a ficha com login ativo como principal. A senha e o acesso permanecem intactos.</p>
+<div class="grid"><label>ID da ficha duplicada<input id="merge-origem" inputmode="numeric" maxlength="5" placeholder="00046"></label><label>ID da ficha principal<input id="merge-destino" inputmode="numeric" maxlength="5" placeholder="00115"></label></div>
+<div class="actions" style="margin-top:12px"><button type="button" id="merge-verificar" class="secondary">Verificar fichas</button><button type="button" id="merge-executar" hidden>Confirmar unificação</button></div>
+<p id="merge-resultado" role="status" aria-live="polite" class="message"></p>
+</details><div id="fju-church-picker" class="fju-church-picker"><div class="fju-church-heading"><h3>Escolha a igreja</h3></div><div id="fju-church-buttons" class="fju-church-buttons" aria-label="Igrejas"></div></div>
 <div id="fju-church-roster-header" hidden>
  <button type="button" id="fju-church-roster-back">← Todas as igrejas</button>
  <div class="fju-church-roster-title"><span>FICHAS DA IGREJA</span><h2 id="fju-church-roster-name"></h2></div>
@@ -1215,6 +1221,53 @@ const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const el=id=>document.getElementById(id);
 // Initialize session state before the first language render.
 let currentProfile=null;
+let mergeConferencia=null;
+document.addEventListener('DOMContentLoaded',()=>{
+ const byId=id=>document.getElementById(id);
+ const verificar=byId('merge-verificar'),executar=byId('merge-executar'),msg=byId('merge-resultado');
+ if(!verificar||!executar)return;
+ const reset=()=>{mergeConferencia=null;executar.hidden=true;};
+ for(const id of ['merge-origem','merge-destino'])byId(id).addEventListener('input',()=>{reset();msg.textContent='';});
+ async function ficha(numero){
+   const {data:ident,error:e}=await supabase.from('fju_identidades').select('jovem_id').eq('numero',numero).maybeSingle();
+   if(e)throw e;if(!ident?.jovem_id)throw Error('Ficha '+numero+' não encontrada.');
+   const {data:jovem,error:e2}=await supabase.from('fju_jovens').select('id,nome_completo,polo_id,excluido_em').eq('id',ident.jovem_id).single();
+   if(e2)throw e2;if(jovem.excluido_em)throw Error('Ficha arquivada.');
+   const {data:vinculo,error:e3}=await supabase.from('fju_vinculos_conta_jovem').select('usuario_id,ativo').eq('jovem_id',jovem.id).maybeSingle();
+   if(e3)throw e3;
+   return {...jovem,vinculo};
+ }
+ verificar.addEventListener('click',async()=>{
+  reset();msg.textContent='Conferindo fichas…';verificar.disabled=true;
+  try{
+   if(!currentProfile||!['nacional','coordenador'].includes(currentProfile.papel))throw Error('Acesso restrito a Nacional e Coordenadores.');
+   const origem=Number(byId('merge-origem').value),destino=Number(byId('merge-destino').value);
+   if(!Number.isInteger(origem)||!Number.isInteger(destino)||origem<1||destino<1||origem===destino)throw Error('Informe dois IDs diferentes.');
+   const [a,b]=await Promise.all([ficha(origem),ficha(destino)]);
+   if(a.polo_id!==b.polo_id)throw Error('As fichas devem pertencer à mesma igreja.');
+   if(currentProfile.papel==='coordenador'&&(a.polo_id!==currentProfile.polo_id||b.polo_id!==currentProfile.polo_id))throw Error('Apenas fichas da sua igreja.');
+   if(a.vinculo)throw Error('A ficha duplicada possui vínculo de login. Não é seguro unificá-la automaticamente.');
+   if(!b.vinculo?.ativo)throw Error('Escolha como principal a ficha com login ativo.');
+   mergeConferencia={origem,destino};
+   msg.textContent='Duplicada #'+String(origem).padStart(5,'0')+': '+a.nome_completo+' (sem login). Principal #'+String(destino).padStart(5,'0')+': '+b.nome_completo+' (login ativo). Confira os nomes antes de confirmar.';
+   executar.hidden=false;
+  }catch(e){msg.textContent=e.message||String(e);}
+  finally{verificar.disabled=false;}
+ });
+ executar.addEventListener('click',async()=>{
+  if(!mergeConferencia)return;
+  if(!confirm('Confirmar unificação? A ficha duplicada será arquivada. O login da principal será preservado.'))return;
+  executar.disabled=true;msg.textContent='Unificando…';
+  try{
+   const {data,error}=await supabase.rpc('fju_unificar_fichas',{p_origem_numero:mergeConferencia.origem,p_destino_numero:mergeConferencia.destino});
+   if(error)throw error;
+   msg.textContent='Unificação concluída. Ficha principal #'+String(data.destino).padStart(5,'0')+'. Login preservado. Atualize a lista.';
+   reset();
+  }catch(e){msg.textContent='Não foi possível unificar: '+(e.message||String(e));}
+  finally{executar.disabled=false;}
+ });
+});
+
 // A senha é alterada por fluxo seguro de recuperação da conta autenticada.
 window.fjuAdminOwnProjects=async function(){
  const auth=await supabase.auth.getUser();
