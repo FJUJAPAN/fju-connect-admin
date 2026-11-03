@@ -2499,12 +2499,10 @@ function renderYouth(){
   el('youth-print-list').disabled=false;
   if(!rows.length){
     const empty=document.createElement('div');empty.className='youth-empty';
-    empty.textContent=term?'Nenhuma ficha corresponde à busca.':fjuSelectedYouthRank?'Nenhum jovem nesta categoria.':'Selecione uma categoria acima para abrir as fichas.';
+    empty.textContent=term?'Nenhuma ficha corresponde à busca.':fjuSelectedYouthRank&&fjuSelectedYouthRank!=='Todos'?'Nenhum jovem nesta categoria.':'Esta igreja ainda não possui fichas cadastradas.';
     list.append(empty);return;
   }
-  if(!fjuSelectedYouthRank&&!term){
-    const hint=document.createElement('div');hint.className='youth-empty';hint.textContent='Escolha uma categoria acima para visualizar as fichas.';list.append(hint);return;
-  }
+  // Todas as fichas aparecem imediatamente; a categoria é filtro opcional.
   if('IntersectionObserver' in window){
     youthCardPhotoObserver=new IntersectionObserver(entries=>{
       for(const entry of entries){
@@ -3415,7 +3413,13 @@ el('youth-search').addEventListener('input',()=>{
   clearTimeout(youthSearchTimer);
   youthSearchTimer=setTimeout(renderYouth,160);
 });
-el('youth-list-polo').addEventListener('change',()=>{el('youth-detail').classList.add('hidden');void loadYouth();});
+el('youth-list-polo').addEventListener('change',()=>{
+  fjuSelectedYouthRank='Todos';
+  el('youth-search').value='';
+  el('fju-youth-rank-filter').open=false;
+  el('youth-detail').classList.add('hidden');
+  void loadYouth();
+});
 
 
 let fjuChurchPendingCounts=new Map();
