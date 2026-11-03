@@ -2347,6 +2347,12 @@ function fjuAgeFromBirth(iso){
  const age=ty-y-(tm<m||(tm===m&&td<d)?1:0);
  return age>=0&&age<125?age+' anos':'';
 }
+function fjuCurrentRankTenure(r,dados={}){
+ const rank=youthCardRank(r).toLowerCase();
+ const fields={cpo:['inicio_cpo','Tempo no CPO'],colaborador:['inicio_colaborador','Tempo como Colaborador'],obreiro:['inicio_obra','Tempo como Obreiro'],coordenador:['inicio_coordenacao_fju','Tempo na coordenação']};
+ const config=fields[rank];
+ return config&&dados[config[0]]?[config[1],fjuCollaboratorTenure(dados[config[0]])]:null;
+}
 function fjuRankDetailEntries(r,dados={}){
  const items=[['Idade',fjuAgeFromBirth(r.nascimento)],['Telefone',r.telefone],['Endereço',r.endereco]];
  const add=(key,label)=>{if(dados[key])items.push([label,dados[key]]);};
@@ -2356,10 +2362,8 @@ function fjuRankDetailEntries(r,dados={}){
  add('batismo_espirito','Batismo com o Espírito Santo');
  add('testemunho','Testemunho');
  add('observacoes','Observações para acompanhamento');
- if(dados.inicio_cpo)items.push(['Tempo no CPO',fjuCollaboratorTenure(dados.inicio_cpo)]);
- if(dados.inicio_colaborador)items.push(['Tempo como Colaborador',fjuCollaboratorTenure(dados.inicio_colaborador)]);
- if(dados.inicio_obra)items.push(['Tempo como Obreiro',fjuCollaboratorTenure(dados.inicio_obra)]);
- if(dados.inicio_coordenacao_fju)items.push(['Tempo na coordenação',fjuCollaboratorTenure(dados.inicio_coordenacao_fju)]);
+ const tenure=fjuCurrentRankTenure(r,dados);
+ if(tenure)items.push(tenure);
  return items.filter(([,value])=>Boolean(value));
 }
 async function fjuGetRankDetails(id){
@@ -2745,7 +2749,7 @@ async function viewYouth(id){
     const groups=[
       ['Dados pessoais',[['Endereço',r.endereco]]],
       ['Vida espiritual',[['Batismo nas águas',dados.batismo_aguas],['Batismo com o Espírito Santo',dados.batismo_espirito],['Testemunho',dados.testemunho]]],
-      ['Trajetória na FJU',[['Tempo no CPO',dados.inicio_cpo&&fjuCollaboratorTenure(dados.inicio_cpo)],['Tempo como Colaborador',dados.inicio_colaborador&&fjuCollaboratorTenure(dados.inicio_colaborador)],['Tempo como Obreiro',dados.inicio_obra&&fjuCollaboratorTenure(dados.inicio_obra)],['Tempo na coordenação',dados.inicio_coordenacao_fju&&fjuCollaboratorTenure(dados.inicio_coordenacao_fju)]]],
+      ['Trajetória na FJU',[fjuCurrentRankTenure(r,dados)].filter(Boolean)],
       ['Acompanhamento',[['Observações',dados.observacoes]]]
     ];
     for(const [title,entries] of groups){
