@@ -2371,7 +2371,7 @@ async function loadYouthCardThumbnail(id,avatar,version){
 }
 function fjuVisibleRank(value){return String(value??'').trim().toLowerCase()==='inconstante'?'Normal':value;}
 function youthCardRank(r){
-  if(r.categoria==='inconstante')return 'Normal';
+  if(!r.patente && r.categoria==='inconstante')return 'Normal';
   const rank=(r.patente||'').toLocaleLowerCase();
   return ({eventual:'Eventual',inconstante:'Normal',normal:'Normal',firme:'Firme',cpo:'CPO',colaborador:'Colaborador',voluntario:'Voluntário',obreiro:'Obreiro',coordenador:'Coordenador'})[rank]||fjuVisibleRank(r.patente)||'Firme';
 }
@@ -3209,7 +3209,7 @@ function editYouth(id){
   el('youth-id').value=r.id;el('youth-polo').value=r.polo_id;
   for(const [field,key] of [['youth-name','nome_completo'],['youth-phone','telefone'],['youth-address','endereco'],['youth-country','nacionalidade_iso2'],['youth-rank','patente']])el(field).value=r[key]||'';
   setYouthBirth(r.nascimento||'');
-  el('youth-rank').value=r.categoria==='inconstante'?'Inconstante':({'eventual':'Eventual','firme':'Firme','cpo':'CPO','colaborador':'Colaborador','voluntario':'Voluntário','obreiro':'Obreiro','coordenador':'Coordenador'}[r.patente]||r.patente||'');
+  el('youth-rank').value=({'normal':'Inconstante','eventual':'Eventual','firme':'Firme','cpo':'CPO','colaborador':'Colaborador','voluntario':'Voluntário','obreiro':'Obreiro','coordenador':'Coordenador'}[r.patente]||r.patente||'');
   document.querySelectorAll('input[name="youth-language"]').forEach(x=>x.checked=(r.idiomas||[]).includes(x.value));refreshYouthLanguages();
   const complementMount=el('fju-edit-complement-mount');
   complementMount.hidden=false;
@@ -3255,7 +3255,7 @@ el('youth-form').addEventListener('submit',async e=>{
     endereco:el('youth-address').value.trim()||null,
     nacionalidade_iso2:el('youth-country').value.trim().toUpperCase()||null,
     idiomas:selectedYouthLanguages(),
-    patente:['Inconstante','Firme'].includes(el('youth-rank').value)?null:el('youth-rank').value.toLowerCase(),
+    patente:el('youth-rank').value==='Inconstante'?'normal':el('youth-rank').value.toLowerCase(),
     categoria:el('youth-rank').value==='Inconstante'?'inconstante':'firme'
   };
   if(!el('youth-rank').value){youthMessage('Selecione a patente do jovem.',true);return;}
@@ -3290,8 +3290,8 @@ el('youth-form').addEventListener('submit',async e=>{
     const original=youthRows.find(x=>String(x.id)===String(id));if(!original){youthMessage('Ficha original não encontrada.',true);return;}
     const changes={};for(const key of ['nome_completo','nascimento','telefone','endereco','nacionalidade_iso2','idiomas','patente','categoria'])if(JSON.stringify(original[key]??null)!==JSON.stringify(payload[key]??null))changes[key]=payload[key];
     if(!Object.keys(changes).length){youthMessage('Nenhuma alteração encontrada.',true);return;}
-    const patenteAnterior=original.categoria==='inconstante'?'normal':(original.patente||'firme').toLowerCase();
-    const patenteNova=payload.categoria==='inconstante'?'normal':(payload.patente||'firme').toLowerCase();
+    const patenteAnterior=(original.patente||(original.categoria==='inconstante'?'normal':'firme')).toLowerCase();
+    const patenteNova=(payload.patente||'firme').toLowerCase();
     const protegidas=['cpo','colaborador','obreiro','coordenador'];
     const somentePatente=Object.keys(changes).every(key=>['patente','categoria'].includes(key));
     if(somentePatente&&!protegidas.includes(patenteAnterior)&&!protegidas.includes(patenteNova)){
