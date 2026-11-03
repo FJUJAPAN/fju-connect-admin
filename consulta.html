@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer"><meta name="robots" content="noindex,nofollow,noarchive">
+<title>Consulta de fichas · FJU Japan</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f6fb;color:#1c2e50;font:16px system-ui,-apple-system,sans-serif}
+header{position:sticky;top:0;z-index:3;background:#101b32;color:white;padding:18px max(18px,calc((100vw - 1000px)/2));font-weight:800;font-size:21px}
+main{max-width:1000px;margin:auto;padding:22px 16px 70px}h1{font-size:24px;margin:8px 0 4px}.hint{color:#53637b;font-size:14px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}input,select,button{font:inherit;border-radius:12px;padding:12px;border:1px solid #cbd6e7;background:white;color:#1c2e50}
+input{flex:1 1 200px}select{flex:1 1 150px}button{cursor:pointer;font-weight:750}button.primary{background:#294783;color:white;border:0}
+#cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:14px}
+.card{background:white;border:1px solid #d8e2ef;border-radius:18px;padding:18px;box-shadow:0 2px 7px #243b5810}
+.card h2{font-size:18px;margin:0 0 8px;overflow-wrap:anywhere}.muted{color:#60718b;font-size:14px}.rank{display:inline-block;border-radius:999px;padding:5px 12px;background:#e9f2ff;font-weight:700;margin:10px 0}
+.flags{font-size:20px;margin:5px 0 15px}dialog{border:0;border-radius:20px;padding:0;width:min(92vw,680px);max-height:88vh;color:#1c2e50;box-shadow:0 12px 60px #0005}dialog::backdrop{background:#0d1932aa}
+.dialog-body{padding:20px;overflow:auto;max-height:82vh}.dialog-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.section{border-top:1px solid #dbe3ed;margin-top:18px;padding-top:12px}.section h3{font-size:17px}.field{margin:9px 0;overflow-wrap:anywhere;white-space:pre-wrap}
+@media(max-width:500px){#cards{grid-template-columns:1fr}header{padding:16px}}
+</style></head><body><header>FJU JAPAN · Consulta de fichas</header><main>
+<h1 id="church">Carregando igreja…</h1><p class="hint">Visualização exclusiva de consulta · Não é possível editar dados.</p>
+<p id="status" role="status">Verificando acesso…</p>
+<div id="content" hidden><div class="controls"><input id="search" type="search" placeholder="Buscar jovem pelo nome"><select id="rank"><option value="">Todas as patentes</option></select></div><p id="count" class="hint"></p><div id="cards"></div></div>
+</main><dialog id="detail"><div class="dialog-body"><div class="dialog-head"><h2 id="detail-title"></h2><button id="close" type="button">Fechar ×</button></div><div id="detail-content"></div></div></dialog>
+<script type="module">
+import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+const client=createClient('https://hmacroktklgwkofxsygv.supabase.co','sb_publishable_mdkfafhpqtthwzU8Hf7u9A_rErx3MFJ',{auth:{persistSession:false,autoRefreshToken:false}});
+const $=id=>document.getElementById(id), token=new URLSearchParams(location.hash.slice(1)).get('chave')||'';
+let people=[];
+const flags={'português':'🇧🇷','japonês':'🇯🇵','inglês':'🇬🇧','espanhol':'🇪🇸','tagalog':'🇵🇭','hindi':'🇮🇳','nepali':'🇳🇵','indonésio':'🇮🇩','birmanês':'🇲🇲','cingalês':'🇱🇰','coreano':'🇰🇷','chinês':'🇨🇳','vietnamita':'🇻🇳','tailandês':'🇹🇭'};
+function node(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=String(text);if(cls)n.className=cls;return n}
+function tenure(iso){if(!/^\d{4}-\d{2}-\d{2}$/.test(iso||''))return '';const [y,m,d]=iso.split('-').map(Number),today=new Date();let n=(today.getFullYear()-y)*12+today.getMonth()+1-m-(today.getDate()<d?1:0);if(n<0)return '';const years=Math.floor(n/12),months=n%12;return [years?years+' '+(years===1?'ano':'anos'):'',months?months+' '+(months===1?'mês':'meses'):''].filter(Boolean).join(' e ')||'menos de 1 mês'}
+function currentTime(p){const r=(p.patente||'').toLowerCase(),key={cpo:'inicio_cpo',colaborador:'inicio_colaborador',obreiro:'inicio_obra',coordenador:'inicio_coordenacao_fju'}[r];return key&&p.complementos?.[key]?tenure(p.complementos[key]):''}
+function languages(p){return [...new Set((p.idiomas||[]).map(x=>flags[String(x).toLowerCase()]).filter(Boolean))].join(' ')}
+function field(parent,label,value){if(value===undefined||value===null||value==='')return;const row=node('div',undefined,'field');const bold=node('strong',label+': ');row.append(bold,node('span',Array.isArray(value)?value.join(', '):value));parent.append(row)}
+function section(parent,title,entries){const valid=entries.filter(x=>x[1]!==null&&x[1]!==undefined&&x[1]!=='');if(!valid.length)return;const box=node('section',undefined,'section');box.append(node('h3',title));valid.forEach(([k,v])=>field(box,k,v));parent.append(box)}
+function openDetail(p){$('detail-title').textContent=p.nome||'Ficha';const box=$('detail-content');box.replaceChildren();
+section(box,'Dados pessoais',[['FJU ID',p.fju_id==null?'':String(p.fju_id).padStart(5,'0')],['Patente',p.patente],['Nascimento',p.nascimento],['Telefone',p.telefone],['Endereço',p.endereco],['Nacionalidade',p.nacionalidade],['Idiomas',(p.idiomas||[]).join(', ')],['Projetos',(p.projetos||[]).join(', ')]]);
+const c=p.complementos||{};
+section(box,'Vida espiritual',[['Batismo nas águas',c.batismo_aguas||p.batismo_aguas],['Batismo com o Espírito Santo',c.batismo_espirito||p.batismo_espirito],['Testemunho',c.testemunho||p.testemunho]]);
+section(box,'Trajetória na FJU',[['Tempo na patente atual',currentTime(p)]]);
+section(box,'Acompanhamento',[['Observações',c.observacoes]]);
+$('detail').showModal()}
+function render(){const query=$('search').value.trim().toLocaleLowerCase('pt-BR'),rank=$('rank').value;const matches=people.filter(p=>(!rank||p.patente===rank)&&(!query||(p.nome||'').toLocaleLowerCase('pt-BR').includes(query)));$('count').textContent=matches.length+' ficha(s)';const holder=$('cards');holder.replaceChildren();
+for(const p of matches){const card=node('article',undefined,'card');card.append(node('h2',p.nome||'Sem nome'),node('div','FJU ID: '+(p.fju_id==null?'—':String(p.fju_id).padStart(5,'0')),'muted'),node('div',p.patente||'—','rank'));const time=currentTime(p);if(time)card.append(node('div','Tempo: '+time));card.append(node('div',languages(p)||'Idiomas não informados','flags'));const button=node('button','Ver ficha','primary');button.addEventListener('click',()=>openDetail(p));card.append(button);holder.append(card)}}
+$('close').addEventListener('click',()=>$('detail').close());$('search').addEventListener('input',render);$('rank').addEventListener('change',render);
+(async()=>{try{if(!/^[0-9a-f]{64}$/.test(token))throw Error('Link de consulta inválido.');const {data,error}=await client.rpc('fju_ler_link_consulta_igreja',{p_token:token});if(error)throw error;people=Array.isArray(data?.jovens)?data.jovens:[];$('church').textContent=data?.igreja||'Igreja';$('status').textContent='Acesso de consulta autorizado';const ranks=[...new Set(people.map(p=>p.patente).filter(Boolean))].sort();for(const r of ranks){const option=node('option',r);option.value=r;$('rank').append(option)}$('content').hidden=false;render()}catch(e){$('church').textContent='Acesso indisponível';$('status').textContent=e.message||'Link inválido ou expirado.'}})();
+</script></body></html>
