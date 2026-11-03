@@ -56,6 +56,8 @@ test('aprovação inicial com complementos é atômica e exige perfil autorizado
  assert.match(sql,/v_papel IS DISTINCT FROM 'coordenador'/);
  assert.match(sql,/papel='nacional'/);
  assert.match(html,/fju_aprovar_inscricao_ficha_completa/);
- assert.match(html,/fju_solicitar_ficha_complementar/);
+ assert.match(html,/fju_salvar_patente_complementos/);
+ const rankSql=readFileSync(new URL('../sql/save-rank-with-complements.sql',import.meta.url),'utf8');
+ assert.match(rankSql,/perform public\.fju_solicitar_ficha_complementar/);
  assert.match(html,/fju_decidir_ficha_complementar/);
 });
