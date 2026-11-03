@@ -1083,6 +1083,7 @@ body.fju-ficha-aberta #youth-detail.fju-direct-detail{padding-bottom:120px!impor
 <p class="youth-page-subtitle">Preencha os dados do jovem. Alterações de fichas existentes feitas pelo coordenador dependem de aprovação nacional.</p>
 <form id="youth-form">
 <input id="youth-id" type="hidden">
+<div id="fju-edit-complement-mount" hidden style="margin:16px 0;padding:14px;border:1px solid #d7dfed;border-radius:12px"><h3>Informações da patente</h3><p class="muted">Preencha os dados adicionais e salve nesta seção. Coordenadores enviam para aprovação nacional.</p><div id="fju-edit-complement-editor"></div></div>
 <p id="youth-eventual-hint" class="muted">Cadastro Eventual feito pelo coordenador, sem login: nome, telefone, nascimento, endereço e foto. Quando o jovem criar uma conta, vincule-a à ficha existente para evitar duplicidade.</p>
 <div class="grid youth-info-grid">
 <div><label for="youth-polo">Polo</label><select id="youth-polo" required></select></div>
@@ -2144,7 +2145,7 @@ el('youth-add-toggle').addEventListener('click',()=>{
   setYouthFormOpen(open,false,open);
 });
 el('youth-form-close').addEventListener('click',()=>{resetYouth();setYouthFormOpen(false);});
-function resetYouth(){++youthPhotoLoadVersion;el('youth-photo').disabled=false;if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}el('youth-form').reset();setYouthBirth('');refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';el('youth-rank').value=currentProfile?.papel==='coordenador'?'Eventual':'Firme';syncEventualYouthForm();if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
+function resetYouth(){++youthPhotoLoadVersion;const complementMount=el('fju-edit-complement-mount');if(complementMount){complementMount.hidden=true;el('fju-edit-complement-editor').replaceChildren();}el('youth-photo').disabled=false;if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}el('youth-form').reset();setYouthBirth('');refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';el('youth-rank').value=currentProfile?.papel==='coordenador'?'Eventual':'Firme';syncEventualYouthForm();if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
 async function initializeYouth(){
   const profile=currentProfile;
   if(!profile)return;
@@ -2337,9 +2338,18 @@ function youthCardRank(r){
 }
 const fjuRankDetailsCache=new Map();
 const fjuRankDetailsPending=new Map();
+function fjuAgeFromBirth(iso){
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(iso||''))return '';
+ const [y,m,d]=iso.split('-').map(Number);
+ const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',year:'numeric',month:'numeric',day:'numeric'}).formatToParts(new Date());
+ const get=type=>Number(parts.find(p=>p.type===type)?.value);
+ const ty=get('year'),tm=get('month'),td=get('day');
+ const age=ty-y-(tm<m||(tm===m&&td<d)?1:0);
+ return age>=0&&age<125?age+' anos':'';
+}
 function fjuRankDetailEntries(r,dados={}){
  const rank=youthCardRank(r).toLowerCase();
- const items=[['Nascimento',r.nascimento],['Telefone',r.telefone],['Endereço',r.endereco]];
+ const items=[['Idade',fjuAgeFromBirth(r.nascimento)],['Telefone',r.telefone],['Endereço',r.endereco]];
  const add=(key,label)=>{if(dados[key])items.push([label,dados[key]]);};
  if(['firme','cpo','colaborador','obreiro','coordenador','voluntário'].includes(rank)){
   add('batismo_aguas','Batismo nas águas');
@@ -2703,7 +2713,7 @@ async function viewYouth(id){
   const details=document.createElement('div');details.className='grid';
   const flag=(r.nacionalidade_iso2&&/^[A-Z]{2}$/.test(r.nacionalidade_iso2))?String.fromCodePoint(...[...r.nacionalidade_iso2].map(c=>127397+c.charCodeAt(0))):'🌐';
   const country=el('youth-country').querySelector('option[value="'+(r.nacionalidade_iso2||'')+'"]');
-  for(const [label,value] of [['Nascimento',r.nascimento],['Telefone',r.telefone],['Nacionalidade',flag+' '+(country?.textContent||r.nacionalidade_iso2||'—')],['Idiomas',(r.idiomas||[]).join(', ')||'—']]){
+  for(const [label,value] of [['Idade',fjuAgeFromBirth(r.nascimento)],['Telefone',r.telefone],['Nacionalidade',flag+' '+(country?.textContent||r.nacionalidade_iso2||'—')],['Idiomas',(r.idiomas||[]).join(', ')||'—']]){
     const cell=document.createElement('div');cell.className='stat';const labelEl=document.createElement('strong');labelEl.textContent=label;const valueEl=document.createElement('p');valueEl.textContent=value||'—';cell.append(labelEl,valueEl);details.append(cell);
   }
   panel.append(details);
@@ -3083,6 +3093,9 @@ function editYouth(id){
   setYouthBirth(r.nascimento||'');
   el('youth-rank').value=r.categoria==='inconstante'?'Inconstante':({'eventual':'Eventual','firme':'Firme','cpo':'CPO','colaborador':'Colaborador','voluntario':'Voluntário','obreiro':'Obreiro','coordenador':'Coordenador'}[r.patente]||r.patente||'');
   document.querySelectorAll('input[name="youth-language"]').forEach(x=>x.checked=(r.idiomas||[]).includes(x.value));refreshYouthLanguages();
+  const complementMount=el('fju-edit-complement-mount');
+  complementMount.hidden=false;
+  void fjuOpenComplementEditor(r.id,el('fju-edit-complement-editor'));
   el('youth-photo').value='';el('youth-photo').disabled=currentProfile?.papel==='coordenador';syncEventualYouthForm();void loadYouthPhoto(r.id);youthMessage(currentProfile?.papel==='coordenador'?'Eventual, Normal, Firme e Voluntário: alteração direta de patente. Entrada ou saída de CPO, Colaborador, Obreiro e Coordenador: aprovação nacional. Outras edições continuam por solicitação.':'Editando ficha: '+r.nome_completo);setYouthFormOpen(true,true,true);
 }
 function syncEventualYouthForm(){
