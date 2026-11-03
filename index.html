@@ -2466,7 +2466,7 @@ function renderYouth(){
     if(youthCardRank(r)==='Colaborador'&&['nacional','coordenador'].includes(currentProfile?.papel)){
       const tenure=document.createElement('span');tenure.className='fju-collaborator-tenure';
       tenure.style.cssText='margin-left:8px;font-size:12px;font-weight:700;color:#475569';
-      info.append(rank,tenure);
+      rank.after(tenure);
       void fjuGetRankDetails(r.id).then(dados=>{
         if(!tenure.isConnected)return;
         const elapsed=fjuCollaboratorTenure(dados.inicio_colaborador);
