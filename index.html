@@ -2983,7 +2983,7 @@ function editYouth(id){
   setYouthBirth(r.nascimento||'');
   el('youth-rank').value=r.categoria==='inconstante'?'Inconstante':({'firme':'Firme','cpo':'CPO','colaborador':'Colaborador','voluntario':'Voluntário','obreiro':'Obreiro','coordenador':'Coordenador'}[r.patente]||r.patente||'');
   document.querySelectorAll('input[name="youth-language"]').forEach(x=>x.checked=(r.idiomas||[]).includes(x.value));refreshYouthLanguages();
-  el('youth-photo').value='';el('youth-photo').disabled=currentProfile?.papel==='coordenador';void loadYouthPhoto(r.id);youthMessage(currentProfile?.papel==='coordenador'?'Edite os campos e envie para aprovação. A ficha original não será alterada.':'Editando ficha: '+r.nome_completo);setYouthFormOpen(true,true,true);
+  el('youth-photo').value='';el('youth-photo').disabled=currentProfile?.papel==='coordenador';void loadYouthPhoto(r.id);youthMessage(currentProfile?.papel==='coordenador'?'Normal, Firme e Voluntário: alteração direta de patente. Entrada ou saída de CPO, Colaborador, Obreiro e Coordenador: aprovação nacional. Outras edições continuam por solicitação.':'Editando ficha: '+r.nome_completo);setYouthFormOpen(true,true,true);
 }
 const coordinationHint=document.createElement('p');coordinationHint.className='muted';coordinationHint.hidden=true;
 coordinationHint.textContent='Ao solicitar a patente Coordenador, o acesso ao painel no polo desta ficha será incluído no mesmo pedido. A conta é identificada automaticamente e somente o Nacional pode aprovar.';
@@ -3019,6 +3019,10 @@ el('youth-form').addEventListener('submit',async e=>{
     categoria:el('youth-rank').value==='Inconstante'?'inconstante':'firme'
   };
   if(!el('youth-rank').value){youthMessage('Selecione a patente do jovem.',true);return;}
+  if(!el('youth-id').value&&profile.papel==='coordenador'&&['CPO','Colaborador','Obreiro','Coordenador'].includes(el('youth-rank').value)){
+    youthMessage('Para cadastrar com CPO, Colaborador, Obreiro ou Coordenador, crie primeiro a ficha como Normal, Firme ou Voluntário; depois solicite a patente para aprovação Nacional.',true);
+    return;
+  }
   if(!payload.nome_completo){youthMessage('Informe o nome completo do jovem.',true);return;}
   // Processar a foto antes da gravação evita deixar fichas incompletas por
   // formato inválido ou erro de compressão (limite de 100 KB).
@@ -3041,6 +3045,19 @@ el('youth-form').addEventListener('submit',async e=>{
     const original=youthRows.find(x=>String(x.id)===String(id));if(!original){youthMessage('Ficha original não encontrada.',true);return;}
     const changes={};for(const key of ['nome_completo','nascimento','telefone','nacionalidade_iso2','idiomas','patente','categoria'])if(JSON.stringify(original[key]??null)!==JSON.stringify(payload[key]??null))changes[key]=payload[key];
     if(!Object.keys(changes).length){youthMessage('Nenhuma alteração encontrada.',true);return;}
+    const patenteAnterior=original.categoria==='inconstante'?'normal':(original.patente||'firme').toLowerCase();
+    const patenteNova=payload.categoria==='inconstante'?'normal':(payload.patente||'firme').toLowerCase();
+    const protegidas=['cpo','colaborador','obreiro','coordenador'];
+    const somentePatente=Object.keys(changes).every(key=>['patente','categoria'].includes(key));
+    if(somentePatente&&!protegidas.includes(patenteAnterior)&&!protegidas.includes(patenteNova)){
+      const {error:patenteError}=await supabase.rpc('fju_alterar_patente_local',{p_jovem_id:id,p_nova_patente:patenteNova});
+      if(!stillCurrent())return;
+      if(patenteError){youthMessage('Não foi possível alterar a patente: '+patenteError.message,true);return;}
+      resetYouth();setYouthFormOpen(false);
+      youthMessage('Patente atualizada diretamente. Não é necessária autorização nacional para Normal, Firme ou Voluntário.');
+      await loadYouth();
+      return;
+    }
     if(changes.patente==='coordenador'){
       const {data:account,error:accountError}=await supabase.rpc('fju_conta_coordenacao',{p_jovem_id:id});
       if(!stillCurrent())return;
