@@ -2381,7 +2381,7 @@ async function fjuGetRankDetails(id){
  try{return await request;}finally{fjuRankDetailsPending.delete(key);}
 }
 function fjuAppendRankDetails(container,r,dados,compact=false){
- const entries=fjuRankDetailEntries(r,dados);
+ const entries=compact?fjuRankDetailEntries(r,dados).filter(([label])=>!['Batismo nas águas','Batismo com o Espírito Santo','Testemunho','Observações para acompanhamento'].includes(label)):fjuRankDetailEntries(r,dados);
  const wrap=document.createElement('div');wrap.className=compact?'fju-rank-card-fields':'fju-rank-profile-fields';
  wrap.style.cssText='display:grid;gap:5px;margin-top:10px;font-size:13px;min-width:0';
  for(const [label,value] of entries){
