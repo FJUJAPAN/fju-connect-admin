@@ -4090,7 +4090,7 @@ async function loadYouthSignups(){
   linkBox.append(linkTitle,linkHint,linkSearch,linkLoad,linkSelect,linkApprove);
   const approve=document.createElement('button');approve.type='button';approve.textContent='Aceitar e criar ficha';
   const requestNational=document.createElement('button');requestNational.type='button';requestNational.className='secondary';requestNational.textContent='Solicitar aprovação Nacional';
-  const elevated=['CPO','Colaborador','Voluntário','Obreiro','Coordenador'];
+  const elevated=['CPO','Colaborador','Obreiro','Coordenador'];
   const syncRankAction=()=>{const need=profile.papel==='coordenador'&&elevated.includes(rank.value);approve.hidden=need||!!pendingRank;requestNational.hidden=!need||!!pendingRank;};
   rank.addEventListener('change',syncRankAction);syncRankAction();
   requestNational.addEventListener('click',async()=>{
