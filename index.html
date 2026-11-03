@@ -2348,18 +2348,18 @@ function fjuAgeFromBirth(iso){
  return age>=0&&age<125?age+' anos':'';
 }
 function fjuRankDetailEntries(r,dados={}){
- const rank=youthCardRank(r).toLowerCase();
  const items=[['Idade',fjuAgeFromBirth(r.nascimento)],['Telefone',r.telefone],['Endereço',r.endereco]];
  const add=(key,label)=>{if(dados[key])items.push([label,dados[key]]);};
- if(['firme','cpo','colaborador','obreiro','coordenador','voluntário'].includes(rank)){
-  add('batismo_aguas','Batismo nas águas');
-  add('testemunho','Testemunho');
- }
- if(['cpo','obreiro','coordenador','voluntário'].includes(rank))add('batismo_espirito','Batismo com o Espírito Santo');
- if(rank==='colaborador'&&dados.inicio_colaborador)items.push(['Tempo como Colaborador',fjuCollaboratorTenure(dados.inicio_colaborador)]);
- if(rank==='cpo'&&dados.inicio_cpo)items.push(['Tempo no CPO',fjuCollaboratorTenure(dados.inicio_cpo)]);
- if(rank==='obreiro'&&dados.inicio_obra)items.push(['Tempo como Obreiro',fjuCollaboratorTenure(dados.inicio_obra)]);
- if(rank==='coordenador'&&dados.inicio_coordenacao_fju)items.push(['Tempo na coordenação',fjuCollaboratorTenure(dados.inicio_coordenacao_fju)]);
+ // A ficha exibe todo o histórico salvo, independentemente da patente atual.
+ // Somente o formulário de edição filtra os campos por patente.
+ add('batismo_aguas','Batismo nas águas');
+ add('batismo_espirito','Batismo com o Espírito Santo');
+ add('testemunho','Testemunho');
+ add('observacoes','Observações para acompanhamento');
+ if(dados.inicio_cpo)items.push(['Tempo no CPO',fjuCollaboratorTenure(dados.inicio_cpo)]);
+ if(dados.inicio_colaborador)items.push(['Tempo como Colaborador',fjuCollaboratorTenure(dados.inicio_colaborador)]);
+ if(dados.inicio_obra)items.push(['Tempo como Obreiro',fjuCollaboratorTenure(dados.inicio_obra)]);
+ if(dados.inicio_coordenacao_fju)items.push(['Tempo na coordenação',fjuCollaboratorTenure(dados.inicio_coordenacao_fju)]);
  return items.filter(([,value])=>Boolean(value));
 }
 async function fjuGetRankDetails(id){
