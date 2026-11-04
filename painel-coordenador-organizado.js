@@ -14,7 +14,7 @@
   },
   ja:{
    home:'管理パネル',intro:'マイページ · すべての機能をここから',back:'戻る',returnHome:'← 管理パネル',choose:'操作を選択してください',
-   fichas:'青年の記録',cadastros:'登録申請',relatorios:'週間報告',materias:'記事・イベント',rally:'ラリー',mypage:'マイページ',
+   fichas:'Jovem名簿',cadastros:'登録申請',relatorios:'レポート',materias:'記事・イベント',rally:'ラリー',mypage:'マイページ',
    openFichas:'青年の記録を確認',addYouth:'青年の記録を追加',registers:'新規登録を確認',reportFill:'週間報告を提出',reportHistory:'過去の報告を見る',
    createPost:'記事を作成',pastEvent:'終了したイベントを投稿',drafts:'下書き',myPublications:'自分の投稿',
    journey:'私の歩み',checkin:'チェックイン',projects:'参加プロジェクト',personalNotifications:'お知らせ',personalHeading:'マイエリア',personalHint:'FJU Connectで個人機能を開きます',openPersonal:'FJU Connectを開く',profile:'プロフィール',display:'表示言語',password:'パスワード変更',notifications:'端末の通知',
