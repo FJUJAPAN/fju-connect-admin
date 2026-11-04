@@ -3163,6 +3163,8 @@ async function loadYouthRequests(){
     if(r.dados_propostos&&(r.tipo==='edicao'||r.tipo==='patente')){
       const changes=document.createElement('div');changes.className='authorization-changes';
       for(const [field,next] of Object.entries(r.dados_propostos)){
+        // Categoria is a legacy compatibility field; patente is the single displayed rank.
+        if(field==='categoria' && Object.prototype.hasOwnProperty.call(r.dados_propostos,'patente'))continue;
         const item=document.createElement('div');item.className='authorization-change';
         const label=document.createElement('b');label.textContent=nomes[field]||field;
         const before=document.createElement('span');before.className='authorization-old';before.textContent=Object.prototype.hasOwnProperty.call(r.dados_anteriores||{},field)?'Anterior: '+fmt(r.dados_anteriores[field]):(r.status==='pendente'?'Atual (não registrado): '+fmt(jovem?.[field]):'Valor anterior: não registrado');
