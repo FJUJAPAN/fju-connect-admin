@@ -1647,7 +1647,7 @@ function translateAdminYouthExtra(language){
  const set=(selector,value)=>{const node=document.querySelector(selector);if(node)node.textContent=value;};
  set('label[for="youth-rank"]',t.rank);set('label[for="youth-photo"]',t.photo);
  set('#youth-submit',t.save);set('#youth-clear',t.clear);
- const rank=el('youth-rank');if(rank)rank.querySelectorAll('option').forEach((option,i)=>{option.textContent=i===0?t.choose:(t.ranks[i-1]||option.textContent);});
+ const rank=el('youth-rank');if(rank){const labels={'':t.choose,'Eventual':'Eventual','Normal':t.ranks[0],'Firme':t.ranks[1],'CPO':'CPO','Colaborador':t.ranks[3],'Voluntário':'Voluntário','Obreiro':'Obreiro','Coordenador':'Coordenador'};rank.querySelectorAll('option').forEach(option=>{if(Object.prototype.hasOwnProperty.call(labels,option.value))option.textContent=labels[option.value];});}
  const country=el('youth-country');if(country){const empty=country.querySelector('option[value=""]');if(empty)empty.textContent=t.choose;}
  set('#youth-photo-preview + .muted',t.photoHelp);
  const preview=el('youth-photo-preview');if(preview)preview.alt=t.photoAlt;
