@@ -3269,7 +3269,7 @@ function editYouth(id){
   el('youth-id').value=r.id;el('youth-polo').value=r.polo_id;
   for(const [field,key] of [['youth-name','nome_completo'],['youth-phone','telefone'],['youth-address','endereco'],['youth-country','nacionalidade_iso2'],['youth-rank','patente']])el(field).value=r[key]||'';
   setYouthBirth(r.nascimento||'');
-  el('youth-rank').value=({'normal':'Inconstante','eventual':'Eventual','firme':'Firme','cpo':'CPO','colaborador':'Colaborador','voluntario':'Voluntário','obreiro':'Obreiro','coordenador':'Coordenador'}[r.patente]||r.patente||'');
+  el('youth-rank').value=({'normal':'Normal','eventual':'Eventual','firme':'Firme','cpo':'CPO','colaborador':'Colaborador','voluntario':'Voluntário','obreiro':'Obreiro','coordenador':'Coordenador'}[r.patente]||r.patente||'');
   document.querySelectorAll('input[name="youth-language"]').forEach(x=>x.checked=(r.idiomas||[]).includes(x.value));refreshYouthLanguages();
   const complementMount=el('fju-edit-complement-mount');
   complementMount.hidden=false;
