@@ -2329,7 +2329,7 @@ async function compactarFoto100KB(file){
 }
 let youthLoadVersion=0;
 async function loadYouth(){
-  if(currentProfile?.papel==='nacional')(el('photo-repair-ui').hidden=false);
+  if(currentProfile?.papel==='nacional'){el('photo-repair-ui').hidden=false;void fjuRestoreApprovedPhotos();}
   const profile=currentProfile;
   if(!profile)return;
   const loadVersion=++youthLoadVersion;
