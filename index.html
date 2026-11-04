@@ -499,6 +499,15 @@ body.fju-admin-shell #app.fju-fichas-mode #jovens.fju-church-roster > #youth-bac
 
 /* Back action remains reachable when viewing or editing a youth record. */
 #app.fju-fichas-mode #youth-back-dashboard{position:sticky!important;top:8px!important;z-index:60!important;display:inline-flex!important;visibility:visible!important;opacity:1!important;background:#1b4e93!important;color:#fff!important;border:0!important;box-shadow:0 3px 12px #0a234b33!important;min-height:44px!important}
+
+/* Mobile language control: prevent Japanese feedback from overflowing the header. */
+@media(max-width:700px){
+ body.fju-admin-shell>.fju-admin-header .fju-admin-header-inner{min-width:0!important;max-width:100%!important;overflow:visible!important}
+ body.fju-admin-shell>.fju-admin-header .fju-admin-header-tools{min-width:0!important;max-width:calc(100vw - 155px)!important;flex:0 1 auto!important}
+ .fju-admin-header-tools #fju-admin-language-settings{display:flex!important;align-items:center!important;flex:0 1 112px!important;width:112px!important;min-width:0!important;max-width:112px!important;overflow:hidden!important;white-space:nowrap!important}
+ .fju-admin-header-tools #fju-admin-language-select{display:block!important;flex:1 1 auto!important;width:75px!important;min-width:0!important;max-width:75px!important;white-space:nowrap!important;writing-mode:horizontal-tb!important}
+ .fju-admin-header-tools #fju-admin-language-feedback{display:none!important}
+}
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023g">
