@@ -513,6 +513,7 @@ body.fju-admin-shell #app.fju-fichas-mode #jovens.fju-church-roster > #youth-bac
 <link rel="stylesheet" href="./admin-header-limpo.css?v=20261023">
 <link rel="stylesheet" href="./admin-atalhos-polidos.css?v=20261024">
 <link rel="stylesheet" href="./painel-coordenador-organizado.css?v=20261031-hide-home-282">
+<link rel="stylesheet" href="./avisos-coordenador.css?v=20261104-1">
 <link rel="stylesheet" href="./graficos-relatorios-coordenador.css?v=20261026-evolucao"><link rel="stylesheet" href="./painel-nacional-ios.css?v=20261027a">
 <link rel="stylesheet" href="./painel-menu-discreto.css?v=20261027a">
 <link rel="stylesheet" href="./painel-sem-menu-funcoes.css?v=20261027b">
@@ -1323,6 +1324,7 @@ import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2
 import {setupCoordinatorCards} from './cards-coordenadores.js';
 import {setupAdministrativeAccess} from './acesso-administrativo.js?v=20261022-conta-automatica-2';
 import {setupCoordinatorRequests} from './cadastros-coordenadores.js';
+import {setupCoordinatorPendingNotices} from './avisos-coordenador.js?v=20261104-1';
 const SUPABASE_URL='https://hmacroktklgwkofxsygv.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_mdkfafhpqtthwzU8Hf7u9A_rErx3MFJ';
 const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
@@ -1716,6 +1718,25 @@ const administrativeAccess=setupAdministrativeAccess({
   }
 });
 setupCoordinatorRequests({supabase,getProfile:()=>currentProfile});
+const coordinatorPending=setupCoordinatorPendingNotices({
+  supabase,getProfile:()=>currentProfile,
+  openYouthEdit:async item=>{
+    const profile=currentProfile;
+    if(profile?.papel!=='coordenador'||String(profile.polo_id)!==String(item.polo_id))throw new Error('Acesso restrito à igreja da ficha.');
+    await youthInitialization;
+    if(currentProfile!==profile)throw new Error('A sessão mudou. Entre novamente.');
+    if(!youthRows.some(row=>String(row.id)===String(item.jovem_id)))await loadYouth();
+    if(currentProfile!==profile)throw new Error('A sessão mudou. Entre novamente.');
+    const row=youthRows.find(row=>String(row.id)===String(item.jovem_id)&&String(row.polo_id)===String(profile.polo_id));
+    if(!row)throw new Error('Ficha não encontrada neste polo.');
+    document.querySelector('#main-nav [data-tab="jovens"]')?.click();
+    fjuSelectedYouthRank='Todos';
+    el('youth-search').value=row.nome_completo;
+    renderYouth();
+    editYouth(row.id);
+    el('youth-rank')?.focus({preventScroll:true});
+  }
+});
 const coordinatorCards=setupCoordinatorCards({supabase,compressPhoto:compactarFoto100KB,navigateToTab:()=>document.querySelector('#main-nav [data-tab="lideranca"]')?.click()});
 const quantityOptions=document.createDocumentFragment();
 for(let n=0;n<=1000;n++){const option=document.createElement('option');option.value=String(n);option.textContent=String(n);quantityOptions.append(option);}
@@ -1728,6 +1749,7 @@ const show=(id)=>{
   }
   for(const s of ['auth','recovery','app'])el(s).classList.toggle('hidden',s!==id);
   if(id!=='app'){
+    coordinatorPending.clear();
     el('fju-admin-context').textContent='ÁREA ADMINISTRATIVA';
     setAdminMenuOpen(false);
     clearAdminPrivateSession();
@@ -2113,6 +2135,7 @@ async function loadProfile(user){
   void coordinatorCards.load(user,data,poloNome);
   youthInitialization=initializeYouth();
   void loadDashboard(data,requestId);
+  void coordinatorPending.refresh(data,true);
 }
 
 function youthMessage(text,error=false){message('youth-message',text,error)}
