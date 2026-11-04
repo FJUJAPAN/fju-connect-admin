@@ -15,6 +15,8 @@ export function setupCoordinatorCards({supabase,compressPhoto,navigateToTab}){
   const editor=byId('leader-editor');
   const nameInput=byId('leader-name');
   const fileInput=byId('leader-photo');
+  const dateKeys=['data_nascimento','data_inicio_obra','data_inicio_fju'];
+  const dateInputs=['leader-birth','leader-work-start','leader-fju-start'].map(byId);
   const saveButton=byId('leader-save');
   const status=byId('leader-message');
   const navButton=byId('leader-nav');
@@ -42,6 +44,7 @@ export function setupCoordinatorCards({supabase,compressPhoto,navigateToTab}){
     if(ownCard)ownCard.replaceChildren();
     if(nameInput)nameInput.value='';
     if(fileInput)fileInput.value='';
+    dateInputs.forEach(input=>{input.value='';});
     if(status){status.textContent='';status.className='message';}
   }
   function tell(msg,error=false){
@@ -103,7 +106,7 @@ export function setupCoordinatorCards({supabase,compressPhoto,navigateToTab}){
     const uid=active.uid;
     tell('Carregando perfil...');
     const {data,error}=await supabase.from(table)
-      .select('usuario_id,nome_exibicao,foto_path').eq('usuario_id',uid).maybeSingle();
+      .select('usuario_id,nome_exibicao,foto_path,data_nascimento,data_inicio_obra,data_inicio_fju').eq('usuario_id',uid).maybeSingle();
     if(requestToken!==token)return;
     if(error){
       tell('O perfil ainda não está disponível. Verifique se a configuração foi ativada no Supabase: '+error.message,true);
@@ -111,6 +114,7 @@ export function setupCoordinatorCards({supabase,compressPhoto,navigateToTab}){
     }
     ownRecord=data||null;
     nameInput.value=data?.nome_exibicao||'';
+    dateInputs.forEach((input,i)=>{input.value=data?.[dateKeys[i]]||'';});
     if(data?.foto_path)await downloadPhoto(data.foto_path,uid,requestToken);
     if(requestToken!==token)return;
     renderOwn();
@@ -204,12 +208,15 @@ export function setupCoordinatorCards({supabase,compressPhoto,navigateToTab}){
     const nome=nameInput.value.trim();
     if(nome.length<2||nome.length>100){tell('Informe seu nome (de 2 a 100 caracteres).',true);return;}
     const file=fileInput.files?.[0];
+    const dates=Object.fromEntries(dateKeys.map((key,i)=>[key,dateInputs[i].value||null]));
+    const today=new Date().toISOString().slice(0,10);
+    if(Object.values(dates).some(value=>value&&value>today)){tell('As datas não podem estar no futuro.',true);return;}
     saveButton.disabled=true;
     tell('Salvando seu perfil...');
     try{
       const result=ownRecord
-        ?await supabase.from(table).update({nome_exibicao:nome}).eq('usuario_id',uid)
-        :await supabase.from(table).insert({usuario_id:uid,nome_exibicao:nome});
+        ?await supabase.from(table).update({nome_exibicao:nome,...dates}).eq('usuario_id',uid)
+        :await supabase.from(table).insert({usuario_id:uid,nome_exibicao:nome,...dates});
       if(result.error)throw new Error(result.error.message);
       let uploaded=false;
       if(file){
