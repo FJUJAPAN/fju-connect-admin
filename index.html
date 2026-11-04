@@ -1708,11 +1708,16 @@ try{initialAdminLanguage=localStorage.getItem('fju_lang')||localStorage.getItem(
 setAdminLanguage(initialAdminLanguage);
 adminLanguageSelect.addEventListener('change',async()=>{
  const value=adminLanguageSelect.value;
- const previousLanguage=['pt','ja','en'].find(lang=>document.documentElement.lang===(lang==='pt'?'pt-BR':lang))||'pt';
- adminLanguageSelect.disabled=true;adminLanguageFeedback.textContent='';
- try{const {error}=await supabase.auth.updateUser({data:{preferred_language:value}});if(error)throw error;setAdminLanguage(value);adminLanguageFeedback.textContent=adminLanguageCopy[value].saved;if(currentProfile)void loadSpecialEvents();}
- catch(e){setAdminLanguage(previousLanguage);adminLanguageFeedback.textContent=adminLanguageCopy[previousLanguage]?.error||adminLanguageCopy.pt.error;}
- finally{adminLanguageSelect.disabled=false;}
+ // Language selection must work before authentication and without network access.
+ setAdminLanguage(value);
+ adminLanguageFeedback.textContent='';
+ if(currentProfile){
+   try{
+     const {error}=await supabase.auth.updateUser({data:{preferred_language:value}});
+     if(error)console.warn('Language preference saved locally only:',error.message);
+   }catch(error){console.warn('Language preference saved locally only:',error);}
+   void loadSpecialEvents();
+ }
 });
 
 const administrativeAccess=setupAdministrativeAccess({
