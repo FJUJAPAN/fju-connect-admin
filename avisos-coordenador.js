@@ -106,6 +106,8 @@ export function setupCoordinatorPendingNotices({supabase,getProfile,openYouthEdi
     const profile=getProfile();
     if(profile?.papel==='coordenador')void refresh(profile,true);
   }
+  mount();
+  window.setInterval(()=>{if(!document.hidden)void refresh();},30000);
   document.addEventListener('visibilitychange',onReturn);
   window.addEventListener('focus',onReturn);
   document.getElementById('fju-admin-language-select')?.addEventListener('change',onReturn);
