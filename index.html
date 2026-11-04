@@ -2329,7 +2329,7 @@ async function compactarFoto100KB(file){
 }
 let youthLoadVersion=0;
 async function loadYouth(){
-  if(currentProfile?.papel==='nacional')(el('photo-repair-ui').hidden=false);
+  if(currentProfile?.papel==='nacional'){el('photo-repair-ui').hidden=false;void fjuRestoreApprovedPhotos();}
   const profile=currentProfile;
   if(!profile)return;
   const loadVersion=++youthLoadVersion;
@@ -4480,9 +4480,9 @@ async function loadYouthSignups(){
     if(currentProfile!==profile)return;
     if(error){feedback.textContent='Não foi possível aprovar: '+error.message;approve.disabled=false;reject.disabled=false;return;}
     let photoWarning='';
-    if(photoBlob&&jovemId){
-      const uploaded=await supabase.storage.from('fju-fotos').upload(jovemId+'/perfil.jpg',photoBlob,{contentType:'image/jpeg',upsert:true});
-      if(uploaded.error)photoWarning=' A ficha foi criada, mas a foto não foi transferida: '+uploaded.error.message;
+    if(jovemId){
+      if(!photoBlob){const retry=await supabase.storage.from('fju-inscricoes-fotos').download(item.usuario_id+'/perfil.jpg');if(!retry.error)photoBlob=retry.data;else photoWarning=' Foto do cadastro indisponível: '+retry.error.message;}
+      if(photoBlob){const uploaded=await supabase.storage.from('fju-fotos').upload(jovemId+'/perfil.jpg',photoBlob,{contentType:'image/jpeg',upsert:true});if(uploaded.error)photoWarning=' Foto não transferida: '+uploaded.error.message;}
     }
     await loadYouthSignups();
     if(currentProfile!==profile)return;
