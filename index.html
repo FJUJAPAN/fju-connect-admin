@@ -3269,7 +3269,7 @@ function editYouth(id){
   el('youth-id').value=r.id;el('youth-polo').value=r.polo_id;
   for(const [field,key] of [['youth-name','nome_completo'],['youth-phone','telefone'],['youth-address','endereco'],['youth-country','nacionalidade_iso2'],['youth-rank','patente']])el(field).value=r[key]||'';
   setYouthBirth(r.nascimento||'');
-  el('youth-rank').value=({'normal':'Normal','eventual':'Eventual','firme':'Firme','cpo':'CPO','colaborador':'Colaborador','voluntario':'Voluntário','obreiro':'Obreiro','coordenador':'Coordenador'}[r.patente]||r.patente||'');
+  el('youth-rank').value=({'normal':'Normal','inconstante':'Normal','eventual':'Eventual','firme':'Firme','cpo':'CPO','colaborador':'Colaborador','voluntario':'Voluntário','obreiro':'Obreiro','coordenador':'Coordenador'}[String(r.patente||'').trim().toLowerCase()]||'Normal');
   document.querySelectorAll('input[name="youth-language"]').forEach(x=>x.checked=(r.idiomas||[]).includes(x.value));refreshYouthLanguages();
   const complementMount=el('fju-edit-complement-mount');
   complementMount.hidden=false;
@@ -3318,7 +3318,24 @@ el('youth-form').addEventListener('submit',async e=>{
     patente:['Inconstante','Normal'].includes(el('youth-rank').value)?'normal':el('youth-rank').value.toLowerCase(),
     categoria:['Inconstante','Normal'].includes(el('youth-rank').value)?'inconstante':'firme'
   };
-  if(!el('youth-rank').value){youthMessage('Selecione a patente do jovem.',true);return;}
+  const rankSelect=el('youth-rank');
+  // Compatibilidade com fichas antigas e seleções que perderam o valor no DOM.
+  const rankRaw=String(rankSelect.value||'').trim();
+  const rankFromRecord=el('youth-id').value
+    ? youthRows.find(row=>String(row.id)===String(el('youth-id').value))?.patente
+    : null;
+  const rankNormalized=String(rankRaw||rankFromRecord||'').trim().toLowerCase();
+  if(rankNormalized==='normal'||rankNormalized==='inconstante'){
+    rankSelect.value='Normal';
+    payload.patente='normal';
+    payload.categoria='inconstante';
+  }
+  if(!rankSelect.value){
+    youthMessage('Selecione a patente do jovem no início do formulário. Se já selecionou, feche e abra novamente o cadastro.',true);
+    rankSelect.focus();
+    rankSelect.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
   if(!el('youth-id').value&&el('youth-rank').value==='Eventual'&&profile.papel!=='coordenador'){
     youthMessage('O cadastro Eventual é exclusivo do coordenador da igreja.',true);return;
   }
