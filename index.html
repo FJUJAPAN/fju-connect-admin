@@ -1251,15 +1251,19 @@ body.fju-ficha-aberta #youth-detail.fju-direct-detail{padding-bottom:120px!impor
 <p class="leader-section-intro">Os perfis são privados e visíveis somente a contas autorizadas. A função e o polo são definidos pela liderança.</p>
 <div class="leader-own-heading">
   <h3>Meu cartão de liderança</h3>
-  <p>Visualize seu cartão e personalize somente o nome exibido e a foto.</p>
+  <p>Visualize seu cartão e atualize suas informações pessoais.</p>
 </div>
 <div id="leader-own-area" class="leader-self-layout hidden">
 <div id="leader-own-card"></div>
 <form id="leader-editor" class="leader-editor">
 <h3>Personalizar meu perfil</h3>
-<p>Seu nível de acesso e seu polo são definidos pela liderança. Aqui você pode escolher o nome exibido e sua foto.</p>
+<p>Seu nível de acesso e seu polo são definidos pela liderança. Aqui você pode atualizar seu nome, foto e datas pessoais.</p>
 <label for="leader-name">Nome exibido</label>
 <input id="leader-name" type="text" maxlength="100" autocomplete="name" placeholder="Seu nome completo" required>
+<label for="leader-birth">Data de nascimento</label><input id="leader-birth" type="date">
+<label for="leader-work-start">Quando entrou na Obra de Deus</label><input id="leader-work-start" type="date">
+<label for="leader-fju-start">Quando começou a cuidar da FJU</label><input id="leader-fju-start" type="date">
+<p>O tempo de serviço é calculado automaticamente a partir das datas informadas.</p>
 <label for="leader-photo">Sua foto de perfil</label>
 <input id="leader-photo" type="file" accept="image/jpeg,image/png,image/webp">
 <p>JPG, PNG ou WebP de até 5 MB. A foto é otimizada antes do envio e fica em armazenamento privado.</p>
