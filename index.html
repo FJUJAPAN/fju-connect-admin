@@ -2993,20 +2993,11 @@ async function loadYouthRequests(){
   el('requests-message').textContent='Consultando solicitações...';
   const accessByRequest=await administrativeAccess.requestsByRank();
   if(version!==requestsLoadVersion||currentProfile!==profile)return;
-  // Keep deleted profiles in the audit database, but omit their authorizations.
-  const excludedIds=[];
-  for(let offset=0;;offset+=500){
-    const {data:deleted,error:deletedError}=await supabase.from('fju_jovens')
-      .select('id').not('excluido_em','is',null).order('id').range(offset,offset+499);
-    if(version!==requestsLoadVersion||currentProfile!==profile)return;
-    if(deletedError){message('requests-message','Não foi possível filtrar fichas excluídas: '+deletedError.message,true);return;}
-    excludedIds.push(...(deleted||[]).map(row=>row.id));
-    if((deleted||[]).length<500)break;
-  }
+  // Solicitações pendentes permanecem visíveis mesmo quando a ficha foi
+  // marcada como excluída depois do envio. A aprovação dessas fichas fica bloqueada.
   const baseQuery=(fields,options)=> {
     let query=supabase.from('fju_solicitacoes').select(fields,options);
     if(profile.papel==='coordenador')query=query.eq('polo_id',profile.polo_id);
-    if(excludedIds.length)query=query.not('jovem_id','in','('+excludedIds.join(',')+')');
     return query;
   };
   // O status é filtrado no Supabase ANTES da paginação; pedidos antigos pendentes
@@ -3056,7 +3047,7 @@ async function loadYouthRequests(){
   const youthIds=[...new Set(visible.map(request=>request.jovem_id).filter(Boolean))];
   if(youthIds.length){
     const {data:people,error:youthError}=await supabase.from('fju_jovens')
-      .select('id,nome_completo,polo_id,nascimento,telefone,nacionalidade_iso2,idiomas,patente,categoria')
+      .select('id,nome_completo,polo_id,nascimento,telefone,nacionalidade_iso2,idiomas,patente,categoria,excluido_em')
       .in('id',youthIds);
     if(version!==requestsLoadVersion||currentProfile!==profile)return;
     if(!youthError)for(const youth of people||[])youthById.set(String(youth.id),youth);
@@ -3070,7 +3061,7 @@ async function loadYouthRequests(){
     while(true){
       let pendingQuery=supabase.from('fju_solicitacoes')
         .select('id,polo_id').eq('status','pendente').order('id',{ascending:true});
-      if(excludedIds.length)pendingQuery=pendingQuery.not('jovem_id','in','('+excludedIds.join(',')+')');
+      
       const {data:pendingRows,error:pendingError}=await pendingQuery
         .range(pendingOffset,pendingOffset+999);
       if(version!==requestsLoadVersion||currentProfile!==profile)return;
@@ -3180,15 +3171,20 @@ async function loadYouthRequests(){
     }
     const meta=document.createElement('p');meta.className='authorization-note';
     meta.textContent='Solicitada em: '+(r.criado_em?new Intl.DateTimeFormat('pt-BR',{dateStyle:'short',timeStyle:'short',timeZone:'Asia/Tokyo'}).format(new Date(r.criado_em)):'Data não disponível');card.append(meta);
+    const fichaExcluida=Boolean(jovem?.excluido_em);
     if(!identificado){
       const warn=document.createElement('p');warn.style.color='#b42318';
       warn.textContent='Não foi possível confirmar o jovem e a igreja. Aprovação bloqueada até corrigir a identificação.';
+      card.append(warn);
+    }else if(fichaExcluida){
+      const warn=document.createElement('p');warn.style.color='#b42318';
+      warn.textContent='Esta ficha foi marcada como excluída após o envio. O pedido continua visível para análise, mas não pode ser aprovado enquanto a ficha estiver excluída.';
       card.append(warn);
     }
     if(profile.papel==='nacional'&&r.status==='pendente'&&identificado){
       const approve=document.createElement('button');approve.type='button';
       approve.textContent=linkedAccess?adminDecisionCopy().approveAccess:adminDecisionCopy().approve;
-      approve.disabled=!!accessUnknown;
+      approve.disabled=!!accessUnknown||fichaExcluida;
       const deny=document.createElement('button');deny.type='button';
       deny.className='secondary';deny.textContent=adminDecisionCopy().deny;
       const feedback=document.createElement('p');feedback.className='message';
@@ -3196,7 +3192,7 @@ async function loadYouthRequests(){
       let submitting=false;
       async function decide(aprovado){
         if(submitting||currentProfile!==profile||!card.isConnected)return;
-        if(aprovado&&accessUnknown)return;
+        if(aprovado&&(accessUnknown||fichaExcluida))return;
         const question=aprovado
           ?(linkedAccess
             ?adminDecisionCopy().confirmAccess.replace('{email}',linkedAccess.email).replace('{polo}',linkedAccess.polo_nome)
@@ -3222,7 +3218,7 @@ async function loadYouthRequests(){
           if(currentProfile!==profile||!card.isConnected)return;
           feedback.classList.add('error');
           feedback.textContent=adminDecisionCopy().failed+(error?.message||'Tente novamente.');
-          approve.disabled=!!accessUnknown;deny.disabled=false;
+          approve.disabled=!!accessUnknown||fichaExcluida;deny.disabled=false;
         }finally{submitting=false;}
       }
       approve.addEventListener('click',()=>void decide(true));

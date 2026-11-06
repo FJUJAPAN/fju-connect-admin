@@ -117,29 +117,26 @@ test('Solicitações respeitam idioma selecionado e usam português como alterna
   assert.equal(w.__status(24),'pt-BR');
  }finally{dom.window.close();}
 });
-test('Troca de idioma atualiza eventos somente após salvar preferência',()=>{
+test('Troca de idioma atualiza imediatamente e salva preferência sem bloquear a interface',()=>{
  const start=html.indexOf("adminLanguageSelect.addEventListener('change'");
  const end=html.indexOf('const administrativeAccess=',start);
  assert.ok(start>=0&&end>start,'Controle de idioma não encontrado');
  const handler=html.slice(start,end);
+ assert.match(handler,/setAdminLanguage\(value\)/);
  assert.match(handler,/supabase\.auth\.updateUser\(\{data:\{preferred_language:value\}\}\)/);
- assert.match(handler,/if\(error\)throw error;setAdminLanguage\(value\);/);
- assert.match(handler,/if\(currentProfile\)void loadSpecialEvents\(\)/);
- const success=handler.indexOf('if(currentProfile)void loadSpecialEvents()');
- const failure=handler.indexOf('catch(e)');
- assert.ok(success>0&&failure>success,'Atualização de eventos deve ocorrer apenas no caminho de sucesso');
+ assert.match(handler,/if\(error\)console\.warn/);
+ assert.match(handler,/void loadSpecialEvents\(\)/);
+ assert.doesNotMatch(handler,/if\(error\)throw error/);
 });
-test('Falha ao salvar idioma restaura preferência anterior sem nova requisição',()=>{
+test('Falha ao salvar preferência não impede a troca local de idioma',()=>{
  const start=html.indexOf("adminLanguageSelect.addEventListener('change'");
  const end=html.indexOf('const administrativeAccess=',start);
  assert.ok(start>=0&&end>start);
  const handler=html.slice(start,end);
- assert.match(handler,/const previousLanguage=\['pt','ja','en'\]\.find/);
- assert.match(handler,/document\.documentElement\.lang/);
- assert.doesNotMatch(handler,/localStorage\.getItem/);
- assert.match(handler,/catch\(e\)\{setAdminLanguage\(previousLanguage\)/);
+ assert.match(handler,/setAdminLanguage\(value\)/);
+ assert.match(handler,/catch\(error\)\{console\.warn/);
+ assert.doesNotMatch(handler,/setAdminLanguage\(previousLanguage\)/);
  assert.doesNotMatch(handler,/supabase\.auth\.getUser\(/);
- assert.match(handler,/finally\{adminLanguageSelect\.disabled=false;\}/);
 });
 test('Idioma inicial tolera armazenamento local bloqueado',()=>{
  const start=html.indexOf("let initialAdminLanguage='pt';");
@@ -163,22 +160,13 @@ test('Carregamento do perfil prioriza idioma salvo e tolera armazenamento bloque
  assert.match(source,/catch\(_\)\{\}/);
  assert.match(source,/setAdminLanguage\(profileLanguage\)/);
 });
-test('Idioma anterior é detectado corretamente em português, japonês e inglês',()=>{
+test('Troca de idioma usa diretamente o idioma selecionado',()=>{
  const start=html.indexOf("adminLanguageSelect.addEventListener('change'");
  const end=html.indexOf('const administrativeAccess=',start);
  assert.ok(start>=0&&end>start);
  const handler=html.slice(start,end);
- const match=handler.match(/const previousLanguage=([^;]+);/);
- assert.ok(match,'Expressão para detectar idioma anterior não encontrada');
- const dom=new JSDOM('',{runScripts:'outside-only'});
- try{
-  const w=dom.window;
-  for(const [htmlLang,expected] of [['pt-BR','pt'],['ja','ja'],['en','en'],['fr','pt']]){
-   w.document.documentElement.lang=htmlLang;
-   w.eval('window.__previous='+match[1]+';');
-   assert.equal(w.__previous,expected);
-  }
- }finally{dom.window.close();}
+ assert.match(handler,/const value=adminLanguageSelect\.value/);
+ assert.match(handler,/setAdminLanguage\(value\)/);
 });
 test('Pacote 1/5: todas as traduções de solicitações têm índices completos',()=>{
  const start=html.indexOf('const specialEventRequestsStatusI18n=');
