@@ -47,6 +47,7 @@ $function$;
 create schema if not exists private;
 revoke all on schema private from public;
 revoke all on schema private from anon;
+revoke all on schema private from authenticated;
 grant usage on schema private to authenticated;
 
 create or replace function private.fju_decidir_correcao_relatorio_semanal(
