@@ -1333,12 +1333,14 @@ import {setupCoordinatorCards} from './cards-coordenadores.js';
 import {setupAdministrativeAccess} from './acesso-administrativo.js?v=20261022-conta-automatica-2';
 import {setupCoordinatorRequests} from './cadastros-coordenadores.js';
 import {setupCoordinatorPendingNotices} from './avisos-coordenador.js?v=20261104-1';
+import {setupWeeklyReportEditing} from './relatorios-edicao-autorizacao.js?v=20261108-2';
 const SUPABASE_URL='https://hmacroktklgwkofxsygv.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_mdkfafhpqtthwzU8Hf7u9A_rErx3MFJ';
 const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const el=id=>document.getElementById(id);
 // Initialize session state before the first language render.
 let currentProfile=null;
+setupWeeklyReportEditing(supabase,()=>currentProfile);
 let mergeConferencia=null;
 document.addEventListener('DOMContentLoaded',()=>{
  const byId=id=>document.getElementById(id);
