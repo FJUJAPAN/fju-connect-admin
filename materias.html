@@ -100,6 +100,36 @@ async function previewItem(m){
  const title=document.createElement('h1');title.textContent=m.titulo_pt||m.titulo_ja||m.titulo_en||'Sem título';title.style.cssText='font-size:28px;line-height:1.2;margin:0 0 8px';card.append(title);
  const meta=document.createElement('p');meta.textContent=(poloNames[m.polo_id]||'Polo')+' · '+(m.data_materia||'');meta.style.cssText='color:#68758b;margin:0 0 20px';card.append(meta);
  const status=document.createElement('p');status.textContent='Esta é uma prévia para conferência. A matéria ainda não está publicada.';status.style.cssText='background:#fff5df;color:#805600;padding:12px;border-radius:10px;font-size:13px';card.append(status);
+ if(profile.papel==='nacional'&&m.status==='pendente'){
+  const approval=document.createElement('div');
+  approval.style.cssText='display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 22px';
+  const approve=document.createElement('button');
+  approve.type='button';approve.textContent='✓ Aprovar e publicar';
+  approve.style.cssText='background:#176b44;color:#fff;padding:13px 18px;border:0;border-radius:10px;font-weight:800;cursor:pointer';
+  const reject=document.createElement('button');
+  reject.type='button';reject.textContent='Rejeitar matéria';
+  reject.style.cssText='background:#f3e8e8;color:#922b35;padding:13px 18px;border:0;border-radius:10px;font-weight:800;cursor:pointer';
+  const decide=async(yes)=>{
+   if(busy)return;
+   const reason=yes?null:prompt('Motivo da rejeição:');
+   if(!yes&&reason===null)return;
+   busy=true;approve.disabled=true;reject.disabled=true;
+   try{
+    const{error}=await sb.rpc('fju_decidir_evento_materia',{p_id:m.id,p_aprovar:yes,p_motivo:reason});
+    if(error)throw error;
+    overlay.remove();
+    msg(yes?'Matéria aprovada e publicada.':'Solicitação rejeitada.');
+    await loadItems();
+   }catch(error){
+    msg('Não foi possível concluir a decisão: '+error.message,true);
+    approve.disabled=false;reject.disabled=false;
+   }finally{busy=false;updatePhotoButtons()}
+  };
+  approve.onclick=()=>void decide(true);
+  reject.onclick=()=>void decide(false);
+  approval.append(approve,reject);
+  card.append(approval);
+ }
  for(const l of langs){const heading=document.createElement('h2');heading.textContent={pt:'Português',ja:'日本語',en:'English'}[l];heading.style.cssText='font-size:18px;margin:22px 0 8px';const t=(m['titulo_'+l]||'').trim(),body=['texto1','texto2','final'].map(k=>(m[k+'_'+l]||'').trim()).filter(Boolean);if(!t&&!body.length)continue;card.append(heading);if(t&&t!==title.textContent){const h=document.createElement('h3');h.textContent=t;h.style.cssText='font-size:21px;margin:8px 0';card.append(h)}body.forEach(value=>{const p=document.createElement('p');p.textContent=value;p.style.cssText='white-space:pre-wrap;line-height:1.7;color:#34435c';card.append(p)})}
  const gallery=document.createElement('div');gallery.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:22px';
  for(let i=1;i<=6;i++){const path=m['foto'+i];if(!path)continue;const img=document.createElement('img');img.alt='Foto '+i;img.style.cssText='width:100%;max-height:280px;object-fit:cover;border-radius:12px;background:#eef2f7';gallery.append(img);const{data,error}=await sb.storage.from('fju-materias').createSignedUrl(path,1800);if(!error&&data?.signedUrl)img.src=data.signedUrl;else img.alt='Foto '+i+' — não foi possível carregar a imagem'}
