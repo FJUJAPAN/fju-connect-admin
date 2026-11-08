@@ -241,10 +241,10 @@ export function setupWeeklyReportEditing(supabase, getProfile) {
     }
     const reportIds = [...new Set(requests.map(r => r.relatorio_id))];
     const poloIds = [...new Set(requests.map(r => r.polo_id))];
-    const [{ data: reports, error: reportError }, { data: polos, error: poloError }, { data: users }] = await Promise.all([
+    const [{ data: reports, error: reportError }, { data: polos, error: poloError }, { data: coordinators }] = await Promise.all([
       supabase.from('fju_relatorios_semanais').select('*').in('id', reportIds),
       supabase.from('fju_polos').select('id,nome').in('id', poloIds),
-      supabase.from('fju_perfis').select('usuario_id').in('usuario_id', requests.map(r => r.solicitado_por))
+      supabase.from('fju_cadastros_coordenadores').select('usuario_id,nome').in('usuario_id', [...new Set(requests.map(r => r.solicitado_por))])
     ]);
     if (getProfile() !== profile) return;
     if (reportError || poloError) {
@@ -253,13 +253,13 @@ export function setupWeeklyReportEditing(supabase, getProfile) {
     }
     const reportMap = new Map((reports || []).map(r => [r.id, r]));
     const poloMap = new Map((polos || []).map(p => [p.id, p.nome]));
-    const requesterIds = [...new Set((users || []).map(u => u.usuario_id))];
+    const coordinatorMap = new Map((coordinators || []).map(item => [item.usuario_id, item.nome]));
     for (const request of requests) {
       const report = reportMap.get(request.relatorio_id);
       const card = make('article', 'report-card');
       const title = make('div', 'report-card-title', (poloMap.get(request.polo_id) || '—') + ' · ' + dateLabel(report?.semana_domingo || request.solicitado_em.slice(0, 10)));
       const reason = make('p', 'authorization-note', t.reasonLabel + ': ' + request.motivo);
-      const meta = make('p', 'report-card-subtitle', t.coordinator + ': ' + request.solicitado_por);
+      const meta = make('p', 'report-card-subtitle', t.coordinator + ': ' + (coordinatorMap.get(request.solicitado_por) || request.solicitado_por));
       card.append(title, meta, reason);
       if (report) card.append(reportMetrics(report));
       const actions = make('div', 'authorization-actions');
