@@ -110,6 +110,12 @@ begin
 end;
 $function$;
 
+drop trigger if exists fju_concluir_solicitacao_edicao_relatorio on public.fju_relatorios_semanais;
+drop function if exists public.fju_concluir_solicitacao_edicao_relatorio();
+revoke all on function public.fju_registrar_edicao_relatorio_semanal() from public;
+revoke all on function public.fju_registrar_edicao_relatorio_semanal() from anon;
+revoke all on function public.fju_registrar_edicao_relatorio_semanal() from authenticated;
+
 revoke all on function public.fju_decidir_correcao_relatorio_semanal(uuid,boolean,text) from public;
 revoke all on function public.fju_decidir_correcao_relatorio_semanal(uuid,boolean,text) from anon;
 grant execute on function public.fju_decidir_correcao_relatorio_semanal(uuid,boolean,text) to authenticated;
