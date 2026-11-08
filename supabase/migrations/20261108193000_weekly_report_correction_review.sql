@@ -44,13 +44,15 @@ begin
 end;
 $function$;
 
-create or replace function public.fju_decidir_correcao_relatorio_semanal(
+create schema if not exists private;
+revoke all on schema private from public;
+revoke all on schema private from anon;
+grant usage on schema private to authenticated;
+
+create or replace function private.fju_decidir_correcao_relatorio_semanal(
   p_solicitacao_id uuid, p_aprovar boolean, p_observacao text default null
 )
-returns jsonb
-language plpgsql
-security definer
-set search_path = ''
+returns jsonb language plpgsql security definer set search_path = ''
 as $function$
 declare
   v_perfil record;
@@ -68,7 +70,6 @@ begin
   if not found or v_solicitacao.status <> 'pendente' then
     raise exception 'Esta correção já foi analisada ou não existe.';
   end if;
-
   if p_aprovar then
     v_dados := v_solicitacao.dados_propostos;
     if v_dados is null or jsonb_typeof(v_dados) <> 'object'
@@ -109,6 +110,21 @@ begin
   end if;
 end;
 $function$;
+
+revoke all on function private.fju_decidir_correcao_relatorio_semanal(uuid,boolean,text) from public;
+revoke all on function private.fju_decidir_correcao_relatorio_semanal(uuid,boolean,text) from anon;
+grant execute on function private.fju_decidir_correcao_relatorio_semanal(uuid,boolean,text) to authenticated;
+
+create or replace function public.fju_decidir_correcao_relatorio_semanal(
+  p_solicitacao_id uuid, p_aprovar boolean, p_observacao text default null
+)
+returns jsonb language sql security invoker set search_path = ''
+as $function$
+  select private.fju_decidir_correcao_relatorio_semanal(p_solicitacao_id,p_aprovar,p_observacao);
+$function$;
+revoke all on function public.fju_decidir_correcao_relatorio_semanal(uuid,boolean,text) from public;
+revoke all on function public.fju_decidir_correcao_relatorio_semanal(uuid,boolean,text) from anon;
+grant execute on function public.fju_decidir_correcao_relatorio_semanal(uuid,boolean,text) to authenticated;
 
 drop trigger if exists fju_concluir_solicitacao_edicao_relatorio on public.fju_relatorios_semanais;
 drop function if exists public.fju_concluir_solicitacao_edicao_relatorio();
