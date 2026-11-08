@@ -72,7 +72,7 @@ begin
   if p_aprovar then
     v_dados := v_solicitacao.dados_propostos;
     if v_dados is null or jsonb_typeof(v_dados) <> 'object'
-       or jsonb_object_length(v_dados) <> 8
+       or (select count(*) from jsonb_object_keys(v_dados)) <> 8
        or not (v_dados ?& array[
          'jovens_firmes','jovens_novos','jovens_afastados',
          'presenca_domingo_930','presenca_encontro_fju',
