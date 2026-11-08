@@ -21,7 +21,7 @@ const TEXT = {
     approve: 'Aprovar correção', deny: 'Recusar correção', note: 'Observação para o coordenador (opcional):',
     coordinator: 'Coordenador (ID)', polo: 'Polo', error: 'Não foi possível concluir: ',
     reportError: 'Não foi possível carregar os relatórios: ', askReason: 'Explique a correção com pelo menos 5 caracteres.',
-    deniedNote: 'Observação do Nacional', status: 'Situação', submitting: 'Enviando…',
+    deniedNote: 'Observação do Nacional', status: 'Situação', submitting: 'Enviando…', deadlineClosed: 'Prazo para editar encerrado. As correções só podem ser enviadas até segunda-feira (horário do Japão).',
     approvedMessage: 'Correção aprovada. O relatório oficial foi atualizado e a versão anterior foi guardada no histórico.',
     deniedMessage: 'Correção recusada. O relatório original continua válido.',
     askDeny: 'Informe o motivo da recusa:'
@@ -37,7 +37,7 @@ const TEXT = {
     approve: '修正を承認', deny: '修正を却下', note: 'コーディネーターへのメモ（任意）:',
     coordinator: 'コーディネーターID', polo: '教会', error: '処理できませんでした: ',
     reportError: 'レポートを読み込めません: ', askReason: '5文字以上で修正内容を入力してください。',
-    deniedNote: '全国管理者からのコメント', status: '状態', submitting: '送信中…',
+    deniedNote: '全国管理者からのコメント', status: '状態', submitting: '送信中…', deadlineClosed: '修正期限が終了しました。修正の送信は日本時間の月曜日まで可能です。',
     approvedMessage: '修正を承認しました。正式なレポートを更新し、以前のバージョンを履歴に保存しました。',
     deniedMessage: '修正を却下しました。元のレポートが引き続き有効です。',
     askDeny: '却下理由を入力してください:'
@@ -54,7 +54,7 @@ const TEXT = {
     approve: 'Approve correction', deny: 'Decline correction', note: 'Note for the coordinator (optional):',
     coordinator: 'Coordinator (ID)', polo: 'Church', error: 'Could not complete: ',
     reportError: 'Could not load reports: ', askReason: 'Please explain the correction in at least 5 characters.',
-    deniedNote: 'National note', status: 'Status', submitting: 'Submitting…',
+    deniedNote: 'National note', status: 'Status', submitting: 'Submitting…', deadlineClosed: 'The editing deadline has passed. Corrections can only be submitted until Monday (Japan time).',
     approvedMessage: 'Correction approved. The official report was updated and the previous version was saved in history.',
     deniedMessage: 'Correction declined. The original report remains official.',
     askDeny: 'Enter the reason for declining:'
@@ -74,6 +74,19 @@ function make(tag, className, content) {
 function dateLabel(value) {
   const locale = language() === 'ja' ? 'ja-JP' : language() === 'en' ? 'en-US' : 'pt-BR';
   return new Date(value + 'T12:00:00').toLocaleDateString(locale);
+}
+function japanTodayISO() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit'
+  }).formatToParts(new Date());
+  const part = Object.fromEntries(parts.map(item => [item.type, item.value]));
+  return part.year + '-' + part.month + '-' + part.day;
+}
+function correctionWindowOpen(report) {
+  if (!report?.semana_domingo) return false;
+  const deadline = new Date(report.semana_domingo + 'T00:00:00Z');
+  deadline.setUTCDate(deadline.getUTCDate() + 1);
+  return japanTodayISO() <= deadline.toISOString().slice(0, 10);
 }
 function reportMetrics(report, heading) {
   const wrap = make('div', 'report-metrics');
@@ -158,9 +171,13 @@ export function setupWeeklyReportEditing(supabase, getProfile) {
         if (req?.status === 'recusada' && req.observacao_nacional) {
           card.append(make('p', 'authorization-note', t.deniedNote + ': ' + req.observacao_nacional));
         }
-        const editButton = make('button', '', t.edit);
-        editButton.addEventListener('click', () => showCorrectionForm(card, report, profile, t));
-        card.append(editButton);
+        if (correctionWindowOpen(report)) {
+          const editButton = make('button', '', t.edit);
+          editButton.addEventListener('click', () => showCorrectionForm(card, report, profile, t));
+          card.append(editButton);
+        } else {
+          card.append(make('p', 'muted', t.deadlineClosed));
+        }
       }
       coordinatorSection.append(card);
     }
