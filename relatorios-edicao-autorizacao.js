@@ -12,45 +12,52 @@ const METRICS = [
 const TEXT = {
   pt: {
     mine: 'Meus relatórios enviados', loading: 'Carregando relatórios…', empty: 'Você ainda não enviou relatórios semanais.',
-    week: 'Semana encerrada em', version: 'Versão', request: 'Solicitar edição', pending: 'Aguardando autorização do Nacional',
-    authorized: 'Edição autorizada', denied: 'Solicitação recusada', done: 'Edição concluída',
-    edit: 'Editar relatório autorizado', save: 'Salvar e reenviar relatório', cancel: 'Cancelar',
-    reason: 'Explique por que precisa editar este relatório:', sent: 'Solicitação enviada ao Nacional.',
-    saved: 'Relatório atualizado e reenviado. O histórico anterior foi preservado.',
-    pendingTitle: 'Solicitações de edição pendentes', noPending: 'Não há solicitações de edição pendentes.',
-    approve: 'Autorizar edição', deny: 'Recusar', note: 'Observação para o coordenador (opcional):',
-    reasonLabel: 'Motivo da solicitação', church: 'Igreja', coordinator: 'Coordenador',
-    error: 'Não foi possível concluir: ', reportError: 'Não foi possível carregar os relatórios: ',
-    askReason: 'Informe um motivo com pelo menos 5 caracteres.', requestExists: 'Já existe uma solicitação ativa para este relatório.',
-    deniedNote: 'Motivo da recusa', status: 'Situação'
+    week: 'Semana encerrada em', version: 'Versão', edit: 'Editar e enviar correção',
+    pending: 'Correção aguardando análise do Nacional', approved: 'Correção aprovada pelo Nacional',
+    denied: 'Correção recusada', reason: 'Explique o que precisa ser corrigido:',
+    send: 'Enviar correção para análise', cancel: 'Cancelar', sent: 'Correção enviada. O relatório original continua valendo até a decisão do Nacional.',
+    pendingTitle: 'Correções aguardando sua autorização', noPending: 'Não há correções aguardando análise.',
+    original: 'Relatório atualmente válido', proposed: 'Versão corrigida enviada pelo coordenador',
+    approve: 'Aprovar correção', deny: 'Recusar correção', note: 'Observação para o coordenador (opcional):',
+    coordinator: 'Coordenador (ID)', polo: 'Polo', error: 'Não foi possível concluir: ',
+    reportError: 'Não foi possível carregar os relatórios: ', askReason: 'Explique a correção com pelo menos 5 caracteres.',
+    deniedNote: 'Observação do Nacional', status: 'Situação', submitting: 'Enviando…',
+    approvedMessage: 'Correção aprovada. O relatório oficial foi atualizado e a versão anterior foi guardada no histórico.',
+    deniedMessage: 'Correção recusada. O relatório original continua válido.',
+    askDeny: 'Informe o motivo da recusa:'
   },
   ja: {
     mine: '提出済みレポート', loading: 'レポートを読み込み中…', empty: '週間レポートはまだ提出されていません。',
-    week: '対象週（日曜日）', version: 'バージョン', request: '編集を申請', pending: '全国管理者の承認待ち',
-    authorized: '編集が許可されました', denied: '申請は却下されました', done: '編集完了',
-    edit: '許可されたレポートを編集', save: '保存して再提出', cancel: 'キャンセル',
-    reason: '編集が必要な理由を入力してください:', sent: '全国管理者に申請しました。',
-    saved: 'レポートを更新して再提出しました。以前の内容も履歴に保存されています。',
-    pendingTitle: '編集申請（承認待ち）', noPending: '承認待ちの編集申請はありません。',
-    approve: '編集を許可', deny: '却下', note: 'コーディネーターへのメモ（任意）:',
-    reasonLabel: '申請理由', church: '教会', coordinator: '申請者',
-    error: '処理できませんでした: ', reportError: 'レポートを読み込めません: ',
-    askReason: '5文字以上の理由を入力してください。', requestExists: 'このレポートには既に有効な申請があります。',
-    deniedNote: '却下理由', status: '状態'
+    week: '対象週（日曜日）', version: 'バージョン', edit: '修正して再提出',
+    pending: '全国管理者の確認待ち', approved: '修正が承認されました', denied: '修正は却下されました',
+    reason: '修正内容を説明してください:', send: '修正を送信', cancel: 'キャンセル',
+    sent: '修正を送信しました。全国管理者の判断までは元のレポートが有効です。',
+    pendingTitle: '確認待ちのレポート修正', noPending: '確認待ちの修正はありません。',
+    original: '現在有効なレポート', proposed: 'コーディネーターが送信した修正版',
+    approve: '修正を承認', deny: '修正を却下', note: 'コーディネーターへのメモ（任意）:',
+    coordinator: 'コーディネーターID', polo: '教会', error: '処理できませんでした: ',
+    reportError: 'レポートを読み込めません: ', askReason: '5文字以上で修正内容を入力してください。',
+    deniedNote: '全国管理者からのコメント', status: '状態', submitting: '送信中…',
+    approvedMessage: '修正を承認しました。正式なレポートを更新し、以前のバージョンを履歴に保存しました。',
+    deniedMessage: '修正を却下しました。元のレポートが引き続き有効です。',
+    askDeny: '却下理由を入力してください:'
   },
   en: {
     mine: 'My submitted reports', loading: 'Loading reports…', empty: 'You have not submitted weekly reports yet.',
-    week: 'Week ending', version: 'Version', request: 'Request editing', pending: 'Awaiting National approval',
-    authorized: 'Editing authorized', denied: 'Request declined', done: 'Editing completed',
-    edit: 'Edit authorized report', save: 'Save and resubmit report', cancel: 'Cancel',
-    reason: 'Explain why this report needs to be edited:', sent: 'Your request was sent to National.',
-    saved: 'Report updated and resubmitted. The previous version was preserved.',
-    pendingTitle: 'Pending edit requests', noPending: 'There are no pending edit requests.',
-    approve: 'Authorize editing', deny: 'Decline', note: 'Note for the coordinator (optional):',
-    reasonLabel: 'Request reason', church: 'Church', coordinator: 'Coordinator',
-    error: 'Could not complete: ', reportError: 'Could not load reports: ',
-    askReason: 'Please enter a reason of at least 5 characters.', requestExists: 'An active request already exists for this report.',
-    deniedNote: 'Decline reason', status: 'Status'
+    week: 'Week ending', version: 'Version', edit: 'Edit and submit correction',
+    pending: 'Correction awaiting National review', approved: 'Correction approved by National',
+    denied: 'Correction declined', reason: 'Explain what needs to be corrected:',
+    send: 'Send correction for review', cancel: 'Cancel',
+    sent: 'Correction submitted. The original report remains official until National decides.',
+    pendingTitle: 'Corrections awaiting your review', noPending: 'There are no corrections awaiting review.',
+    original: 'Currently official report', proposed: 'Corrected version submitted by coordinator',
+    approve: 'Approve correction', deny: 'Decline correction', note: 'Note for the coordinator (optional):',
+    coordinator: 'Coordinator (ID)', polo: 'Church', error: 'Could not complete: ',
+    reportError: 'Could not load reports: ', askReason: 'Please explain the correction in at least 5 characters.',
+    deniedNote: 'National note', status: 'Status', submitting: 'Submitting…',
+    approvedMessage: 'Correction approved. The official report was updated and the previous version was saved in history.',
+    deniedMessage: 'Correction declined. The original report remains official.',
+    askDeny: 'Enter the reason for declining:'
   }
 };
 
@@ -58,48 +65,44 @@ function language() {
   const value = document.getElementById('fju-admin-language-select')?.value || 'pt';
   return TEXT[value] ? value : 'pt';
 }
-
 function make(tag, className, content) {
   const node = document.createElement(tag);
   if (className) node.className = className;
   if (content !== undefined) node.textContent = String(content);
   return node;
 }
-
 function dateLabel(value) {
   const locale = language() === 'ja' ? 'ja-JP' : language() === 'en' ? 'en-US' : 'pt-BR';
   return new Date(value + 'T12:00:00').toLocaleDateString(locale);
 }
-
-function statusBadge(status, t) {
-  const labels = { pendente: t.pending, autorizada: t.authorized, recusada: t.denied, concluida: t.done };
-  const badge = make('span', 'report-badge', labels[status] || status);
-  if (status === 'pendente') badge.style.background = '#fff2d9', badge.style.color = '#825600';
-  if (status === 'autorizada') badge.style.background = '#e8f5ed', badge.style.color = '#176b44';
-  if (status === 'recusada') badge.style.background = '#fde8e8', badge.style.color = '#9c2929';
-  return badge;
-}
-
-function reportMetrics(report) {
+function reportMetrics(report, heading) {
   const wrap = make('div', 'report-metrics');
+  if (heading) {
+    const title = make('strong', 'report-comparison-title', heading);
+    title.style.gridColumn = '1/-1';
+    wrap.append(title);
+  }
   for (const [key, label] of METRICS) {
     const item = make('div', 'report-metric');
-    item.append(make('span', '', label), make('b', '', Number(report[key] || 0).toLocaleString('ja-JP')));
+    item.append(make('span', '', label), make('b', '', Number(report?.[key] || 0).toLocaleString('ja-JP')));
     wrap.append(item);
   }
   return wrap;
 }
+function statusBadge(label, status) {
+  const badge = make('span', 'report-badge', label);
+  if (status === 'pendente') badge.style.cssText += ';background:#fff2d9;color:#825600';
+  if (status === 'recusada') badge.style.cssText += ';background:#fde8e8;color:#9c2929';
+  return badge;
+}
 
 export function setupWeeklyReportEditing(supabase, getProfile) {
-  let coordinatorSection;
-  let nationalSection;
-  let loading = false;
+  let coordinatorSection, nationalSection, loading = false;
 
   function getSections() {
     const weekly = document.getElementById('report-weekly');
     const national = document.getElementById('national-report-panel');
     if (!weekly || !national) return false;
-
     if (!coordinatorSection) {
       coordinatorSection = make('section');
       coordinatorSection.id = 'fju-weekly-reports-own';
@@ -119,7 +122,7 @@ export function setupWeeklyReportEditing(supabase, getProfile) {
     const t = TEXT[language()];
     coordinatorSection.replaceChildren(make('h3', '', t.mine), make('p', 'muted', t.loading));
     const [{ data: reports, error }, { data: requests, error: requestError }] = await Promise.all([
-      supabase.from('fju_relatorios_semanais').select('*').eq('polo_id', profile.polo_id).order('semana_domingo', { ascending: false }).limit(30),
+      supabase.from('fju_relatorios_semanais').select('*').eq('polo_id', profile.polo_id).order('semana_domingo', { ascending: false }).limit(40),
       supabase.from('fju_relatorio_semanal_edicao_solicitacoes').select('*').eq('polo_id', profile.polo_id).order('solicitado_em', { ascending: false }).limit(100)
     ]);
     if (getProfile() !== profile) return;
@@ -128,10 +131,8 @@ export function setupWeeklyReportEditing(supabase, getProfile) {
       return;
     }
     coordinatorSection.replaceChildren(make('h3', '', t.mine));
-    if (!reports?.length) {
-      coordinatorSection.append(make('p', 'muted', t.empty));
-      return;
-    }
+    if (!reports?.length) { coordinatorSection.append(make('p', 'muted', t.empty)); return; }
+
     const requestByReport = new Map();
     for (const request of requests || []) {
       const current = requestByReport.get(request.relatorio_id);
@@ -140,86 +141,81 @@ export function setupWeeklyReportEditing(supabase, getProfile) {
     for (const report of reports) {
       const card = make('article', 'report-card');
       const head = make('div', 'report-card-head');
-      const title = make('div', 'report-card-title', t.week + ': ' + dateLabel(report.semana_domingo));
-      const meta = make('div', 'report-card-subtitle', t.version + ' ' + (report.versao || 1));
-      const currentRequest = requestByReport.get(report.id);
-      head.append(make('div').appendChild(title));
-      head.firstChild.append(meta);
-      if (currentRequest) head.append(statusBadge(currentRequest.status, t));
+      const titleWrap = make('div');
+      titleWrap.append(make('div', 'report-card-title', t.week + ': ' + dateLabel(report.semana_domingo)));
+      titleWrap.append(make('div', 'report-card-subtitle', t.version + ' ' + (report.versao || 1)));
+      head.append(titleWrap);
+      const req = requestByReport.get(report.id);
+      if (req) {
+        const label = req.status === 'pendente' ? t.pending : req.status === 'recusada' ? t.denied : req.status === 'concluida' ? t.approved : req.status;
+        head.append(statusBadge(label, req.status));
+      }
       card.append(head, reportMetrics(report));
-
-      if (currentRequest?.status === 'pendente') {
+      if (req?.status === 'pendente') {
         card.append(make('p', 'authorization-note', t.pending));
-      } else if (currentRequest?.status === 'autorizada') {
-        card.append(make('p', 'authorization-note', t.authorized));
-        const editButton = make('button', '', t.edit);
-        editButton.addEventListener('click', () => showEditForm(card, report, t));
-        card.append(editButton);
+        if (req.dados_propostos) card.append(reportMetrics(req.dados_propostos, t.proposed));
       } else {
-        if (currentRequest?.status === 'recusada' && currentRequest.observacao_nacional) {
-          card.append(make('p', 'authorization-note', t.deniedNote + ': ' + currentRequest.observacao_nacional));
+        if (req?.status === 'recusada' && req.observacao_nacional) {
+          card.append(make('p', 'authorization-note', t.deniedNote + ': ' + req.observacao_nacional));
         }
-        const requestButton = make('button', '', t.request);
-        requestButton.addEventListener('click', async () => {
-          const reason = window.prompt(t.reason);
-          if (reason === null) return;
-          if (reason.trim().length < 5) { window.alert(t.askReason); return; }
-          requestButton.disabled = true;
-          const { data: authData, error: authError } = await supabase.auth.getUser();
-          if (authError || !authData?.user?.id) { window.alert(t.error + (authError?.message || 'Sessão expirada.')); requestButton.disabled = false; return; }
-          const { error: insertError } = await supabase.from('fju_relatorio_semanal_edicao_solicitacoes').insert({
-            relatorio_id: report.id, polo_id: profile.polo_id, solicitado_por: authData.user.id, motivo: reason.trim()
-          });
-          if (insertError) {
-            window.alert(insertError.code === '23505' ? t.requestExists : t.error + insertError.message);
-            requestButton.disabled = false;
-            return;
-          }
-          await refresh();
-          window.alert(t.sent);
-        });
-        card.append(requestButton);
+        const editButton = make('button', '', t.edit);
+        editButton.addEventListener('click', () => showCorrectionForm(card, report, profile, t));
+        card.append(editButton);
       }
       coordinatorSection.append(card);
     }
   }
 
-  function showEditForm(card, report, t) {
-    if (card.querySelector('form[data-weekly-edit]')) return;
+  function showCorrectionForm(card, report, profile, t) {
+    if (card.querySelector('form[data-weekly-correction]')) return;
     const form = make('form');
-    form.dataset.weeklyEdit = 'true';
+    form.dataset.weeklyCorrection = 'true';
     form.style.cssText = 'margin-top:14px;padding-top:14px;border-top:1px solid #e2e8f0';
-    const grid = make('div', 'grid');
-    const controls = {};
+    const grid = make('div', 'grid'), controls = {};
     for (const [key, label] of METRICS) {
-      const wrap = make('div');
-      const fieldLabel = make('label', '', label);
+      const wrap = make('div'), fieldLabel = make('label', '', label);
       const input = document.createElement('input');
-      input.type = 'number'; input.min = '0'; input.step = '1'; input.required = true; input.value = String(report[key] ?? 0);
-      input.style.width = '100%';
+      input.type = 'number'; input.min = '0'; input.step = '1'; input.required = true;
+      input.value = String(report[key] ?? 0); input.style.width = '100%';
       wrap.append(fieldLabel, input); grid.append(wrap); controls[key] = input;
     }
+    const reasonLabel = make('label', '', t.reason);
+    const reason = document.createElement('textarea');
+    reason.required = true; reason.minLength = 5; reason.maxLength = 1000; reason.rows = 3;
     const actions = make('div', 'actions');
-    const save = make('button', '', t.save); save.type = 'submit';
+    const send = make('button', '', t.send); send.type = 'submit';
     const cancel = make('button', 'secondary', t.cancel); cancel.type = 'button'; cancel.addEventListener('click', () => form.remove());
-    actions.append(save, cancel);
-    const message = make('p', 'message');
-    form.append(grid, actions, message);
+    const feedback = make('p', 'message');
+    actions.append(send, cancel); form.append(grid, reasonLabel, reason, actions, feedback);
     form.addEventListener('submit', async event => {
       event.preventDefault();
       if (!form.reportValidity()) return;
-      save.disabled = true;
-      const patch = {};
-      for (const [key] of METRICS) patch[key] = Number(controls[key].value);
-      const { error } = await supabase.from('fju_relatorios_semanais').update(patch).eq('id', report.id);
-      if (error) {
-        message.textContent = t.error + error.message;
-        message.className = 'message error';
-        save.disabled = false;
-        return;
+      if (reason.value.trim().length < 5) { feedback.textContent = t.askReason; return; }
+      send.disabled = true; send.textContent = t.submitting;
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError || !authData?.user?.id) {
+        feedback.textContent = t.error + (authError?.message || 'Sessão expirada.');
+        send.disabled = false; send.textContent = t.send; return;
+      }
+      const proposed = {};
+      for (const [key] of METRICS) {
+        const value = Number(controls[key].value);
+        if (!Number.isSafeInteger(value) || value < 0) {
+          feedback.textContent = t.error + 'Use somente números inteiros não negativos.';
+          send.disabled = false; send.textContent = t.send; return;
+        }
+        proposed[key] = value;
+      }
+      const { error: insertError } = await supabase.from('fju_relatorio_semanal_edicao_solicitacoes').insert({
+        relatorio_id: report.id, polo_id: profile.polo_id,
+        solicitado_por: authData.user.id, motivo: reason.value.trim(), dados_propostos: proposed
+      });
+      if (insertError) {
+        feedback.textContent = t.error + insertError.message;
+        send.disabled = false; send.textContent = t.send; return;
       }
       await refresh();
-      window.alert(t.saved);
+      window.alert(t.sent);
     });
     card.append(form);
   }
@@ -235,16 +231,13 @@ export function setupWeeklyReportEditing(supabase, getProfile) {
       return;
     }
     nationalSection.replaceChildren(make('h3', '', t.pendingTitle));
-    if (!requests?.length) {
-      nationalSection.append(make('p', 'muted', t.noPending));
-      return;
-    }
+    if (!requests?.length) { nationalSection.append(make('p', 'muted', t.noPending)); return; }
+
     const reportIds = [...new Set(requests.map(r => r.relatorio_id))];
     const poloIds = [...new Set(requests.map(r => r.polo_id))];
-    const [{ data: reports, error: reportError }, { data: polos, error: poloError }, { data: coordinators }] = await Promise.all([
+    const [{ data: reports, error: reportError }, { data: polos, error: poloError }] = await Promise.all([
       supabase.from('fju_relatorios_semanais').select('*').in('id', reportIds),
-      supabase.from('fju_polos').select('id,nome').in('id', poloIds),
-      supabase.from('fju_cadastros_coordenadores').select('usuario_id,nome').in('usuario_id', [...new Set(requests.map(r => r.solicitado_por))])
+      supabase.from('fju_polos').select('id,nome').in('id', poloIds)
     ]);
     if (getProfile() !== profile) return;
     if (reportError || poloError) {
@@ -253,34 +246,37 @@ export function setupWeeklyReportEditing(supabase, getProfile) {
     }
     const reportMap = new Map((reports || []).map(r => [r.id, r]));
     const poloMap = new Map((polos || []).map(p => [p.id, p.nome]));
-    const coordinatorMap = new Map((coordinators || []).map(item => [item.usuario_id, item.nome]));
     for (const request of requests) {
       const report = reportMap.get(request.relatorio_id);
       const card = make('article', 'report-card');
-      const title = make('div', 'report-card-title', (poloMap.get(request.polo_id) || '—') + ' · ' + dateLabel(report?.semana_domingo || request.solicitado_em.slice(0, 10)));
-      const reason = make('p', 'authorization-note', t.reasonLabel + ': ' + request.motivo);
-      const meta = make('p', 'report-card-subtitle', t.coordinator + ': ' + (coordinatorMap.get(request.solicitado_por) || request.solicitado_por));
-      card.append(title, meta, reason);
-      if (report) card.append(reportMetrics(report));
+      card.append(
+        make('div', 'report-card-title', (poloMap.get(request.polo_id) || t.polo) + ' · ' + dateLabel(report?.semana_domingo || request.solicitado_em.slice(0, 10))),
+        make('p', 'report-card-subtitle', t.coordinator + ': ' + request.solicitado_por),
+        make('p', 'authorization-note', request.motivo)
+      );
+      if (report) card.append(reportMetrics(report, t.original));
+      if (request.dados_propostos) card.append(reportMetrics(request.dados_propostos, t.proposed));
       const actions = make('div', 'authorization-actions');
       const approve = make('button', '', t.approve);
-      approve.addEventListener('click', () => decide(request, 'autorizada', t));
+      approve.addEventListener('click', () => decide(request, true, t));
       const deny = make('button', 'secondary', t.deny);
-      deny.addEventListener('click', () => decide(request, 'recusada', t));
+      deny.addEventListener('click', () => decide(request, false, t));
       actions.append(approve, deny); card.append(actions);
       nationalSection.append(card);
     }
   }
 
-  async function decide(request, status, t) {
-    const note = window.prompt(t.note) || '';
-    const { data: authData, error: authError } = await supabase.auth.getUser();
-    if (authError || !authData?.user?.id) { window.alert(t.error + (authError?.message || 'Session expired.')); return; }
-    const { error } = await supabase.from('fju_relatorio_semanal_edicao_solicitacoes').update({
-      status, decidido_por: authData.user.id, decidido_em: new Date().toISOString(), observacao_nacional: note.trim() || null
-    }).eq('id', request.id).eq('status', 'pendente');
+  async function decide(request, approve, t) {
+    const promptText = approve ? t.note : t.askDeny;
+    const note = window.prompt(promptText);
+    if (note === null) return;
+    if (!approve && !note.trim()) { window.alert(t.askDeny); return; }
+    const { error } = await supabase.rpc('fju_decidir_correcao_relatorio_semanal', {
+      p_solicitacao_id: request.id, p_aprovar: approve, p_observacao: note.trim() || null
+    });
     if (error) { window.alert(t.error + error.message); return; }
     await refresh();
+    window.alert(approve ? t.approvedMessage : t.deniedMessage);
   }
 
   async function refresh() {
@@ -293,8 +289,7 @@ export function setupWeeklyReportEditing(supabase, getProfile) {
       if (profile.papel === 'nacional') await loadNational(profile);
     } finally { loading = false; }
   }
-
-  const openReports = () => window.setTimeout(() => { void refresh(); }, 80);
+  const openReports = () => window.setTimeout(() => { void refresh(); }, 100);
   document.querySelector('[data-tab="relatorios"]')?.addEventListener('click', openReports);
   document.querySelectorAll('[data-report-tab]').forEach(button => button.addEventListener('click', openReports));
   document.getElementById('national-report-refresh')?.addEventListener('click', openReports);
