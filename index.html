@@ -2612,7 +2612,7 @@ function fjuProjectVisual(project){
  if(value.includes('media')||value.includes('mídia')||value.includes('midia'))return {label:'Mídia',short:'MID',color:'navy'};
  if(value.includes('unifor'))return {label:'Uniforça',short:'UNI',color:'gold'};
  if(value.includes('banda'))return {label:'Banda',short:'BAN',color:'pink'};
- return {label:String(project||'Projeto'),short:String(project||'P').slice(0,3).toLocaleUpperCase(),color:'slate'};
+ return {label:String(project||'Projeto'),short:String(project||'Projeto'),color:'slate'};
 }
 function fjuBuildProjectIcons(projects){
  const wrap=document.createElement('div');wrap.className='fju-youth-project-icons';wrap.setAttribute('aria-label','Projetos do jovem');

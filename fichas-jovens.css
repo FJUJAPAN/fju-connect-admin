@@ -226,3 +226,8 @@
 .fju-project-mark--pink,#youth-list .fju-project-icon--pink{background:#fce8f1;color:#a23b70}
 #youth-list .fju-project-icon--slate{background:#edf1f6;color:#53657d}
 @media(max-width:700px){.fju-project-option-mark{width:31px;height:31px;flex-basis:31px}#youth-list .fju-project-icon{font-size:9px}}
+
+/* Nome completo dos projetos, no mesmo padrão das etiquetas de patente. */
+#youth-list .fju-project-icon{width:auto;min-width:0;height:auto;min-height:29px;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:750;line-height:1.2;white-space:nowrap}
+@media(max-width:700px){#youth-list .fju-project-icon{width:auto;height:auto;min-height:27px;padding:5px 9px;font-size:10px}}
+.fju-project-option-mark{width:auto;min-width:34px;height:auto;min-height:34px;padding:0 8px;flex:0 0 auto;border-radius:9px;font-size:10px}
