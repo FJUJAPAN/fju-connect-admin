@@ -1429,23 +1429,73 @@ window.fjuAdminLoadCoordinatorReportHistory=async()=>{
     if(error)throw error;
     status.remove();
     if(!data?.length){const empty=document.createElement('p');empty.textContent=t[7];section.append(empty);return;}
-    const wrap=document.createElement('div');wrap.style.overflowX='auto';
-    const table=document.createElement('table');table.style.cssText='width:100%;border-collapse:collapse;font-size:13px';
+    const style=document.createElement('style');
+    style.textContent=`
+      #fju-coord-report-history .fju-report-history-table-wrap{overflow-x:auto}
+      #fju-coord-report-history .fju-report-history-table{width:100%;border-collapse:collapse;font-size:13px}
+      #fju-coord-report-history .fju-report-history-cards{display:none}
+      #fju-coord-report-history .fju-report-history-card{border:1px solid #dbe4ef;border-radius:14px;padding:14px;margin:0 0 12px;background:#fff;box-shadow:0 3px 10px rgba(20,39,78,.045);min-width:0}
+      #fju-coord-report-history .fju-report-history-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+      #fju-coord-report-history .fju-report-history-card-date{font-size:17px;font-weight:800;color:#203b60;overflow-wrap:anywhere}
+      #fju-coord-report-history .fju-report-history-status{font-size:11px;font-weight:750;color:#18794e;background:#eaf7ef;border-radius:99px;padding:5px 9px;white-space:nowrap}
+      #fju-coord-report-history .fju-report-history-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px}
+      #fju-coord-report-history .fju-report-history-metric{min-width:0;padding:10px;border:1px solid #e8eef7;border-radius:10px;background:#f5f8fd}
+      #fju-coord-report-history .fju-report-history-metric b{display:block;font-size:20px;line-height:1.2;color:#203b60;overflow-wrap:anywhere}
+      #fju-coord-report-history .fju-report-history-metric span{display:block;margin-top:4px;font-size:11px;line-height:1.35;color:#526782;overflow-wrap:anywhere}
+      #fju-coord-report-history .fju-report-history-view{display:block;width:100%;min-height:46px;padding:11px 14px;border:0;border-radius:10px;background:#1d416f;color:#fff;font-size:14px;font-weight:750;white-space:normal;overflow-wrap:anywhere;cursor:pointer}
+      @media(max-width:720px){
+        #fju-coord-report-history .fju-report-history-table-wrap{display:none}
+        #fju-coord-report-history .fju-report-history-cards{display:block}
+        #fju-coord-report-history{padding:13px!important}
+      }
+    `;
+    section.append(style);
+    const wrap=document.createElement('div');wrap.className='fju-report-history-table-wrap';
+    const table=document.createElement('table');table.className='fju-report-history-table';
     const thead=document.createElement('thead'),thRow=document.createElement('tr');
     for(const label of [...t.slice(2,7),({pt:'Relatório',ja:'報告',en:'Report'}[l]||'Relatório')]){const th=document.createElement('th');th.textContent=label;th.style.cssText='padding:9px 6px;text-align:left;border-bottom:2px solid #e2e8f0';thRow.append(th);}
     thead.append(thRow);table.append(thead);
     const detail=document.createElement('section');detail.style.cssText='margin-top:16px;padding:16px;border:1px solid #dbe4ef;border-radius:14px;background:#f8fbff';detail.hidden=true;
+    const cards=document.createElement('div');cards.className='fju-report-history-cards';
+    const showReport=(report,dateLabel)=>{
+      detail.hidden=false;detail.replaceChildren();
+      const heading=document.createElement('h4');heading.textContent=({pt:'Relatório da semana de ',ja:'週次報告：',en:'Weekly report — '}[l]||'Relatório da semana de ')+dateLabel;heading.style.cssText='margin:0 0 12px;color:#203b60';detail.append(heading);
+      if(typeof window.fjuAdminRenderReportChart==='function')window.fjuAdminRenderReportChart(detail,[report],l);
+      else{const note=document.createElement('p');note.textContent='Gráfico indisponível.';detail.append(note);}
+      detail.scrollIntoView({behavior:'smooth',block:'nearest'});
+    };
     const tbody=document.createElement('tbody');
-    for(const report of data){const tr=document.createElement('tr');
-      for(const value of [report.semana_domingo,report.total_jovens_unicos,report.jovens_firmes,report.jovens_novos,report.presenca_quadra_unica]){
-        const td=document.createElement('td');td.textContent=String(value??'—');td.style.cssText='padding:10px 6px;border-bottom:1px solid #ebeff5';tr.append(td);}
+    for(const report of data){
+      const dateParts=String(report.semana_domingo||'').split('-');
+      const dateLabel=dateParts.length===3?dateParts[2]+'/'+dateParts[1]+'/'+dateParts[0]:String(report.semana_domingo||'');
+      const values=[report.total_jovens_unicos,report.jovens_firmes,report.jovens_novos,report.presenca_quadra_unica];
+      const tr=document.createElement('tr');
+      for(const value of [report.semana_domingo,...values]){
+        const td=document.createElement('td');td.textContent=String(value??'—');td.style.cssText='padding:10px 6px;border-bottom:1px solid #ebeff5';tr.append(td);
+      }
       const actionCell=document.createElement('td');actionCell.style.cssText='padding:8px 6px;border-bottom:1px solid #ebeff5';
-      const dateParts=String(report.semana_domingo||'').split('-');const dateLabel=dateParts.length===3?dateParts[2]+'/'+dateParts[1]+'/'+dateParts[0]:String(report.semana_domingo||'');
       const view=document.createElement('button');view.type='button';view.textContent=({pt:'Ver relatório — ',ja:'報告を見る — ',en:'View report — '}[l]||'Ver relatório — ')+dateLabel;
       view.style.cssText='padding:9px 12px;border:0;border-radius:9px;background:#1d416f;color:#fff;font-weight:700;cursor:pointer;white-space:nowrap';
-      view.addEventListener('click',()=>{detail.hidden=false;detail.replaceChildren();const heading=document.createElement('h4');heading.textContent=({pt:'Relatório da semana de ',ja:'週次報告：',en:'Weekly report — '}[l]||'Relatório da semana de ')+dateLabel;heading.style.cssText='margin:0 0 12px;color:#203b60';detail.append(heading);if(typeof window.fjuAdminRenderReportChart==='function')window.fjuAdminRenderReportChart(detail,[report],l);else{const note=document.createElement('p');note.textContent='Gráfico indisponível.';detail.append(note);}detail.scrollIntoView({behavior:'smooth',block:'nearest'});});
-      actionCell.append(view);tr.append(actionCell);tbody.append(tr);}
-    table.append(tbody);wrap.append(table);section.append(wrap,detail);
+      view.addEventListener('click',()=>showReport(report,dateLabel));actionCell.append(view);tr.append(actionCell);tbody.append(tr);
+      const card=document.createElement('article');card.className='fju-report-history-card';
+      const cardHead=document.createElement('div');cardHead.className='fju-report-history-card-head';
+      const cardDate=document.createElement('div');cardDate.className='fju-report-history-card-date';cardDate.textContent=dateLabel;
+      const badge=document.createElement('span');badge.className='fju-report-history-status';badge.textContent=({pt:'Enviado',ja:'提出済み',en:'Submitted'}[l]||'Enviado');
+      cardHead.append(cardDate,badge);card.append(cardHead);
+      const metrics=document.createElement('div');metrics.className='fju-report-history-metrics';
+      const metricLabels=[t[3],t[4],t[5],t[6]];
+      values.forEach((value,index)=>{
+        const metric=document.createElement('div');metric.className='fju-report-history-metric';
+        const number=document.createElement('b');number.textContent=String(value??'—');
+        const label=document.createElement('span');label.textContent=metricLabels[index];
+        metric.append(number,label);metrics.append(metric);
+      });
+      const cardView=document.createElement('button');cardView.type='button';cardView.className='fju-report-history-view';
+      cardView.textContent=({pt:'Ver relatório completo →',ja:'報告の詳細を見る →',en:'View full report →'}[l]||'Ver relatório completo →');
+      cardView.addEventListener('click',()=>showReport(report,dateLabel));
+      card.append(metrics,cardView);cards.append(card);
+    }
+    table.append(tbody);wrap.append(table);section.append(wrap,cards,detail);
   }catch(error){status.textContent=t[8]+(error?.message||'');}
   section.scrollIntoView({behavior:'smooth',block:'start'});
 };
