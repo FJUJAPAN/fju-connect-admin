@@ -213,7 +213,16 @@
 #youth-list .fju-project-icon--slate{background:#edf1f6;color:#53657d}
 @media(max-width:700px){#youth-list .fju-youth-project-icons{gap:6px;margin-top:5px}#youth-list .fju-project-icon{width:27px;height:27px;font-size:15px}}
 
-/* Identidade visual do projeto Uniforça */
-#youth-list .fju-project-icon--uniforca{object-fit:cover;border-radius:50%;background:#ff9b00;box-shadow:inset 0 0 0 1px rgba(60,25,10,.15)}
-.fju-project-option-uniforca{display:inline-flex;align-items:center;gap:7px}
-.fju-project-option-uniforca img{width:30px;height:30px;object-fit:cover;border-radius:50%;vertical-align:middle}
+
+/* Selos tipográficos dos projetos: sem ilustrações aleatórias ou imagens externas. */
+.fju-project-option{display:inline-flex;align-items:center;gap:9px}
+.fju-project-option-mark{width:34px;height:34px;display:inline-grid;place-items:center;flex:0 0 34px;border-radius:9px;font-size:10px;font-weight:850;letter-spacing:-.3px;line-height:1}
+.fju-project-mark--green,#youth-list .fju-project-icon--green{background:#e4f6eb;color:#16834a}
+.fju-project-mark--purple,#youth-list .fju-project-icon--purple{background:#f2eafe;color:#8546b8}
+.fju-project-mark--blue,#youth-list .fju-project-icon--blue{background:#e7f0ff;color:#2366c5}
+.fju-project-mark--navy,#youth-list .fju-project-icon--navy{background:#e8edf7;color:#233c67}
+.fju-project-mark--orange,#youth-list .fju-project-icon--orange{background:#fff0e5;color:#d66a20}
+.fju-project-mark--gold,#youth-list .fju-project-icon--gold{background:#fff3d5;color:#946000}
+.fju-project-mark--pink,#youth-list .fju-project-icon--pink{background:#fce8f1;color:#a23b70}
+#youth-list .fju-project-icon--slate{background:#edf1f6;color:#53657d}
+@media(max-width:700px){.fju-project-option-mark{width:31px;height:31px;flex-basis:31px}#youth-list .fju-project-icon{font-size:9px}}
