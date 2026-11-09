@@ -1495,7 +1495,19 @@ window.fjuAdminLoadCoordinatorReportHistory=async()=>{
       cardView.addEventListener('click',()=>showReport(report,dateLabel));
       card.append(metrics,cardView);cards.append(card);
     }
-    table.append(tbody);wrap.append(table);section.append(wrap,cards,detail);
+    table.append(tbody);wrap.append(table);
+    // Layout resiliente: alterna tabela/cards por largura real da janela,
+    // sem depender apenas da media query (que falhou em alguns iPhones).
+    const syncHistoryLayout=()=>{
+      const mobile=window.matchMedia('(max-width: 720px)').matches;
+      wrap.style.setProperty('display',mobile?'none':'block','important');
+      cards.style.setProperty('display',mobile?'block':'none','important');
+    };
+    if(section._fjuHistoryResize)window.removeEventListener('resize',section._fjuHistoryResize);
+    section._fjuHistoryResize=syncHistoryLayout;
+    window.addEventListener('resize',syncHistoryLayout,{passive:true});
+    syncHistoryLayout();
+    section.append(wrap,cards,detail);
   }catch(error){status.textContent=t[8]+(error?.message||'');}
   section.scrollIntoView({behavior:'smooth',block:'start'});
 };
