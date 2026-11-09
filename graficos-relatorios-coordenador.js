@@ -5,7 +5,7 @@
 const NS='http://www.w3.org/2000/svg';
 const fieldKeys=[
  'total_jovens_unicos','jovens_firmes','jovens_novos','jovens_afastados',
- 'presenca_domingo_930','presenca_encontro_fju','batizados_espirito_santo','batizados_aguas'
+ 'presenca_domingo_930','presenca_encontro_fju','batizados_espirito_santo','batizados_aguas','presenca_quadra_unica'
 ];
 const dictionary={
  pt:{
@@ -15,7 +15,7 @@ const dictionary={
   noValue:'Sem valores disponíveis para este indicador.',note:'O gráfico mostra semanas com relatório enviado. Semanas sem envio não são estimadas.',
   one:'relatório',many:'relatórios',weeks:'Últimos envios',unit:'jovens',metricNames:[
    'Total de jovens (sem repetir)','Jovens firmes','Jovens novos','Jovens afastados',
-   'Presença no domingo 9h30','Presença no Encontro FJU','Batizados com o Espírito Santo','Batizados nas águas']
+   'Presença no domingo 9h30','Presença no Encontro FJU','Batizados com o Espírito Santo','Batizados nas águas','Movimento (Quadra) · jovens únicos']
  },
  ja:{
   title:'教会の成長グラフ',detail:'提出済みの週間報告を比較できます。',metric:'比較する項目',
@@ -24,7 +24,7 @@ const dictionary={
   noValue:'この項目の数値はまだありません。',note:'提出した週だけを表示します。未提出の週の値は推定しません。',
   one:'回',many:'回',weeks:'最近の報告',unit:'人',metricNames:[
    '青年実人数','堅固な青年','新しい青年','離れた青年',
-   '日曜9時30分の出席','FJUミーティングの出席','聖霊のバプテスマ','水のバプテスマ']
+   '日曜9時30分の出席','FJUミーティングの出席','聖霊のバプテスマ','水のバプテスマ','スポーツコート活動（実人数）']
  },
  en:{
   title:'My church progress',detail:'Compare your church’s submitted weekly reports.',metric:'Compare metric',
@@ -33,7 +33,7 @@ const dictionary={
   noValue:'No numbers yet for this metric.',note:'Only submitted weeks are shown. Missing weeks are not estimated.',
   one:'report',many:'reports',weeks:'Recent reports',unit:'youth',metricNames:[
    'Unique youth total','Steady youth','New youth','Inactive youth',
-   'Sunday 9:30 attendance','FJU meeting attendance','Holy Spirit baptisms','Water baptisms']
+   'Sunday 9:30 attendance','FJU meeting attendance','Holy Spirit baptisms','Water baptisms','Sports Court movement (unique youth)']
  }
 };
 const node=(tag,cls,text)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=String(text);return el};
