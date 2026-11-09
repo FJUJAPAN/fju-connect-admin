@@ -1206,6 +1206,7 @@ body.fju-ficha-aberta #youth-detail.fju-direct-detail{padding-bottom:120px!impor
 <div><label for="weekly-afastados">Jovens afastados durante a semana</label><select id="weekly-afastados" class="weekly-quantity" required></select></div>
 <div><label for="weekly-domingo">Presença domingo 9h30</label><select id="weekly-domingo" class="weekly-quantity" required></select></div>
 <div><label for="weekly-encontro">Presença no Encontro FJU</label><select id="weekly-encontro" class="weekly-quantity" required></select></div>
+<div><label for="weekly-quadra">Jovens no Movimento (Quadra) durante a semana — total único</label><select id="weekly-quadra" class="weekly-quantity" required></select></div>
 <div><label for="weekly-espirito">Batizados com o Espírito Santo nesta semana</label><select id="weekly-espirito" class="weekly-quantity" required></select></div>
 <div><label for="weekly-aguas">Batizados nas águas nesta semana</label><select id="weekly-aguas" class="weekly-quantity" required></select></div>
 <div><label for="weekly-total">Total único da semana (sem repetir)</label><select id="weekly-total" class="weekly-quantity" required></select></div>
@@ -1536,12 +1537,12 @@ const adminDecisionI18n={
 function adminDecisionCopy(){return adminDecisionI18n[adminLanguageSelect?.value]||adminDecisionI18n.pt;}
 
 
-const adminWeeklyFieldLabels={"pt":["Igreja do relatório","Semana do relatório (domingo)","Jovens firmes durante a semana","Jovens novos durante a semana","Jovens afastados durante a semana","Presença domingo 9h30","Presença no Encontro FJU","Batizados com o Espírito Santo nesta semana","Batizados nas águas nesta semana","Total único da semana (sem repetir)"],"ja":["報告する教会","報告週（日曜日）","今週の堅固な青年","今週の新しい青年","今週の離れた青年","日曜日9時30分の出席者","FJUミーティングの出席者","今週聖霊のバプテスマを受けた青年","今週水のバプテスマを受けた青年","今週の実人数（重複なし）"],"en":["Reporting church","Report week (Sunday)","Firm youth this week","New youth this week","Youth who left this week","Sunday 9:30 AM attendance","FJU Meeting attendance","Baptized with the Holy Spirit this week","Water baptisms this week","Unique total this week (no duplicates)"]};
+const adminWeeklyFieldLabels={"pt":["Igreja do relatório","Semana do relatório (domingo)","Jovens firmes durante a semana","Jovens novos durante a semana","Jovens afastados durante a semana","Presença domingo 9h30","Presença no Encontro FJU","Jovens no Movimento (Quadra) durante a semana — total único","Batizados com o Espírito Santo nesta semana","Batizados nas águas nesta semana","Total único da semana (sem repetir)"],"ja":["報告する教会","報告週（日曜日）","今週の堅固な青年","今週の新しい青年","今週の離れた青年","日曜日9時30分の出席者","FJUミーティングの出席者","今週のFJUスポーツ活動（コート）の実人数（重複なし）","今週聖霊のバプテスマを受けた青年","今週水のバプテスマを受けた青年","今週の実人数（重複なし）"],"en":["Reporting church","Report week (Sunday)","Firm youth this week","New youth this week","Youth who left this week","Sunday 9:30 AM attendance","FJU Meeting attendance","Unique youth at FJU court/sports activities this week (no duplicates)","Baptized with the Holy Spirit this week","Water baptisms this week","Unique total this week (no duplicates)"]};
 const adminWeeklyExtraLabels={"pt":["Selecione a igreja","Selecionar domingo ▾","Salvar relatório semanal","Selecione o domingo correspondente à semana."],"ja":["教会を選択","日曜日を選択 ▾","週間レポートを保存","該当する週の日曜日を選択してください。"],"en":["Select church","Select Sunday ▾","Save weekly report","Select the Sunday for the reporting week."]};
 function translateAdminWeeklyFields(language){
  const labels=adminWeeklyFieldLabels[language]||adminWeeklyFieldLabels.pt;
  const extra=adminWeeklyExtraLabels[language]||adminWeeklyExtraLabels.pt;
- const ids=["weekly-polo","weekly-date-button","weekly-firmes","weekly-novos","weekly-afastados","weekly-domingo","weekly-encontro","weekly-espirito","weekly-aguas","weekly-total"];
+ const ids=["weekly-polo","weekly-date-button","weekly-firmes","weekly-novos","weekly-afastados","weekly-domingo","weekly-encontro","weekly-quadra","weekly-espirito","weekly-aguas","weekly-total"];
  ids.forEach((id,i)=>{const label=document.querySelector('label[for="'+id+'"]');if(label)label.textContent=labels[i];});
  const church=document.querySelector('#weekly-polo option[value=""]');if(church)church.textContent=extra[0];
  const date=el('weekly-date-button');if(date&&['Selecionar domingo ▾','日曜日を選択 ▾','Select Sunday ▾'].includes(date.textContent.trim()))date.textContent=extra[1];
@@ -1893,7 +1894,7 @@ async function loadNationalReportOverview(){
   const summary=el('national-report-summary');summary.replaceChildren();
   const summaryItems=[
     ['Polos',poloRows.length],['Relatórios enviados',submitted],['Pendentes',pending],
-    ['Jovens únicos informados',total('total_jovens_unicos')],['Jovens novos',total('jovens_novos')],
+    ['Jovens únicos informados',total('total_jovens_unicos')],['Jovens no Movimento (Quadra)',total('presenca_quadra_unica')],['Jovens novos',total('jovens_novos')],
     ['Batizados com o Espírito Santo',total('batizados_espirito_santo')],['Batizados nas águas',total('batizados_aguas')]
   ];
   for(const [label,value] of summaryItems){
@@ -1955,7 +1956,7 @@ async function loadNationalReportOverview(){
     if(r){
       const metrics=document.createElement('div');metrics.className='report-metrics';
       const addMetric=(label,value)=>{const m=document.createElement('div');m.className='report-metric';const l=document.createElement('span');l.textContent=label;const v=document.createElement('b');v.textContent=String(Number(value)||0);m.append(l,v);metrics.append(m);};
-      addMetric('Total único',r.total_jovens_unicos);addMetric('Firmes',r.jovens_firmes);addMetric('Novos',r.jovens_novos);addMetric('Afastados',r.jovens_afastados);addMetric('Domingo 9h30',r.presenca_domingo_930);addMetric('Encontro FJU',r.presenca_encontro_fju);addMetric('Batizados Espírito Santo',r.batizados_espirito_santo);addMetric('Batizados nas águas',r.batizados_aguas);details.append(metrics);
+      addMetric('Total único',r.total_jovens_unicos);addMetric('Firmes',r.jovens_firmes);addMetric('Novos',r.jovens_novos);addMetric('Afastados',r.jovens_afastados);addMetric('Domingo 9h30',r.presenca_domingo_930);addMetric('Encontro FJU',r.presenca_encontro_fju);addMetric('Movimento (Quadra) — jovens únicos',r.presenca_quadra_unica);addMetric('Batizados Espírito Santo',r.batizados_espirito_santo);addMetric('Batizados nas águas',r.batizados_aguas);details.append(metrics);
     }else{const p=document.createElement('p');p.className='muted';p.textContent=nationalReportStatus(1)+selectedDate+'.';details.append(p);}
     row.append(details);list.append(row);
   }
@@ -1977,7 +1978,7 @@ async function printWeeklyReport(poloId=null){
   const area=el('print-area');area.replaceChildren();
   const [{data:polos,error:poloError},{data:reports,error:reportError}]=await Promise.all([
     supabase.from('fju_polos').select('id,nome').order('nome'),
-    supabase.from('fju_relatorios_semanais').select('polo_id,semana_domingo,jovens_firmes,jovens_novos,jovens_afastados,presenca_domingo_930,presenca_encontro_fju,batizados_espirito_santo,batizados_aguas,total_jovens_unicos').eq('semana_domingo',date)
+    supabase.from('fju_relatorios_semanais').select('polo_id,semana_domingo,jovens_firmes,jovens_novos,jovens_afastados,presenca_domingo_930,presenca_encontro_fju,presenca_quadra_unica,batizados_espirito_santo,batizados_aguas,total_jovens_unicos').eq('semana_domingo',date)
   ]);
   if(poloError||reportError){alert('Não foi possível preparar a impressão: '+(poloError?.message||reportError?.message));return;}
   let selectedPolos=(polos||[]);if(poloId)selectedPolos=selectedPolos.filter(p=>p.id===poloId);
@@ -1992,7 +1993,7 @@ async function printWeeklyReport(poloId=null){
     if(!r){const note=document.createElement('p');note.textContent='Este polo ainda não enviou o relatório referente a esta semana.';wrap.append(note);}
     else{
       const metrics=document.createElement('div');metrics.className='print-kpis';
-      for(const [label,key] of [['Total único','total_jovens_unicos'],['Jovens firmes','jovens_firmes'],['Jovens novos','jovens_novos'],['Jovens afastados','jovens_afastados'],['Presença domingo 9h30','presenca_domingo_930'],['Presença Encontro FJU','presenca_encontro_fju'],['Batizados com o Espírito Santo','batizados_espirito_santo'],['Batizados nas águas','batizados_aguas']]){
+      for(const [label,key] of [['Total único','total_jovens_unicos'],['Jovens firmes','jovens_firmes'],['Jovens novos','jovens_novos'],['Jovens afastados','jovens_afastados'],['Presença domingo 9h30','presenca_domingo_930'],['Presença Encontro FJU','presenca_encontro_fju'],['Movimento (Quadra) — jovens únicos','presenca_quadra_unica'],['Batizados com o Espírito Santo','batizados_espirito_santo'],['Batizados nas águas','batizados_aguas']]){
         const box=document.createElement('div');box.className='print-kpi';const l=document.createElement('span');l.textContent=label;const v=document.createElement('b');v.textContent=String(Number(r[key])||0);box.append(l,v);metrics.append(box);
       }wrap.append(metrics);
     }
@@ -2000,13 +2001,13 @@ async function printWeeklyReport(poloId=null){
     const current=(reports||[]).filter(r=>r.semana_domingo===date);
     const sum=key=>current.reduce((n,r)=>n+(Number(r[key])||0),0);
     const metrics=document.createElement('div');metrics.className='print-kpis';
-    for(const [label,value] of [['Polos',selectedPolos.length],['Relatórios enviados',selectedPolos.filter(p=>byPolo.has(p.id)).length],['Pendentes',selectedPolos.filter(p=>!byPolo.has(p.id)).length],['Total único informado',sum('total_jovens_unicos')],['Jovens novos',sum('jovens_novos')],['Batizados com o Espírito Santo',sum('batizados_espirito_santo')],['Batizados nas águas',sum('batizados_aguas')]]){
+    for(const [label,value] of [['Polos',selectedPolos.length],['Relatórios enviados',selectedPolos.filter(p=>byPolo.has(p.id)).length],['Pendentes',selectedPolos.filter(p=>!byPolo.has(p.id)).length],['Total único informado',sum('total_jovens_unicos')],['Jovens no Movimento (Quadra)',sum('presenca_quadra_unica')],['Jovens novos',sum('jovens_novos')],['Batizados com o Espírito Santo',sum('batizados_espirito_santo')],['Batizados nas águas',sum('batizados_aguas')]]){
       const box=document.createElement('div');box.className='print-kpi';const l=document.createElement('span');l.textContent=label;const v=document.createElement('b');v.textContent=String(value);box.append(l,v);metrics.append(box);
     }wrap.append(metrics);
     const table=document.createElement('table');const thead=document.createElement('thead');const trh=document.createElement('tr');
-    for(const label of ['Polo','Status','Total único','Firmes','Novos','Afastados','Domingo 9h30','Encontro','Bat. E.S.','Bat. águas']){const th=document.createElement('th');th.textContent=label;trh.append(th);}thead.append(trh);table.append(thead);
+    for(const label of ['Polo','Status','Total único','Firmes','Novos','Afastados','Domingo 9h30','Encontro','Movimento (Quadra)','Bat. E.S.','Bat. águas']){const th=document.createElement('th');th.textContent=label;trh.append(th);}thead.append(trh);table.append(thead);
     const tbody=document.createElement('tbody');
-    for(const p of selectedPolos){const r=byPolo.get(p.id);const tr=document.createElement('tr');const vals=[p.nome,r?'Enviado':'Pendente',r?.total_jovens_unicos??'—',r?.jovens_firmes??'—',r?.jovens_novos??'—',r?.jovens_afastados??'—',r?.presenca_domingo_930??'—',r?.presenca_encontro_fju??'—',r?.batizados_espirito_santo??'—',r?.batizados_aguas??'—'];for(const val of vals){const td=document.createElement('td');td.textContent=String(val);tr.append(td);}tbody.append(tr);}table.append(tbody);wrap.append(table);
+    for(const p of selectedPolos){const r=byPolo.get(p.id);const tr=document.createElement('tr');const vals=[p.nome,r?'Enviado':'Pendente',r?.total_jovens_unicos??'—',r?.jovens_firmes??'—',r?.jovens_novos??'—',r?.jovens_afastados??'—',r?.presenca_domingo_930??'—',r?.presenca_encontro_fju??'—',r?.presenca_quadra_unica??'—',r?.batizados_espirito_santo??'—',r?.batizados_aguas??'—'];for(const val of vals){const td=document.createElement('td');td.textContent=String(val);tr.append(td);}tbody.append(tr);}table.append(tbody);wrap.append(table);
   }
   const footer=document.createElement('div');footer.className='print-footer';footer.textContent='FJU JAPAN · Documento interno para acompanhamento dos polos.';wrap.append(footer);
   const toolbar=document.createElement('div');toolbar.className='print-toolbar';
@@ -3807,7 +3808,7 @@ el('weekly-report-form').addEventListener('submit',async e=>{
     message('weekly-report-message',weeklySubmitText(1),true);return;
   }
   if(date>previousSundayISO()){message('weekly-report-message',weeklySubmitText(2),true);return;}
-  const ids=['weekly-firmes','weekly-novos','weekly-afastados','weekly-domingo','weekly-encontro','weekly-espirito','weekly-aguas','weekly-total'];
+  const ids=['weekly-firmes','weekly-novos','weekly-afastados','weekly-domingo','weekly-encontro','weekly-quadra','weekly-espirito','weekly-aguas','weekly-total'];
   const rawValues=ids.map(id=>el(id).value);
   if(rawValues.some(value=>!String(value).trim())){
     message('weekly-report-message',weeklySubmitText(3),true);return;
@@ -3826,9 +3827,9 @@ el('weekly-report-form').addEventListener('submit',async e=>{
     if(authError||!auth?.user?.id)throw new Error('Sessão expirada. Entre novamente.');
     const payload={
       polo_id:poloId,semana_domingo:date,jovens_firmes:values[0],jovens_novos:values[1],
-      jovens_afastados:values[2],presenca_domingo_930:values[3],presenca_encontro_fju:values[4],
-      batizados_espirito_santo:values[5],batizados_aguas:values[6],
-      total_jovens_unicos:values[7],criado_por:auth.user.id
+      jovens_afastados:values[2],presenca_domingo_930:values[3],presenca_encontro_fju:values[4],presenca_quadra_unica:values[5],
+      batizados_espirito_santo:values[6],batizados_aguas:values[7],
+      total_jovens_unicos:values[8],criado_por:auth.user.id
     };
     // INSERT + índice UNIQUE(polo_id, semana_domingo): impede duplicação até
     // quando dois coordenadores tentam enviar simultaneamente.
