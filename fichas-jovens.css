@@ -200,3 +200,15 @@
    margin:0!important;
  }
 }
+
+
+/* Ícones coloridos dos projetos aprovados exibidos nos cards das fichas. */
+#youth-list .fju-youth-project-icons{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-top:6px}
+#youth-list .fju-project-icon{width:29px;height:29px;display:inline-grid;place-items:center;border-radius:9px;font-size:16px;font-weight:850;line-height:1;box-shadow:inset 0 0 0 1px rgba(20,35,60,.07)}
+#youth-list .fju-project-icon--green{background:#e4f6eb;color:#16834a}
+#youth-list .fju-project-icon--blue{background:#e7f0ff;color:#2366c5}
+#youth-list .fju-project-icon--orange{background:#fff0e5;color:#d66a20}
+#youth-list .fju-project-icon--purple{background:#f2eafe;color:#8546b8}
+#youth-list .fju-project-icon--yellow{background:#fff4d9;color:#a36d00}
+#youth-list .fju-project-icon--slate{background:#edf1f6;color:#53657d}
+@media(max-width:700px){#youth-list .fju-youth-project-icons{gap:6px;margin-top:5px}#youth-list .fju-project-icon{width:27px;height:27px;font-size:15px}}
