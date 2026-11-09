@@ -266,3 +266,28 @@
   font-weight: 750 !important;
   letter-spacing: 0 !important;
 }
+
+
+/* Projetos: mesmas dimensões e tipografia da etiqueta de patente (.youth-rank). */
+#youth-list .fju-project-icon{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:auto!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  padding:4px 9px!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  border-radius:100px!important;
+  font-size:10px!important;
+  font-weight:750!important;
+  letter-spacing:.05px!important;
+  line-height:1.3!important;
+  white-space:nowrap!important;
+}
+@media(max-width:700px){
+  #youth-list .fju-project-icon{padding:4px 9px!important;font-size:10px!important}
+}
