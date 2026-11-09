@@ -2436,6 +2436,22 @@ async function loadYouth(){
     fjuIdByYouth=new Map((idRows||[]).filter(x=>x.jovem_id).map(x=>[String(x.jovem_id),x.fju_id]));
     fjuIdByUser=new Map((idRows||[]).filter(x=>x.usuario_id).map(x=>[String(x.usuario_id),x.fju_id]));
   }else console.warn('FJU ID indisponível:',idError.message);
+  // Projetos aprovados de cada jovem: usados somente como identificação visual nos cards.
+  fjuProjectsByYouth.clear();
+  if(all.length){
+    const ids=all.map(row=>row.id);
+    for(let start=0;start<ids.length;start+=500){
+      const {data:projectRows,error:projectError}=await supabase.from('fju_projetos_jovens')
+        .select('jovem_id,projeto').in('jovem_id',ids.slice(start,start+500)).eq('aprovado',true).order('projeto');
+      if(loadVersion!==youthLoadVersion||currentProfile!==profile)return;
+      if(projectError){console.warn('Projetos dos jovens indisponíveis:',projectError.message);break;}
+      for(const item of projectRows||[]){
+        const key=String(item.jovem_id);
+        if(!fjuProjectsByYouth.has(key))fjuProjectsByYouth.set(key,[]);
+        fjuProjectsByYouth.get(key).push(item.projeto);
+      }
+    }
+  }
   fjuRankDetailsCache.clear();youthRows=all;renderYouth();if(profile.papel==='nacional')void fjuRefreshChurchYouthCounts(true);youthMessage(`${youthRows.length} ficha(s) carregada(s) ${polo?'da igreja selecionada':'do Japão inteiro'}.`);
   if(profile.papel==='nacional'&&polo)void fjuShowChurchPendingDetail(String(polo));
 }
@@ -2592,6 +2608,26 @@ function fjuRenderYouthRankCategories(){
   holder.append(button);
  }
 }
+const fjuProjectsByYouth=new Map();
+function fjuProjectVisual(project){
+ const value=String(project||'').trim().toLocaleLowerCase();
+ if(value.includes('help'))return {label:'HELP',symbol:'♥',color:'green'};
+ if(value.includes('sport'))return {label:'Sports',symbol:'⚽',color:'blue'};
+ if(value.includes('bjj')||value.includes('jiu'))return {label:'BJJ',symbol:'🥋',color:'orange'};
+ if(value.includes('culture'))return {label:'Culture',symbol:'🎨',color:'purple'};
+ if(value.includes('media'))return {label:'Media',symbol:'▣',color:'yellow'};
+ return {label:String(project||'Projeto'),symbol:'✦',color:'slate'};
+}
+function fjuBuildProjectIcons(projects){
+ const wrap=document.createElement('div');wrap.className='fju-youth-project-icons';wrap.setAttribute('aria-label','Projetos do jovem');
+ for(const project of projects||[]){
+  const visual=fjuProjectVisual(project);
+  const icon=document.createElement('span');icon.className='fju-project-icon fju-project-icon--'+visual.color;
+  icon.textContent=visual.symbol;icon.title=visual.label;icon.setAttribute('aria-label',visual.label);
+  wrap.append(icon);
+ }
+ return wrap;
+}
 function renderYouth(){
   fjuEnsureRankScreenBack();
   fjuUpdateChurchScreen();
@@ -2653,7 +2689,10 @@ function renderYouth(){
     }
     const idLabel=document.createElement('span');idLabel.className='fju-youth-id';
     idLabel.textContent=fjuIdByYouth.get(String(r.id))||'';
-    info.append(name,idLabel,rank,metadata);
+    info.append(name,idLabel,rank);
+    const projects=fjuProjectsByYouth.get(String(r.id))||[];
+    if(projects.length)info.append(fjuBuildProjectIcons(projects));
+    info.append(metadata);
     if(['nacional','coordenador'].includes(currentProfile?.papel)){
       const rankDetails=document.createElement('div');rankDetails.className='fju-rank-card-fields';rankDetails.textContent='Carregando informações…';info.append(rankDetails);
       const profileAtRender=currentProfile;
