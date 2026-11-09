@@ -1499,7 +1499,16 @@ window.fjuAdminLoadCoordinatorReportHistory=async()=>{
     // Layout resiliente: alterna tabela/cards por largura real da janela,
     // sem depender apenas da media query (que falhou em alguns iPhones).
     const syncHistoryLayout=()=>{
-      const mobile=window.matchMedia('(max-width: 720px)').matches;
+      const viewportWidth=Math.min(
+        window.innerWidth||Infinity,
+        document.documentElement.clientWidth||Infinity,
+        window.screen?.width||Infinity
+      );
+      // iOS webviews podem reportar uma largura de layout maior que a área visível.
+      const isAppleMobile=/iPhone|iPod/i.test(navigator.userAgent);
+      const isAndroidMobile=/Android/i.test(navigator.userAgent)&&/Mobile/i.test(navigator.userAgent);
+      const mobile=window.matchMedia('(max-width: 720px)').matches||
+        viewportWidth<=720||isAppleMobile||isAndroidMobile;
       wrap.style.setProperty('display',mobile?'none':'block','important');
       cards.style.setProperty('display',mobile?'block':'none','important');
     };
