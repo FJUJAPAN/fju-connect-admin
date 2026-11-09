@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
+<rect width="600" height="600" rx="38" fill="#281711"/>
+<circle cx="300" cy="300" r="266" fill="#ff9b00" stroke="#fff" stroke-width="12"/>
+<circle cx="300" cy="300" r="224" fill="none" stroke="#8b3210" stroke-width="5" stroke-dasharray="18 12"/>
+<g fill="#281711"><path d="M300 102l15 31 34 5-25 24 6 34-30-16-30 16 6-34-25-24 34-5z"/><path d="M190 130l10 20 22 3-16 15 4 22-20-10-20 10 4-22-16-15 22-3z"/><path d="M410 130l10 20 22 3-16 15 4 22-20-10-20 10 4-22-16-15 22-3z"/><path d="M118 178l7 14 16 2-12 11 3 16-14-8-14 8 3-16-12-11 16-2z"/><path d="M482 178l7 14 16 2-12 11 3 16-14-8-14 8 3-16-12-11 16-2z"/></g>
+<path d="M40 252Q300 222 560 252V365Q300 395 40 365Z" fill="#ff9b00" stroke="#281711" stroke-width="10"/>
+<text x="300" y="330" text-anchor="middle" font-family="sans-serif" font-size="72" font-weight="900" fill="#281711">ユニフォース</text>
+<text x="300" y="455" text-anchor="middle" font-family="sans-serif" font-size="42" font-weight="800" fill="#281711">FJU JAPAN</text>
+<text x="300" y="530" text-anchor="middle" font-family="sans-serif" font-size="28" font-weight="700" fill="#e8d9a8">結団が力の源</text>
+</svg>
