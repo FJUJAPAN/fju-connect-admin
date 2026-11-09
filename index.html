@@ -2420,7 +2420,7 @@ async function loadYouth(){
   const all=[],batchSize=500;
   for(let start=0;;start+=batchSize){
     const {data,error}=await supabase.from('fju_jovens')
-      .select('id,polo_id,nome_completo,nascimento,telefone,endereco,nacionalidade_iso2,idiomas,patente,categoria,excluido_em')
+      .select('id,polo_id,nome_completo,nascimento,telefone,endereco,nacionalidade_iso2,idiomas,patente,categoria,projetos,excluido_em')
       .is('excluido_em',null)
       .order('nome_completo').order('id')
       .range(start,start+batchSize-1);
@@ -2436,21 +2436,12 @@ async function loadYouth(){
     fjuIdByYouth=new Map((idRows||[]).filter(x=>x.jovem_id).map(x=>[String(x.jovem_id),x.fju_id]));
     fjuIdByUser=new Map((idRows||[]).filter(x=>x.usuario_id).map(x=>[String(x.usuario_id),x.fju_id]));
   }else console.warn('FJU ID indisponível:',idError.message);
-  // Projetos aprovados de cada jovem: usados somente como identificação visual nos cards.
+  // Os projetos são gravados diretamente no array fju_jovens.projetos.
+  // A tabela fju_projetos_jovens não contém os vínculos atuais.
   fjuProjectsByYouth.clear();
-  if(all.length){
-    const ids=all.map(row=>row.id);
-    for(let start=0;start<ids.length;start+=500){
-      const {data:projectRows,error:projectError}=await supabase.from('fju_projetos_jovens')
-        .select('jovem_id,projeto').in('jovem_id',ids.slice(start,start+500)).eq('aprovado',true).order('projeto');
-      if(loadVersion!==youthLoadVersion||currentProfile!==profile)return;
-      if(projectError){console.warn('Projetos dos jovens indisponíveis:',projectError.message);break;}
-      for(const item of projectRows||[]){
-        const key=String(item.jovem_id);
-        if(!fjuProjectsByYouth.has(key))fjuProjectsByYouth.set(key,[]);
-        fjuProjectsByYouth.get(key).push(item.projeto);
-      }
-    }
+  for(const row of all){
+    const projects=Array.isArray(row.projetos)?row.projetos:[];
+    if(projects.length)fjuProjectsByYouth.set(String(row.id),projects);
   }
   fjuRankDetailsCache.clear();youthRows=all;renderYouth();if(profile.papel==='nacional')void fjuRefreshChurchYouthCounts(true);youthMessage(`${youthRows.length} ficha(s) carregada(s) ${polo?'da igreja selecionada':'do Japão inteiro'}.`);
   if(profile.papel==='nacional'&&polo)void fjuShowChurchPendingDetail(String(polo));
@@ -2612,10 +2603,10 @@ const fjuProjectsByYouth=new Map();
 function fjuProjectVisual(project){
  const value=String(project||'').trim().toLocaleLowerCase();
  if(value.includes('help'))return {label:'HELP',symbol:'♥',color:'green'};
- if(value.includes('sport'))return {label:'Sports',symbol:'⚽',color:'blue'};
+ if(value.includes('sport')||value.includes('esporte'))return {label:'Sports',symbol:'⚽',color:'blue'};
  if(value.includes('bjj')||value.includes('jiu'))return {label:'BJJ',symbol:'🥋',color:'orange'};
- if(value.includes('culture'))return {label:'Culture',symbol:'🎨',color:'purple'};
- if(value.includes('media'))return {label:'Media',symbol:'▣',color:'yellow'};
+ if(value.includes('culture')||value.includes('cultura'))return {label:'Culture',symbol:'🎨',color:'purple'};
+ if(value.includes('media')||value.includes('mídia')||value.includes('midia'))return {label:'Media',symbol:'▣',color:'yellow'};
  return {label:String(project||'Projeto'),symbol:'✦',color:'slate'};
 }
 function fjuBuildProjectIcons(projects){
