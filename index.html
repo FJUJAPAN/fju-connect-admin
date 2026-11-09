@@ -2605,13 +2605,13 @@ function fjuRenderYouthRankCategories(){
 const fjuProjectsByYouth=new Map();
 function fjuProjectVisual(project){
  const value=String(project||'').trim().toLocaleLowerCase();
- if(value.includes('help'))return {label:'HELP',short:'HELP',color:'green'};
- if(value.includes('sport')||value.includes('esporte'))return {label:'Sports',short:'ESP',color:'blue'};
- if(value.includes('bjj')||value.includes('jiu'))return {label:'FJU BJJ',short:'BJJ',color:'orange'};
- if(value.includes('culture')||value.includes('cultura'))return {label:'Cultura',short:'CUL',color:'purple'};
- if(value.includes('media')||value.includes('mídia')||value.includes('midia'))return {label:'Mídia',short:'MID',color:'navy'};
- if(value.includes('unifor'))return {label:'Uniforça',short:'UNI',color:'gold'};
- if(value.includes('banda'))return {label:'Banda',short:'BAN',color:'pink'};
+ if(value.includes('help'))return {label:'HELP',short:'HELP',color:'help'};
+ if(value.includes('sport')||value.includes('esporte'))return {label:'Esporte',short:'Esporte',color:'sport'};
+ if(value.includes('bjj')||value.includes('jiu'))return {label:'BJJ',short:'FJU BJJ',color:'bjj'};
+ if(value.includes('culture')||value.includes('cultura'))return {label:'Cultura',short:'Cultura',color:'culture'};
+ if(value.includes('media')||value.includes('mídia')||value.includes('midia'))return {label:'Mídia',short:'Mídia',color:'media'};
+ if(value.includes('unifor'))return {label:'Uniforça',short:'Uniforça',color:'uniforca'};
+ if(value.includes('banda'))return {label:'Banda',short:'Banda',color:'pink'};
  return {label:String(project||'Projeto'),short:String(project||'Projeto'),color:'slate'};
 }
 function fjuBuildProjectIcons(projects){
