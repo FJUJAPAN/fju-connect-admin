@@ -2001,7 +2001,7 @@ async function printWeeklyReport(poloId=null){
     const current=(reports||[]).filter(r=>r.semana_domingo===date);
     const sum=key=>current.reduce((n,r)=>n+(Number(r[key])||0),0);
     const metrics=document.createElement('div');metrics.className='print-kpis';
-    for(const [label,value] of [['Polos',selectedPolos.length],['Relatórios enviados',selectedPolos.filter(p=>byPolo.has(p.id)).length],['Pendentes',selectedPolos.filter(p=>!byPolo.has(p.id)).length],['Total único informado',sum('total_jovens_unicos')],['Jovens novos',sum('jovens_novos')],['Batizados com o Espírito Santo',sum('batizados_espirito_santo')],['Batizados nas águas',sum('batizados_aguas')]]){
+    for(const [label,value] of [['Polos',selectedPolos.length],['Relatórios enviados',selectedPolos.filter(p=>byPolo.has(p.id)).length],['Pendentes',selectedPolos.filter(p=>!byPolo.has(p.id)).length],['Total único informado',sum('total_jovens_unicos')],['Jovens no Movimento (Quadra)',sum('presenca_quadra_unica')],['Jovens novos',sum('jovens_novos')],['Batizados com o Espírito Santo',sum('batizados_espirito_santo')],['Batizados nas águas',sum('batizados_aguas')]]){
       const box=document.createElement('div');box.className='print-kpi';const l=document.createElement('span');l.textContent=label;const v=document.createElement('b');v.textContent=String(value);box.append(l,v);metrics.append(box);
     }wrap.append(metrics);
     const table=document.createElement('table');const thead=document.createElement('thead');const trh=document.createElement('tr');
