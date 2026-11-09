@@ -248,3 +248,21 @@
   border-radius:999px!important;
   font-weight:750!important;
 }
+
+
+/* Correção definitiva: força o padrão das etiquetas de patente nos projetos dos cards. */
+#jovens #youth-list .fju-project-icon,
+#jovens #youth-list .fju-project-icon--help,
+#jovens #youth-list .fju-project-icon--sport,
+#jovens #youth-list .fju-project-icon--uniforca,
+#jovens #youth-list .fju-project-icon--media,
+#jovens #youth-list .fju-project-icon--bjj,
+#jovens #youth-list .fju-project-icon--culture {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  border-radius: 999px !important;
+  font-family: inherit !important;
+  font-weight: 750 !important;
+  letter-spacing: 0 !important;
+}
