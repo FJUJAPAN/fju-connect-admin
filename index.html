@@ -1427,7 +1427,7 @@ window.fjuAdminLoadCoordinatorReportHistory=async()=>{
     if(currentProfile!==profile||section.hidden)return;
     if(error)throw error;
     status.remove();
-    if(!data?.length){const empty=document.createElement('p');empty.textContent=t[6];section.append(empty);return;}
+    if(!data?.length){const empty=document.createElement('p');empty.textContent=t[7];section.append(empty);return;}
     if(typeof window.fjuAdminRenderReportChart==='function')window.fjuAdminRenderReportChart(section,data,l);
     const wrap=document.createElement('div');wrap.style.overflowX='auto';
     const table=document.createElement('table');table.style.cssText='width:100%;border-collapse:collapse;font-size:13px';
@@ -1440,7 +1440,7 @@ window.fjuAdminLoadCoordinatorReportHistory=async()=>{
         const td=document.createElement('td');td.textContent=String(value??'—');td.style.cssText='padding:10px 6px;border-bottom:1px solid #ebeff5';tr.append(td);}
       tbody.append(tr);}
     table.append(tbody);wrap.append(table);section.append(wrap);
-  }catch(error){status.textContent=t[7]+(error?.message||'');}
+  }catch(error){status.textContent=t[8]+(error?.message||'');}
   section.scrollIntoView({behavior:'smooth',block:'start'});
 };
 window.fjuAdminRequestPasswordReset=async()=>{
