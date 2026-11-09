@@ -1429,18 +1429,23 @@ window.fjuAdminLoadCoordinatorReportHistory=async()=>{
     if(error)throw error;
     status.remove();
     if(!data?.length){const empty=document.createElement('p');empty.textContent=t[7];section.append(empty);return;}
-    if(typeof window.fjuAdminRenderReportChart==='function')window.fjuAdminRenderReportChart(section,data,l);
     const wrap=document.createElement('div');wrap.style.overflowX='auto';
     const table=document.createElement('table');table.style.cssText='width:100%;border-collapse:collapse;font-size:13px';
     const thead=document.createElement('thead'),thRow=document.createElement('tr');
-    for(const label of t.slice(2,7)){const th=document.createElement('th');th.textContent=label;th.style.cssText='padding:9px 6px;text-align:left;border-bottom:2px solid #e2e8f0';thRow.append(th);}
+    for(const label of [...t.slice(2,7),({pt:'Relatório',ja:'報告',en:'Report'}[l]||'Relatório')]){const th=document.createElement('th');th.textContent=label;th.style.cssText='padding:9px 6px;text-align:left;border-bottom:2px solid #e2e8f0';thRow.append(th);}
     thead.append(thRow);table.append(thead);
+    const detail=document.createElement('section');detail.style.cssText='margin-top:16px;padding:16px;border:1px solid #dbe4ef;border-radius:14px;background:#f8fbff';detail.hidden=true;
     const tbody=document.createElement('tbody');
     for(const report of data){const tr=document.createElement('tr');
       for(const value of [report.semana_domingo,report.total_jovens_unicos,report.jovens_firmes,report.jovens_novos,report.presenca_quadra_unica]){
         const td=document.createElement('td');td.textContent=String(value??'—');td.style.cssText='padding:10px 6px;border-bottom:1px solid #ebeff5';tr.append(td);}
-      tbody.append(tr);}
-    table.append(tbody);wrap.append(table);section.append(wrap);
+      const actionCell=document.createElement('td');actionCell.style.cssText='padding:8px 6px;border-bottom:1px solid #ebeff5';
+      const dateParts=String(report.semana_domingo||'').split('-');const dateLabel=dateParts.length===3?dateParts[2]+'/'+dateParts[1]+'/'+dateParts[0]:String(report.semana_domingo||'');
+      const view=document.createElement('button');view.type='button';view.textContent=({pt:'Ver relatório — ',ja:'報告を見る — ',en:'View report — '}[l]||'Ver relatório — ')+dateLabel;
+      view.style.cssText='padding:9px 12px;border:0;border-radius:9px;background:#1d416f;color:#fff;font-weight:700;cursor:pointer;white-space:nowrap';
+      view.addEventListener('click',()=>{detail.hidden=false;detail.replaceChildren();const heading=document.createElement('h4');heading.textContent=({pt:'Relatório da semana de ',ja:'週次報告：',en:'Weekly report — '}[l]||'Relatório da semana de ')+dateLabel;heading.style.cssText='margin:0 0 12px;color:#203b60';detail.append(heading);if(typeof window.fjuAdminRenderReportChart==='function')window.fjuAdminRenderReportChart(detail,[report],l);else{const note=document.createElement('p');note.textContent='Gráfico indisponível.';detail.append(note);}detail.scrollIntoView({behavior:'smooth',block:'nearest'});});
+      actionCell.append(view);tr.append(actionCell);tbody.append(tr);}
+    table.append(tbody);wrap.append(table);section.append(wrap,detail);
   }catch(error){status.textContent=t[8]+(error?.message||'');}
   section.scrollIntoView({behavior:'smooth',block:'start'});
 };

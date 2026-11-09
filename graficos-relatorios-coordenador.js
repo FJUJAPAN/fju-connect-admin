@@ -46,6 +46,30 @@ function renderGraph(container,reports,language){
  const model=(Array.isArray(reports)?reports:[]).filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x.semana_domingo||''))
   .sort((a,b)=>a.semana_domingo.localeCompare(b.semana_domingo));
  const shell=node('section','fju-coord-chart');
+ if(model.length===1){
+  const report=model[0];
+  const heading=node('div','fju-coord-chart-heading');
+  const weekTitle=language==='ja'?'週次報告':language==='en'?'Weekly report':'Relatório da semana';
+  const dateText=dateLabel(report.semana_domingo);
+  heading.append(node('h4','',weekTitle),node('p','',dateText));shell.append(heading);
+  const values=fieldKeys.map((key,i)=>({key,label:t.metricNames[i],value:validNumber(report[key])})).filter(item=>item.value!==null);
+  const maxValue=Math.max(1,...values.map(item=>item.value));
+  const grid=node('div','fju-coord-week-summary');
+  grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:14px';
+  values.forEach(item=>{
+   const card=node('div','fju-coord-week-metric');
+   card.style.cssText='padding:13px;border:1px solid #dce5f0;border-radius:12px;background:#f7f9fc;min-width:0';
+   const top=node('div','');top.style.cssText='display:flex;align-items:flex-start;justify-content:space-between;gap:10px';
+   const label=node('span','',item.label);label.style.cssText='color:#526783;font-size:13px;line-height:1.35';
+   const value=node('strong','',item.value.toLocaleString(language==='ja'?'ja-JP':language==='en'?'en-US':'pt-BR'));value.style.cssText='color:#1c3152;font-size:20px;white-space:nowrap';
+   top.append(label,value);
+   const track=node('div','');track.style.cssText='height:9px;margin-top:12px;border-radius:99px;background:#e4ebf4;overflow:hidden';
+   const fill=node('div','');fill.style.cssText='height:100%;width:'+Math.max(item.value===0?0:3,(item.value/maxValue)*100)+'%;border-radius:99px;background:#2b568b';track.append(fill);
+   card.append(top,track);grid.append(card);
+  });
+  if(!values.length)grid.append(node('p','',t.noValue));
+  shell.append(grid);container.append(shell);return;
+ }
  const heading=node('div','fju-coord-chart-heading');
  heading.append(node('h4','',t.title),node('p','',t.detail));shell.append(heading);
  const controls=node('div','fju-coord-chart-controls');
