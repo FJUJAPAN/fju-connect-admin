@@ -239,3 +239,12 @@
 .fju-project-mark--media,#youth-list .fju-project-icon--media{background:#2474bd!important;color:#111!important;border:1px solid #111}
 .fju-project-mark--bjj,#youth-list .fju-project-icon--bjj{background:#fff!important;color:#d3232a!important;border:2px solid #d3232a}
 .fju-project-mark--culture,#youth-list .fju-project-icon--culture{background:#ed8124!important;color:#171717!important;border:1px solid #171717}
+
+
+/* Padroniza os selos de projetos com as etiquetas de patente dos cards. */
+#youth-list .fju-project-icon{
+  border:0!important;
+  box-shadow:none!important;
+  border-radius:999px!important;
+  font-weight:750!important;
+}
