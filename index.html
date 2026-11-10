@@ -2684,6 +2684,7 @@ function renderYouth(){
     const ageValue=Number(String(fjuAgeFromBirth(r.nascimento)||'').match(/\d+/)?.[0]);
     card.dataset.ageBand=!Number.isFinite(ageValue)?'sem-idade':ageValue<=25?'ate-25':'mais-25';
     card.style.borderLeft='5px solid '+(card.dataset.ageBand==='ate-25'?'#23865b':card.dataset.ageBand==='mais-25'?'#5268b5':'#9ca3af');
+    card.style.background=card.dataset.ageBand==='ate-25'?'#f2faf5':card.dataset.ageBand==='mais-25'?'#f3f5fc':'#f7f7f7';
     const main=document.createElement('div');main.className='youth-card-main';
     const avatar=document.createElement('div');avatar.className='youth-avatar';
     avatar.dataset.jovemId=String(r.id);
