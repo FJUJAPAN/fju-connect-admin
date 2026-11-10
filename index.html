@@ -2620,6 +2620,13 @@ function fjuBuildProjectIcons(projects){
   const visual=fjuProjectVisual(project);
   const icon=document.createElement('span');
   icon.className='youth-rank fju-project-icon fju-project-icon--'+visual.color;
+  if(visual.color==='bjj'){
+   icon.style.setProperty('background-color','#fff','important');
+   icon.style.setProperty('color','#d3232a','important');
+   icon.style.setProperty('border','1px solid #d3232a','important');
+   icon.style.setProperty('border-radius','999px','important');
+   icon.style.setProperty('box-sizing','border-box','important');
+  }
   icon.textContent=visual.short;
   icon.setAttribute('role','img');
   icon.setAttribute('aria-label',visual.label);
