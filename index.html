@@ -3448,6 +3448,8 @@ el('youth-form').addEventListener('submit',async e=>{
   const stillCurrent=()=>currentProfile===profile&&submitVersion===youthSubmitVersion;
   try{
   const polo_id=el('youth-polo').value;
+  const selectedCivilStatus=document.querySelector('input[name="youth-civil-status"]:checked')?.value||'';
+  const selectedProjects=[...document.querySelectorAll('input[name="youth-project"]:checked')].map(input=>input.value);
   if(profile.papel==='coordenador'&&polo_id!==currentProfile.polo_id){youthMessage('Polo não autorizado.',true);return;}
   if(!syncYouthBirth()){youthMessage('Preencha uma data de nascimento válida (dia, mês e ano).',true);return;}
   const payload={
@@ -3457,9 +3459,9 @@ el('youth-form').addEventListener('submit',async e=>{
     endereco:el('youth-address').value.trim()||null,
     nacionalidade_iso2:el('youth-country').value.trim().toUpperCase()||null,
     idiomas:selectedYouthLanguages(),
-    projetos:selectedYouthProjects(),
-    estado_civil:selectedYouthCivilStatus()||(el('youth-id').value?(youthRows.find(row=>String(row.id)===String(el('youth-id').value))?.estado_civil||'nao_informado'):''),
-    data_casamento:selectedYouthCivilStatus()==='casado'?el('youth-wedding-date').value||null:(el('youth-id').value?youthRows.find(row=>String(row.id)===String(el('youth-id').value))?.data_casamento||null:null),
+    projetos:selectedProjects,
+    estado_civil:selectedCivilStatus||(el('youth-id').value?(youthRows.find(row=>String(row.id)===String(el('youth-id').value))?.estado_civil||'nao_informado'):''),
+    data_casamento:selectedCivilStatus==='casado'?el('youth-wedding-date').value||null:(el('youth-id').value?youthRows.find(row=>String(row.id)===String(el('youth-id').value))?.data_casamento||null:null),
     deseja_obra_altar:el('youth-altar-desire').checked,
     patente:({'Eventual':'eventual','Inconstante':'normal','Normal':'normal','Firme':'firme','CPO':'cpo','Colaborador':'colaborador','Voluntário':'voluntario','Obreiro':'obreiro','Coordenador':'coordenador'}[el('youth-rank').value]||el('youth-rank').value.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase()),
     categoria:['Inconstante','Normal'].includes(el('youth-rank').value)?'inconstante':'firme'
