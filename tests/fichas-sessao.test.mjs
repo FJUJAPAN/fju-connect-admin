@@ -22,6 +22,7 @@ function formFixture(){
  doc.querySelector('#youth-polo').value='polo-A';
  doc.querySelector('#youth-name').value='Pessoa Teste';
  doc.querySelector('#youth-rank').value='Firme';
+ doc.querySelector('input[name="youth-civil-status"][value="solteiro"]').checked=true;
  assert.equal(doc.querySelector('#youth-rank').value,'Firme');
  w.__profile=profile;
  w.__supabase={from:table=>{
@@ -32,6 +33,7 @@ function formFixture(){
  w.eval('var currentProfile=window.__profile;var profileRequest=3;'+
   'var supabase=window.__supabase;const el=id=>document.getElementById(id);'+
   'const syncYouthBirth=()=>true;const selectedYouthLanguages=()=>[];'+
+  'const selectedYouthProjects=()=>[];const selectedYouthCivilStatus=()=>"solteiro";'+
   'const youthMessage=(msg)=>window.__messages.push(msg);'+
   'const resetYouth=()=>window.__success.push("reset");'+
   'const setYouthFormOpen=()=>window.__success.push("close");'+

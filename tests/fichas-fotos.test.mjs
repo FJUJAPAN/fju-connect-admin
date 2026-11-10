@@ -25,6 +25,7 @@ function fixture(photoType='image/jpeg',photoSize=1234,compressFails=false,uploa
  d.querySelector('#youth-polo').value='polo-B';
  d.querySelector('#youth-name').value='Pessoa Teste';
  d.querySelector('#youth-rank').value='Firme';
+ d.querySelector('input[name="youth-civil-status"][value="solteiro"]').checked=true;
  assert.equal(d.querySelector('#youth-rank').value,'Firme');
  const fakeFile={type:photoType,size:photoSize};
  Object.defineProperty(d.querySelector('#youth-photo'),'files',{configurable:true,value:[fakeFile]});
@@ -52,6 +53,7 @@ function fixture(photoType='image/jpeg',photoSize=1234,compressFails=false,uploa
  w.eval('var currentProfile=window.__profile;var profileRequest=9;'+
  'var supabase=window.__supabase;const el=id=>document.getElementById(id);'+
  'const syncYouthBirth=()=>true;const selectedYouthLanguages=()=>[];'+
+ 'const selectedYouthProjects=()=>[];const selectedYouthCivilStatus=()=>"solteiro";'+
  'const compactarFoto100KB=window.__mockCompress;'+
  'const youthMessage=(msg,error)=>window.__messages.push({msg,error});'+
  'const resetYouth=()=>window.__events.push("reset");'+
