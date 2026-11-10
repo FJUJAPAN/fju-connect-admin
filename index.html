@@ -2698,13 +2698,17 @@ function renderYouth(){
     const isInconstante=['normal','inconstante'].includes(String(r.patente||'').toLowerCase())||(!r.patente&&r.categoria==='inconstante');
     rank.textContent=visibleRank;rank.dataset.rank=rank.textContent;if(isInconstante)rank.hidden=true;
     const metadata=document.createElement('div');metadata.className='youth-card-metadata';
-    metadata.setAttribute('aria-label','Idiomas que fala');
+    metadata.setAttribute('aria-label','Idioma: idiomas que fala');
+    const languageLabel=document.createElement('span');
+    languageLabel.textContent='Idioma:';
+    languageLabel.style.fontWeight='700';
+    metadata.append(languageLabel);
     const languageFlags=fjuYouthLanguageFlags(r.idiomas);
     if(languageFlags.length){
       for(const flag of languageFlags){const item=document.createElement('span');item.textContent=flag;metadata.append(item);}
       metadata.title='Idiomas: '+r.idiomas.join(', ');
     }else{
-      const empty=document.createElement('span');empty.textContent='Idiomas não informados';metadata.append(empty);
+      const empty=document.createElement('span');empty.textContent='Não informado';metadata.append(empty);
     }
     const idLabel=document.createElement('span');idLabel.className='fju-youth-id';
     idLabel.textContent=fjuIdByYouth.get(String(r.id))||'';
