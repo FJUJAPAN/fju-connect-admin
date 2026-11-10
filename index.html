@@ -2682,8 +2682,8 @@ function renderYouth(){
   for(const [index,r] of rows.entries()){
     const card=document.createElement('article');card.className='youth-card';
     const ageValue=Number(String(fjuAgeFromBirth(r.nascimento)||'').match(/\d+/)?.[0]);
-    card.dataset.ageBand=Number.isFinite(ageValue)&&ageValue<=25?'ate-25':'mais-25';
-    card.style.borderLeft='5px solid '+(card.dataset.ageBand==='ate-25'?'#23865b':'#5268b5');
+    card.dataset.ageBand=!Number.isFinite(ageValue)?'sem-idade':ageValue<=25?'ate-25':'mais-25';
+    card.style.borderLeft='5px solid '+(card.dataset.ageBand==='ate-25'?'#23865b':card.dataset.ageBand==='mais-25'?'#5268b5':'#9ca3af');
     const main=document.createElement('div');main.className='youth-card-main';
     const avatar=document.createElement('div');avatar.className='youth-avatar';
     avatar.dataset.jovemId=String(r.id);
@@ -2708,7 +2708,7 @@ function renderYouth(){
     const idLabel=document.createElement('span');idLabel.className='fju-youth-id';
     idLabel.textContent=fjuIdByYouth.get(String(r.id))||'';
     info.append(name,idLabel);
-    const ageTag=document.createElement('span');ageTag.className='youth-rank';ageTag.textContent=fjuAgeFromBirth(r.nascimento)||'Idade não informada';ageTag.style.background=card.dataset.ageBand==='ate-25'?'#e8f5ee':'#edf0fb';ageTag.style.color=card.dataset.ageBand==='ate-25'?'#17643f':'#354b9b';
+    const ageTag=document.createElement('span');ageTag.className='youth-rank';ageTag.textContent=fjuAgeFromBirth(r.nascimento)||'Idade não informada';ageTag.style.background=card.dataset.ageBand==='ate-25'?'#e8f5ee':card.dataset.ageBand==='mais-25'?'#edf0fb':'#f1f3f5';ageTag.style.color=card.dataset.ageBand==='ate-25'?'#17643f':card.dataset.ageBand==='mais-25'?'#354b9b':'#596273';
     const civilTag=document.createElement('span');civilTag.className='youth-rank';civilTag.textContent=r.estado_civil==='casado'?'Casado(a)':r.estado_civil==='solteiro'?'Solteiro(a)':'Estado civil não informado';civilTag.style.background='#f0f2f6';civilTag.style.color='#3e4859';
     const tags=document.createElement('div');tags.className='youth-card-metadata';tags.style.display='flex';tags.style.flexWrap='wrap';tags.style.gap='5px';tags.append(ageTag,civilTag);
     if(!isInconstante)tags.append(rank);
