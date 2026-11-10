@@ -2713,7 +2713,7 @@ function renderYouth(){
     const civilTag=document.createElement('span');civilTag.className='youth-rank';civilTag.textContent=r.estado_civil==='casado'?'Casado(a)':r.estado_civil==='solteiro'?'Solteiro(a)':'Estado civil não informado';civilTag.style.background='#f0f2f6';civilTag.style.color='#3e4859';
     const tags=document.createElement('div');tags.className='youth-card-metadata';tags.style.display='flex';tags.style.flexWrap='wrap';tags.style.gap='5px';tags.append(ageTag,civilTag);
     if(!isInconstante)tags.append(rank);
-    if(r.deseja_obra_altar){const altarTag=document.createElement('span');altarTag.className='youth-rank';altarTag.textContent='Deseja fazer a Obra no Altar';altarTag.style.background='#fff2d8';altarTag.style.color='#825300';tags.append(altarTag);}
+    if(r.deseja_obra_altar){const altarTag=document.createElement('span');altarTag.className='youth-rank';altarTag.textContent='ALTAR';altarTag.style.background='#fff2d8';altarTag.style.color='#825300';tags.append(altarTag);}
     info.append(tags);
     const projects=fjuProjectsByYouth.get(String(r.id))||[];
     if(projects.length)info.append(fjuBuildProjectIcons(projects));
