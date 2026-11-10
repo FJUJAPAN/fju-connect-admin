@@ -3457,8 +3457,8 @@ el('youth-form').addEventListener('submit',async e=>{
     nacionalidade_iso2:el('youth-country').value.trim().toUpperCase()||null,
     idiomas:selectedYouthLanguages(),
     projetos:selectedYouthProjects(),
-    estado_civil:selectedYouthCivilStatus(),
-    data_casamento:selectedYouthCivilStatus()==='casado'?el('youth-wedding-date').value||null:null,
+    estado_civil:selectedYouthCivilStatus()||(el('youth-id').value?(youthRows.find(row=>String(row.id)===String(el('youth-id').value))?.estado_civil||'nao_informado'):''),
+    data_casamento:selectedYouthCivilStatus()==='casado'?el('youth-wedding-date').value||null:(el('youth-id').value?youthRows.find(row=>String(row.id)===String(el('youth-id').value))?.data_casamento||null:null),
     deseja_obra_altar:el('youth-altar-desire').checked,
     patente:({'Eventual':'eventual','Inconstante':'normal','Normal':'normal','Firme':'firme','CPO':'cpo','Colaborador':'colaborador','Voluntário':'voluntario','Obreiro':'obreiro','Coordenador':'coordenador'}[el('youth-rank').value]||el('youth-rank').value.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase()),
     categoria:['Inconstante','Normal'].includes(el('youth-rank').value)?'inconstante':'firme'
