@@ -291,3 +291,43 @@
 @media(max-width:700px){
   #youth-list .fju-project-icon{padding:4px 9px!important;font-size:10px!important}
 }
+
+
+/* Projetos nos cards: replica EXATAMENTE a geometria da etiqueta de patente. */
+#youth-list .fju-youth-project-icons{
+ display:flex!important;
+ align-items:center!important;
+ flex-wrap:wrap!important;
+ gap:6px!important;
+ margin-top:0!important;
+}
+#youth-list .fju-youth-project-icons .fju-project-icon{
+ display:inline-flex!important;
+ align-items:center!important;
+ max-width:100%!important;
+ width:auto!important;
+ min-width:0!important;
+ height:auto!important;
+ min-height:0!important;
+ padding:4px 9px!important;
+ border:0!important;
+ outline:0!important;
+ box-shadow:none!important;
+ border-radius:100px!important;
+ font-family:inherit!important;
+ font-size:10px!important;
+ font-weight:750!important;
+ letter-spacing:.05px!important;
+ line-height:1.3!important;
+ white-space:nowrap!important;
+}
+#youth-list .fju-project-icon--help{background:#f5cf32!important;color:#171717!important}
+#youth-list .fju-project-icon--sport{background:#269b55!important;color:#fff!important}
+#youth-list .fju-project-icon--uniforca{background:#d99a16!important;color:#171717!important}
+#youth-list .fju-project-icon--media{background:#2474bd!important;color:#fff!important}
+#youth-list .fju-project-icon--bjj{background:#fff!important;color:#d3232a!important}
+#youth-list .fju-project-icon--culture{background:#ed8124!important;color:#171717!important}
+@media(max-width:700px){
+ #youth-list .fju-youth-project-icons{gap:6px!important;margin-top:0!important}
+ #youth-list .fju-youth-project-icons .fju-project-icon{padding:3px 8px!important;font-size:10px!important}
+}
