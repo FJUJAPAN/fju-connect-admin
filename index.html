@@ -2626,13 +2626,6 @@ function fjuBuildProjectIcons(projects){
   const visual=fjuProjectVisual(project);
   const icon=document.createElement('span');
   icon.className='youth-rank fju-project-icon fju-project-icon--'+visual.color;
-  if(visual.color==='bjj'){
-   icon.style.setProperty('background-color','#fff','important');
-   icon.style.setProperty('color','#d3232a','important');
-   icon.style.setProperty('border','1px solid #d3232a','important');
-   icon.style.setProperty('border-radius','999px','important');
-   icon.style.setProperty('box-sizing','border-box','important');
-  }
   icon.textContent=visual.short;
   icon.setAttribute('role','img');
   icon.setAttribute('aria-label',visual.label);
@@ -2714,10 +2707,10 @@ function renderYouth(){
     idLabel.textContent=fjuIdByYouth.get(String(r.id))||'';
     info.append(name,idLabel);
     const ageTag=document.createElement('span');ageTag.className='youth-rank';ageTag.textContent=fjuAgeFromBirth(r.nascimento)||'Idade não informada';ageTag.style.background=card.dataset.ageBand==='ate-25'?'#e8f5ee':card.dataset.ageBand==='mais-25'?'#edf0fb':'#f1f3f5';ageTag.style.color=card.dataset.ageBand==='ate-25'?'#17643f':card.dataset.ageBand==='mais-25'?'#354b9b':'#596273';
-    const tags=document.createElement('div');tags.className='youth-card-metadata';tags.style.display='flex';tags.style.flexWrap='wrap';tags.style.gap='5px';tags.append(ageTag);
+    const tags=document.createElement('div');tags.className='youth-card-metadata youth-card-tags';tags.style.display='flex';tags.style.flexWrap='wrap';tags.style.gap='5px';tags.append(ageTag);
     if(r.estado_civil==='casado'||r.estado_civil==='solteiro'){const civilTag=document.createElement('span');civilTag.className='youth-rank';civilTag.textContent=r.estado_civil==='casado'?'Casado(a)':'Solteiro(a)';civilTag.style.background='#f0f2f6';civilTag.style.color='#3e4859';tags.append(civilTag);}
     if(!isInconstante)tags.append(rank);
-    if(r.deseja_obra_altar){const altarTag=document.createElement('span');altarTag.className='youth-rank';altarTag.textContent='ALTAR';altarTag.style.background='#fff2d8';altarTag.style.color='#825300';tags.append(altarTag);}
+    if(r.deseja_obra_altar){const altarTag=document.createElement('span');altarTag.className='youth-rank youth-altar-tag';altarTag.textContent='ALTAR';tags.append(altarTag);}
     info.append(tags);
     const projects=fjuProjectsByYouth.get(String(r.id))||[];
     if(projects.length)info.append(fjuBuildProjectIcons(projects));

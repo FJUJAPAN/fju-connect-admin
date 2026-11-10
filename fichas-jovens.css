@@ -361,3 +361,84 @@
   box-shadow:inset 0 0 0 1px #d3232a!important;
   box-sizing:border-box!important;
 }
+
+
+/* FJU Connect — paleta vibrante unificada para patente, ALTAR e projetos.
+   Todos os selos compartilham geometria, tipografia e peso visual.
+   As cores variam dentro da mesma família cromática, sem contornos especiais. */
+#youth-list .youth-rank,
+#youth-list .fju-youth-project-icons .fju-project-icon{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  box-sizing:border-box!important;
+  min-width:0!important;
+  min-height:26px!important;
+  height:auto!important;
+  padding:5px 10px!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  border-radius:999px!important;
+  font-family:inherit!important;
+  font-size:10px!important;
+  font-weight:750!important;
+  letter-spacing:.05px!important;
+  line-height:1.2!important;
+  white-space:nowrap!important;
+}
+#youth-list .youth-rank[data-rank=Firme]{background:#dcecff!important;color:#24549a!important}
+#youth-list .youth-rank[data-rank=CPO]{background:#eee3ff!important;color:#6840a0!important}
+#youth-list .youth-rank[data-rank=Colaborador]{background:#d9f3e9!important;color:#176b50!important}
+#youth-list .youth-rank[data-rank=Obreiro]{background:#ffebd9!important;color:#99501f!important}
+#youth-list .youth-rank[data-rank=Coordenador]{background:#e3e7ff!important;color:#414b9a!important}
+#youth-list .youth-rank[data-rank=Eventual]{background:#ffe2ed!important;color:#9a3e68!important}
+#youth-list .youth-rank:not([data-rank]){background:#e8edf5!important;color:#465675!important}
+
+/* Mesma família vibrante para os projetos — sem borda individual do BJJ. */
+#youth-list .fju-project-icon--help,
+.fju-project-mark--help{background:#ffedb8!important;color:#805300!important}
+#youth-list .fju-project-icon--sport,
+.fju-project-mark--sport{background:#d8f2e5!important;color:#176b50!important}
+#youth-list .fju-project-icon--uniforca,
+.fju-project-mark--uniforca{background:#ffedcf!important;color:#89551a!important}
+#youth-list .fju-project-icon--media,
+.fju-project-mark--media{background:#dcecff!important;color:#24549a!important}
+#youth-list .fju-project-icon--bjj,
+.fju-project-mark--bjj{background:#ffe0e5!important;color:#9a3e55!important}
+#youth-list .fju-project-icon--culture,
+.fju-project-mark--culture{background:#f1e2ff!important;color:#70439b!important}
+#youth-list .fju-project-icon--pink,
+.fju-project-mark--pink{background:#ffe2ed!important;color:#9a3e68!important}
+#youth-list .fju-project-icon--slate{background:#e8edf5!important;color:#465675!important}
+
+/* O desejo de fazer a Obra no Altar é um selo da mesma família. */
+#youth-list .youth-card-tags .youth-rank[aria-label="ALTAR"],
+#youth-list .youth-rank.youth-altar-tag{background:#ffedb8!important;color:#805300!important}
+
+@media(max-width:700px){
+ #youth-list .youth-rank,
+ #youth-list .fju-youth-project-icons .fju-project-icon{
+  min-height:25px!important;padding:4px 9px!important;font-size:10px!important
+ }
+}
+
+
+/* Tags auxiliares (idade e estado civil) também seguem a mesma linguagem visual. */
+#youth-list .youth-card-tags .youth-rank{
+  min-height:26px!important;
+  padding:5px 10px!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  border-radius:999px!important;
+  font-size:10px!important;
+  font-weight:750!important;
+  line-height:1.2!important;
+}
+#youth-list .youth-card-tags .youth-rank:not(.youth-altar-tag){
+  background:#e8edf5!important;color:#465675!important;
+}
+#youth-list .youth-card-tags .youth-altar-tag{
+  background:#ffedb8!important;color:#805300!important;
+}
