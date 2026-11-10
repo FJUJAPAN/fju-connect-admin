@@ -340,3 +340,12 @@
   border:1px solid #d3232a!important;
   box-sizing:border-box!important;
 }
+
+
+/* Correção de prioridade: a borda fina do FJU BJJ deve prevalecer sobre o reset geral dos selos. */
+#jovens #youth-list .fju-youth-project-icons .fju-project-icon--bjj{
+  background:#fff!important;
+  color:#d3232a!important;
+  border:1px solid #d3232a!important;
+  box-sizing:border-box!important;
+}
