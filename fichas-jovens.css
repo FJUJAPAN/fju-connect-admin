@@ -349,3 +349,15 @@
   border:1px solid #d3232a!important;
   box-sizing:border-box!important;
 }
+
+
+/* FJU BJJ: contorno visível mesmo quando regras gerais removem a borda. */
+#jovens #youth-list .fju-youth-project-icons .fju-project-icon--bjj{
+  background:#fff!important;
+  color:#d3232a!important;
+  border:1px solid #d3232a!important;
+  outline:1px solid #d3232a!important;
+  outline-offset:-1px!important;
+  box-shadow:inset 0 0 0 1px #d3232a!important;
+  box-sizing:border-box!important;
+}
