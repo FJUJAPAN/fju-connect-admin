@@ -1141,7 +1141,7 @@ body.fju-ficha-aberta #youth-detail.fju-direct-detail{padding-bottom:120px!impor
 </div>
 </div>
 <div><label for="youth-phone">Telefone</label><input id="youth-phone" type="tel" maxlength="50"></div>
-<div id="youth-civil-status-field"><label for="youth-civil-status">Estado civil</label><select id="youth-civil-status"><option value="solteiro">Solteiro(a)</option><option value="casado">Casado(a)</option></select></div>
+<div id="youth-civil-status-field"><span class="fju-field-label">Estado civil</span><div class="fju-civil-options"><label><input type="radio" name="youth-civil-status" value="solteiro"> Solteiro(a)</label><label><input type="radio" name="youth-civil-status" value="casado"> Casado(a)</label></div></div>
 <div id="youth-wedding-date-field" hidden><label for="youth-wedding-date">Data do casamento</label><input id="youth-wedding-date" type="date"></div>
 <div id="youth-altar-desire-field"><label><input id="youth-altar-desire" type="checkbox"> Tenho desejo de fazer a Obra no Altar</label></div>
 <div><label for="youth-address">Endereço</label><input id="youth-address" maxlength="300" autocomplete="street-address" placeholder="Endereço no Japão"></div>
@@ -2307,9 +2307,10 @@ el('youth-add-toggle').addEventListener('click',()=>{
 el('youth-form-close').addEventListener('click',()=>{resetYouth();setYouthFormOpen(false);});
 function selectedYouthProjects(){return [...document.querySelectorAll('input[name="youth-project"]:checked')].map(input=>input.value);}
 function setYouthProjects(projects){const selected=Array.isArray(projects)?projects:[];document.querySelectorAll('input[name="youth-project"]').forEach(input=>{input.checked=selected.includes(input.value);});}
-function syncYouthCivilStatus(){const married=el('youth-civil-status').value==='casado';el('youth-wedding-date-field').hidden=!married;el('youth-wedding-date').required=married;}
-el('youth-civil-status').addEventListener('change',syncYouthCivilStatus);
-function resetYouth(){++youthPhotoLoadVersion;const complementMount=el('fju-edit-complement-mount');if(complementMount){complementMount.hidden=true;el('fju-edit-complement-editor').replaceChildren();}el('youth-photo').disabled=false;if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}el('youth-form').reset();setYouthProjects([]);setYouthBirth('');el('youth-civil-status').value='solteiro';el('youth-wedding-date').value='';el('youth-altar-desire').checked=false;syncYouthCivilStatus();refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';el('youth-rank').value=currentProfile?.papel==='coordenador'?'Eventual':'Firme';syncEventualYouthForm();if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
+function selectedYouthCivilStatus(){return document.querySelector('input[name="youth-civil-status"]:checked')?.value||'';}
+function syncYouthCivilStatus(){const married=selectedYouthCivilStatus()==='casado';el('youth-wedding-date-field').hidden=!married;el('youth-wedding-date').required=married;}
+document.querySelectorAll('input[name="youth-civil-status"]').forEach(input=>input.addEventListener('change',syncYouthCivilStatus));
+function resetYouth(){++youthPhotoLoadVersion;const complementMount=el('fju-edit-complement-mount');if(complementMount){complementMount.hidden=true;el('fju-edit-complement-editor').replaceChildren();}el('youth-photo').disabled=false;if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}el('youth-form').reset();setYouthProjects([]);setYouthBirth('');document.querySelectorAll('input[name="youth-civil-status"]').forEach(input=>input.checked=false);el('youth-wedding-date').value='';el('youth-altar-desire').checked=false;syncYouthCivilStatus();refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';el('youth-rank').value=currentProfile?.papel==='coordenador'?'Eventual':'Firme';syncEventualYouthForm();if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
 async function initializeYouth(){
   const profile=currentProfile;
   if(!profile)return;
@@ -2708,7 +2709,7 @@ function renderYouth(){
     idLabel.textContent=fjuIdByYouth.get(String(r.id))||'';
     info.append(name,idLabel);
     const ageTag=document.createElement('span');ageTag.className='youth-rank';ageTag.textContent=fjuAgeFromBirth(r.nascimento)||'Idade não informada';ageTag.style.background=card.dataset.ageBand==='ate-25'?'#e8f5ee':'#edf0fb';ageTag.style.color=card.dataset.ageBand==='ate-25'?'#17643f':'#354b9b';
-    const civilTag=document.createElement('span');civilTag.className='youth-rank';civilTag.textContent=(r.estado_civil||'solteiro')==='casado'?'Casado(a)':'Solteiro(a)';civilTag.style.background='#f0f2f6';civilTag.style.color='#3e4859';
+    const civilTag=document.createElement('span');civilTag.className='youth-rank';civilTag.textContent=r.estado_civil==='casado'?'Casado(a)':r.estado_civil==='solteiro'?'Solteiro(a)':'Estado civil não informado';civilTag.style.background='#f0f2f6';civilTag.style.color='#3e4859';
     const tags=document.createElement('div');tags.className='youth-card-metadata';tags.style.display='flex';tags.style.flexWrap='wrap';tags.style.gap='5px';tags.append(ageTag,civilTag);
     if(!isInconstante)tags.append(rank);
     if(r.deseja_obra_altar){const altarTag=document.createElement('span');altarTag.className='youth-rank';altarTag.textContent='Deseja fazer a Obra no Altar';altarTag.style.background='#fff2d8';altarTag.style.color='#825300';tags.append(altarTag);}
@@ -2977,7 +2978,7 @@ async function viewYouth(id){
   const details=document.createElement('div');details.className='grid';
   const flag=(r.nacionalidade_iso2&&/^[A-Z]{2}$/.test(r.nacionalidade_iso2))?String.fromCodePoint(...[...r.nacionalidade_iso2].map(c=>127397+c.charCodeAt(0))):'🌐';
   const country=el('youth-country').querySelector('option[value="'+(r.nacionalidade_iso2||'')+'"]');
-  for(const [label,value] of [['Idade',fjuAgeFromBirth(r.nascimento)],['Estado civil',(r.estado_civil||'solteiro')==='casado'?'Casado(a)':'Solteiro(a)'],['Data do casamento',r.data_casamento||'—'],['Tempo de casado',r.estado_civil==='casado'?fjuCollaboratorTenure(r.data_casamento):'—'],['Desejo de fazer a Obra no Altar',r.deseja_obra_altar?'Sim':'Não'],['Telefone',r.telefone],['Nacionalidade',flag+' '+(country?.textContent||r.nacionalidade_iso2||'—')],['Idiomas',(r.idiomas||[]).join(', ')||'—']]){
+  for(const [label,value] of [['Idade',fjuAgeFromBirth(r.nascimento)],['Estado civil',r.estado_civil==='casado'?'Casado(a)':r.estado_civil==='solteiro'?'Solteiro(a)':'Não informado'],['Data do casamento',r.data_casamento||'—'],['Tempo de casado',r.estado_civil==='casado'?fjuCollaboratorTenure(r.data_casamento):'—'],['Desejo de fazer a Obra no Altar',r.deseja_obra_altar?'Sim':'Não'],['Telefone',r.telefone],['Nacionalidade',flag+' '+(country?.textContent||r.nacionalidade_iso2||'—')],['Idiomas',(r.idiomas||[]).join(', ')||'—']]){
     const cell=document.createElement('div');cell.className='stat';const labelEl=document.createElement('strong');labelEl.textContent=label;const valueEl=document.createElement('p');valueEl.textContent=value||'—';cell.append(labelEl,valueEl);details.append(cell);
   }
   panel.append(details);
@@ -3407,7 +3408,7 @@ function editYouth(id){
   const r=youthRows.find(x=>x.id===id);if(!r)return;
   el('youth-id').value=r.id;el('youth-polo').value=r.polo_id;
   for(const [field,key] of [['youth-name','nome_completo'],['youth-phone','telefone'],['youth-address','endereco'],['youth-country','nacionalidade_iso2'],['youth-rank','patente']])el(field).value=r[key]||'';
-  el('youth-civil-status').value=r.estado_civil||'solteiro';el('youth-wedding-date').value=r.data_casamento||'';el('youth-altar-desire').checked=Boolean(r.deseja_obra_altar);syncYouthCivilStatus();
+  document.querySelectorAll('input[name="youth-civil-status"]').forEach(input=>input.checked=input.value===r.estado_civil);el('youth-wedding-date').value=r.data_casamento||'';el('youth-altar-desire').checked=Boolean(r.deseja_obra_altar);syncYouthCivilStatus();
   setYouthBirth(r.nascimento||'');
   el('youth-rank').value=({'normal':'Normal','inconstante':'Normal','eventual':'Eventual','firme':'Firme','cpo':'CPO','colaborador':'Colaborador','voluntario':'Voluntário','obreiro':'Obreiro','coordenador':'Coordenador'}[String(r.patente||'').trim().toLowerCase()]||'Normal');
   document.querySelectorAll('input[name="youth-language"]').forEach(x=>x.checked=(r.idiomas||[]).includes(x.value));refreshYouthLanguages();setYouthProjects(r.projetos||[]);
@@ -3456,8 +3457,8 @@ el('youth-form').addEventListener('submit',async e=>{
     nacionalidade_iso2:el('youth-country').value.trim().toUpperCase()||null,
     idiomas:selectedYouthLanguages(),
     projetos:selectedYouthProjects(),
-    estado_civil:el('youth-civil-status').value,
-    data_casamento:el('youth-civil-status').value==='casado'?el('youth-wedding-date').value||null:null,
+    estado_civil:selectedYouthCivilStatus(),
+    data_casamento:selectedYouthCivilStatus()==='casado'?el('youth-wedding-date').value||null:null,
     deseja_obra_altar:el('youth-altar-desire').checked,
     patente:({'Eventual':'eventual','Inconstante':'normal','Normal':'normal','Firme':'firme','CPO':'cpo','Colaborador':'colaborador','Voluntário':'voluntario','Obreiro':'obreiro','Coordenador':'coordenador'}[el('youth-rank').value]||el('youth-rank').value.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase()),
     categoria:['Inconstante','Normal'].includes(el('youth-rank').value)?'inconstante':'firme'
@@ -3487,6 +3488,7 @@ el('youth-form').addEventListener('submit',async e=>{
     youthMessage('Para cadastrar com CPO, Colaborador, Obreiro ou Coordenador, crie primeiro a ficha como Normal, Firme ou Voluntário; depois solicite a patente para aprovação Nacional.',true);
     return;
   }
+  if(!payload.estado_civil){youthMessage('Selecione se o jovem é solteiro(a) ou casado(a).',true);return;}
   if(payload.estado_civil==='casado'&&!payload.data_casamento){youthMessage('Informe a data do casamento.',true);el('youth-wedding-date').focus();return;}
   if(payload.data_casamento&&payload.data_casamento>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo'}).format(new Date())){youthMessage('A data do casamento não pode estar no futuro.',true);return;}
   if(!payload.nome_completo){youthMessage('Informe o nome completo do jovem.',true);return;}
