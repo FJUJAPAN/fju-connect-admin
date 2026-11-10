@@ -2619,7 +2619,7 @@ function fjuBuildProjectIcons(projects){
  for(const project of projects||[]){
   const visual=fjuProjectVisual(project);
   const icon=document.createElement('span');
-  icon.className='fju-project-icon fju-project-icon--'+visual.color;
+  icon.className='youth-rank fju-project-icon fju-project-icon--'+visual.color;
   icon.textContent=visual.short;
   icon.setAttribute('role','img');
   icon.setAttribute('aria-label',visual.label);
