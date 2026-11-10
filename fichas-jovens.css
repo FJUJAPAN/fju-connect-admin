@@ -422,3 +422,23 @@
   min-height:25px!important;padding:4px 9px!important;font-size:10px!important
  }
 }
+
+
+/* Tags auxiliares (idade e estado civil) também seguem a mesma linguagem visual. */
+#youth-list .youth-card-tags .youth-rank{
+  min-height:26px!important;
+  padding:5px 10px!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  border-radius:999px!important;
+  font-size:10px!important;
+  font-weight:750!important;
+  line-height:1.2!important;
+}
+#youth-list .youth-card-tags .youth-rank:not(.youth-altar-tag){
+  background:#e8edf5!important;color:#465675!important;
+}
+#youth-list .youth-card-tags .youth-altar-tag{
+  background:#ffedb8!important;color:#805300!important;
+}
