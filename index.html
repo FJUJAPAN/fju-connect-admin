@@ -1141,6 +1141,9 @@ body.fju-ficha-aberta #youth-detail.fju-direct-detail{padding-bottom:120px!impor
 </div>
 </div>
 <div><label for="youth-phone">Telefone</label><input id="youth-phone" type="tel" maxlength="50"></div>
+<div class="youth-extended-field" id="youth-civil-status-field"><label for="youth-civil-status">Estado civil</label><select id="youth-civil-status"><option value="solteiro">Solteiro(a)</option><option value="casado">Casado(a)</option></select></div>
+<div class="youth-extended-field" id="youth-wedding-date-field" hidden><label for="youth-wedding-date">Data do casamento</label><input id="youth-wedding-date" type="date"></div>
+<div class="youth-extended-field" id="youth-altar-desire-field"><label><input id="youth-altar-desire" type="checkbox"> Tenho desejo de fazer a Obra no Altar</label></div>
 <div><label for="youth-address">Endereço</label><input id="youth-address" maxlength="300" autocomplete="street-address" placeholder="Endereço no Japão"></div>
 <div class="youth-extended-field"><label for="youth-country">Nacionalidade</label><select id="youth-country"><option value="">Selecione</option><option value="BR">🇧🇷 Brasil</option><option value="JP">🇯🇵 Japão</option><option value="PH">🇵🇭 Filipinas</option><option value="PE">🇵🇪 Peru</option><option value="BO">🇧🇴 Bolívia</option><option value="PY">🇵🇾 Paraguai</option><option value="AR">🇦🇷 Argentina</option><option value="CO">🇨🇴 Colômbia</option><option value="VE">🇻🇪 Venezuela</option><option value="US">🇺🇸 Estados Unidos</option><option value="CN">🇨🇳 China</option><option value="KR">🇰🇷 Coreia do Sul</option><option value="VN">🇻🇳 Vietnã</option><option value="ID">🇮🇩 Indonésia</option><option value="NP">🇳🇵 Nepal</option><option value="IN">🇮🇳 Índia</option><option value="LK">🇱🇰 Sri Lanka</option><option value="MM">🇲🇲 Mianmar</option><option value="TH">🇹🇭 Tailândia</option><option value="PK">🇵🇰 Paquistão</option><option value="BD">🇧🇩 Bangladesh</option><option value="GB">🇬🇧 Reino Unido</option><option value="FR">🇫🇷 França</option><option value="DE">🇩🇪 Alemanha</option><option value="PT">🇵🇹 Portugal</option><option value="ES">🇪🇸 Espanha</option><option value="MX">🇲🇽 México</option><option value="NG">🇳🇬 Nigéria</option><option value="GH">🇬🇭 Gana</option><option value="OTHER">Outra nacionalidade</option></select></div>
 <div class="youth-extended-field"><label>Idiomas que fala (selecione um ou mais)</label><details id="youth-languages-picker"><summary id="youth-languages-summary">Selecionar idiomas</summary><div class="fju-language-options"><label class="fju-language-option"><input type="checkbox" name="youth-language" value="Português"> Português</label><label class="fju-language-option"><input type="checkbox" name="youth-language" value="Japonês"> Japonês</label><label class="fju-language-option"><input type="checkbox" name="youth-language" value="Inglês"> Inglês</label><label class="fju-language-option"><input type="checkbox" name="youth-language" value="Espanhol"> Espanhol</label><label class="fju-language-option"><input type="checkbox" name="youth-language" value="Tagalog"> Tagalog</label><label class="fju-language-option"><input type="checkbox" name="youth-language" value="Hindi"> Hindi</label><label class="fju-language-option"><input type="checkbox" name="youth-language" value="Nepali"> Nepali</label><label class="fju-language-option"><input type="checkbox" name="youth-language" value="Indonésio"> Indonésio</label><label class="fju-language-option"><input type="checkbox" name="youth-language" value="Birmanês"> Birmanês</label><label class="fju-language-option"><input type="checkbox" name="youth-language" value="Cingalês"> Cingalês</label><label class="fju-language-option"><input type="checkbox" name="youth-language" value="Coreano"> Coreano</label><label class="fju-language-option"><input type="checkbox" name="youth-language" value="Chinês"> Chinês</label><label class="fju-language-option"><input type="checkbox" name="youth-language" value="Vietnamita"> Vietnamita</label><label class="fju-language-option"><input type="checkbox" name="youth-language" value="Tailandês"> Tailandês</label><label class="fju-language-option"><input type="checkbox" name="youth-language" value="Outros"> Outros</label></div></details></div>
@@ -1154,7 +1157,7 @@ body.fju-ficha-aberta #youth-detail.fju-direct-detail{padding-bottom:120px!impor
 <p id="youth-message" class="message" role="status" aria-live="polite"></p>
 <div id="photo-repair-ui" hidden><button type="button" id="photo-repair-run" class="secondary">Recuperar fotos das fichas</button><p id="photo-repair-status" role="status"></p></div><div class="youth-saved-heading"><h3>Fichas cadastradas</h3><span id="youth-visible-count" class="youth-saved-count">Carregando...</span></div><div id="youth-print-toolbar" hidden><button type="button" id="youth-print-list" class="secondary">🖨 Imprimir lista desta igreja</button></div>
 <div id="youth-list-polo-wrap" class="youth-polo-filter"><label for="youth-list-polo">Visualizar fichas da igreja</label><select id="youth-list-polo"><option value="">Selecione uma igreja</option></select></div>
-<div class="youth-list-controls"><div><label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite o nome do jovem" type="search" autocomplete="off"></div><button type="button" id="youth-refresh" class="secondary">Atualizar</button></div>
+<div class="youth-list-controls"><div><label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite o nome do jovem" type="search" autocomplete="off"></div><div><label for="youth-altar-filter">Desejo de fazer a Obra no Altar</label><select id="youth-altar-filter"><option value="todos">Todos</option><option value="sim">Somente quem deseja</option><option value="nao">Somente quem não marcou</option></select></div><button type="button" id="youth-refresh" class="secondary">Atualizar</button></div>
 <details id="fju-youth-rank-filter" class="fju-rank-filter">
 <summary id="fju-youth-rank-filter-summary" aria-label="Abrir filtros de patente"><span class="fju-rank-filter-label">⚑ Filtros</span><span id="fju-youth-rank-current" class="fju-rank-filter-current">Todos</span><span class="fju-rank-filter-chevron" aria-hidden="true">⌄</span></summary>
 <div id="fju-youth-rank-categories" aria-label="Categorias de patente"></div>
@@ -2304,7 +2307,9 @@ el('youth-add-toggle').addEventListener('click',()=>{
 el('youth-form-close').addEventListener('click',()=>{resetYouth();setYouthFormOpen(false);});
 function selectedYouthProjects(){return [...document.querySelectorAll('input[name="youth-project"]:checked')].map(input=>input.value);}
 function setYouthProjects(projects){const selected=Array.isArray(projects)?projects:[];document.querySelectorAll('input[name="youth-project"]').forEach(input=>{input.checked=selected.includes(input.value);});}
-function resetYouth(){++youthPhotoLoadVersion;const complementMount=el('fju-edit-complement-mount');if(complementMount){complementMount.hidden=true;el('fju-edit-complement-editor').replaceChildren();}el('youth-photo').disabled=false;if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}el('youth-form').reset();setYouthProjects([]);setYouthBirth('');refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';el('youth-rank').value=currentProfile?.papel==='coordenador'?'Eventual':'Firme';syncEventualYouthForm();if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
+function syncYouthCivilStatus(){const married=el('youth-civil-status').value==='casado';el('youth-wedding-date-field').hidden=!married;el('youth-wedding-date').required=married;}
+el('youth-civil-status').addEventListener('change',syncYouthCivilStatus);
+function resetYouth(){++youthPhotoLoadVersion;const complementMount=el('fju-edit-complement-mount');if(complementMount){complementMount.hidden=true;el('fju-edit-complement-editor').replaceChildren();}el('youth-photo').disabled=false;if(photoUrl){URL.revokeObjectURL(photoUrl);photoUrl=null;}el('youth-form').reset();setYouthProjects([]);setYouthBirth('');el('youth-civil-status').value='solteiro';el('youth-wedding-date').value='';el('youth-altar-desire').checked=false;syncYouthCivilStatus();refreshYouthLanguages();el('youth-photo-preview').classList.add('hidden');el('youth-photo-preview').removeAttribute('src');el('youth-id').value='';el('youth-rank').value=currentProfile?.papel==='coordenador'?'Eventual':'Firme';syncEventualYouthForm();if(currentProfile?.papel==='coordenador')el('youth-polo').value=currentProfile.polo_id;}
 async function initializeYouth(){
   const profile=currentProfile;
   if(!profile)return;
@@ -2423,7 +2428,7 @@ async function loadYouth(){
   const all=[],batchSize=500;
   for(let start=0;;start+=batchSize){
     const {data,error}=await supabase.from('fju_jovens')
-      .select('id,polo_id,nome_completo,nascimento,telefone,endereco,nacionalidade_iso2,idiomas,patente,categoria,projetos,excluido_em')
+      .select('id,polo_id,nome_completo,nascimento,telefone,endereco,nacionalidade_iso2,idiomas,patente,categoria,projetos,deseja_obra_altar,estado_civil,data_casamento,excluido_em')
       .is('excluido_em',null)
       .order('nome_completo').order('id')
       .range(start,start+batchSize-1);
@@ -2652,7 +2657,8 @@ function renderYouth(){
     empty.textContent='Selecione uma igreja para visualizar as fichas cadastradas.';
     list.append(empty);return;
   }
-  const rows=youthRows.filter(r=>(!polo||String(r.polo_id)===polo)&&(!fjuSelectedYouthRank||fjuSelectedYouthRank==='Todos'||youthCardRank(r)===fjuSelectedYouthRank)&&(r.nome_completo||'').toLocaleLowerCase().includes(term));
+  const altarFilter=el('youth-altar-filter')?.value||'todos';
+  const rows=youthRows.filter(r=>(!polo||String(r.polo_id)===polo)&&(!fjuSelectedYouthRank||fjuSelectedYouthRank==='Todos'||youthCardRank(r)===fjuSelectedYouthRank)&&(altarFilter==='todos'||(altarFilter==='sim'?Boolean(r.deseja_obra_altar):!r.deseja_obra_altar))&&(r.nome_completo||'').toLocaleLowerCase().includes(term));
   el('youth-print-toolbar').hidden=!polo;
   count.textContent=rows.length+' '+(rows.length===1?'ficha':'fichas');
   el('youth-print-list').disabled=false;
@@ -2674,6 +2680,9 @@ function renderYouth(){
   }
   for(const [index,r] of rows.entries()){
     const card=document.createElement('article');card.className='youth-card';
+    const ageValue=Number(String(fjuAgeFromBirth(r.nascimento)||'').match(/\d+/)?.[0]);
+    card.dataset.ageBand=Number.isFinite(ageValue)&&ageValue<=25?'ate-25':'mais-25';
+    card.style.borderLeft='5px solid '+(card.dataset.ageBand==='ate-25'?'#23865b':'#5268b5');
     const main=document.createElement('div');main.className='youth-card-main';
     const avatar=document.createElement('div');avatar.className='youth-avatar';
     avatar.dataset.jovemId=String(r.id);
@@ -2683,7 +2692,9 @@ function renderYouth(){
     const name=document.createElement('h3');name.className='youth-card-name';
     name.textContent=r.nome_completo||'Jovem sem nome';
     const rank=document.createElement('span');rank.className='youth-rank';
-    rank.textContent=youthCardRank(r);rank.dataset.rank=rank.textContent;
+    const visibleRank=youthCardRank(r);
+    const isInconstante=['normal','inconstante'].includes(String(r.patente||'').toLowerCase())||(!r.patente&&r.categoria==='inconstante');
+    rank.textContent=visibleRank;rank.dataset.rank=rank.textContent;if(isInconstante)rank.hidden=true;
     const metadata=document.createElement('div');metadata.className='youth-card-metadata';
     metadata.setAttribute('aria-label','Idiomas que fala');
     const languageFlags=fjuYouthLanguageFlags(r.idiomas);
@@ -2695,7 +2706,13 @@ function renderYouth(){
     }
     const idLabel=document.createElement('span');idLabel.className='fju-youth-id';
     idLabel.textContent=fjuIdByYouth.get(String(r.id))||'';
-    info.append(name,idLabel,rank);
+    info.append(name,idLabel);
+    const ageTag=document.createElement('span');ageTag.className='youth-rank';ageTag.textContent=fjuAgeFromBirth(r.nascimento)||'Idade não informada';ageTag.style.background=card.dataset.ageBand==='ate-25'?'#e8f5ee':'#edf0fb';ageTag.style.color=card.dataset.ageBand==='ate-25'?'#17643f':'#354b9b';
+    const civilTag=document.createElement('span');civilTag.className='youth-rank';civilTag.textContent=(r.estado_civil||'solteiro')==='casado'?'Casado(a)':'Solteiro(a)';civilTag.style.background='#f0f2f6';civilTag.style.color='#3e4859';
+    const tags=document.createElement('div');tags.className='youth-card-metadata';tags.style.display='flex';tags.style.flexWrap='wrap';tags.style.gap='5px';tags.append(ageTag,civilTag);
+    if(!isInconstante)tags.append(rank);
+    if(r.deseja_obra_altar){const altarTag=document.createElement('span');altarTag.className='youth-rank';altarTag.textContent='Deseja fazer a Obra no Altar';altarTag.style.background='#fff2d8';altarTag.style.color='#825300';tags.append(altarTag);}
+    info.append(tags);
     const projects=fjuProjectsByYouth.get(String(r.id))||[];
     if(projects.length)info.append(fjuBuildProjectIcons(projects));
     info.append(metadata);
@@ -2960,7 +2977,7 @@ async function viewYouth(id){
   const details=document.createElement('div');details.className='grid';
   const flag=(r.nacionalidade_iso2&&/^[A-Z]{2}$/.test(r.nacionalidade_iso2))?String.fromCodePoint(...[...r.nacionalidade_iso2].map(c=>127397+c.charCodeAt(0))):'🌐';
   const country=el('youth-country').querySelector('option[value="'+(r.nacionalidade_iso2||'')+'"]');
-  for(const [label,value] of [['Idade',fjuAgeFromBirth(r.nascimento)],['Telefone',r.telefone],['Nacionalidade',flag+' '+(country?.textContent||r.nacionalidade_iso2||'—')],['Idiomas',(r.idiomas||[]).join(', ')||'—']]){
+  for(const [label,value] of [['Idade',fjuAgeFromBirth(r.nascimento)],['Estado civil',(r.estado_civil||'solteiro')==='casado'?'Casado(a)':'Solteiro(a)'],['Data do casamento',r.data_casamento||'—'],['Desejo de fazer a Obra no Altar',r.deseja_obra_altar?'Sim':'Não'],['Telefone',r.telefone],['Nacionalidade',flag+' '+(country?.textContent||r.nacionalidade_iso2||'—')],['Idiomas',(r.idiomas||[]).join(', ')||'—']]){
     const cell=document.createElement('div');cell.className='stat';const labelEl=document.createElement('strong');labelEl.textContent=label;const valueEl=document.createElement('p');valueEl.textContent=value||'—';cell.append(labelEl,valueEl);details.append(cell);
   }
   panel.append(details);
@@ -3390,6 +3407,7 @@ function editYouth(id){
   const r=youthRows.find(x=>x.id===id);if(!r)return;
   el('youth-id').value=r.id;el('youth-polo').value=r.polo_id;
   for(const [field,key] of [['youth-name','nome_completo'],['youth-phone','telefone'],['youth-address','endereco'],['youth-country','nacionalidade_iso2'],['youth-rank','patente']])el(field).value=r[key]||'';
+  el('youth-civil-status').value=r.estado_civil||'solteiro';el('youth-wedding-date').value=r.data_casamento||'';el('youth-altar-desire').checked=Boolean(r.deseja_obra_altar);syncYouthCivilStatus();
   setYouthBirth(r.nascimento||'');
   el('youth-rank').value=({'normal':'Normal','inconstante':'Normal','eventual':'Eventual','firme':'Firme','cpo':'CPO','colaborador':'Colaborador','voluntario':'Voluntário','obreiro':'Obreiro','coordenador':'Coordenador'}[String(r.patente||'').trim().toLowerCase()]||'Normal');
   document.querySelectorAll('input[name="youth-language"]').forEach(x=>x.checked=(r.idiomas||[]).includes(x.value));refreshYouthLanguages();setYouthProjects(r.projetos||[]);
@@ -3438,6 +3456,9 @@ el('youth-form').addEventListener('submit',async e=>{
     nacionalidade_iso2:el('youth-country').value.trim().toUpperCase()||null,
     idiomas:selectedYouthLanguages(),
     projetos:selectedYouthProjects(),
+    estado_civil:el('youth-civil-status').value,
+    data_casamento:el('youth-civil-status').value==='casado'?el('youth-wedding-date').value||null:null,
+    deseja_obra_altar:el('youth-altar-desire').checked,
     patente:({'Eventual':'eventual','Inconstante':'normal','Normal':'normal','Firme':'firme','CPO':'cpo','Colaborador':'colaborador','Voluntário':'voluntario','Obreiro':'obreiro','Coordenador':'coordenador'}[el('youth-rank').value]||el('youth-rank').value.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase()),
     categoria:['Inconstante','Normal'].includes(el('youth-rank').value)?'inconstante':'firme'
   };
@@ -3466,6 +3487,8 @@ el('youth-form').addEventListener('submit',async e=>{
     youthMessage('Para cadastrar com CPO, Colaborador, Obreiro ou Coordenador, crie primeiro a ficha como Normal, Firme ou Voluntário; depois solicite a patente para aprovação Nacional.',true);
     return;
   }
+  if(payload.estado_civil==='casado'&&!payload.data_casamento){youthMessage('Informe a data do casamento.',true);el('youth-wedding-date').focus();return;}
+  if(payload.data_casamento&&payload.data_casamento>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo'}).format(new Date())){youthMessage('A data do casamento não pode estar no futuro.',true);return;}
   if(!payload.nome_completo){youthMessage('Informe o nome completo do jovem.',true);return;}
   if(el('youth-rank').value==='Eventual'&&(!payload.telefone||!payload.endereco)){youthMessage('Eventual: informe telefone e endereço.',true);return;}
   // Processar a foto antes da gravação evita deixar fichas incompletas por
@@ -3488,7 +3511,7 @@ el('youth-form').addEventListener('submit',async e=>{
   const id=el('youth-id').value;
   if(id&&profile.papel==='coordenador'){
     const original=youthRows.find(x=>String(x.id)===String(id));if(!original){youthMessage('Ficha original não encontrada.',true);return;}
-    const changes={};for(const key of ['nome_completo','nascimento','telefone','endereco','nacionalidade_iso2','idiomas','projetos','patente','categoria'])if(JSON.stringify(original[key]??null)!==JSON.stringify(payload[key]??null))changes[key]=payload[key];
+    const changes={};for(const key of ['nome_completo','nascimento','telefone','endereco','nacionalidade_iso2','idiomas','projetos','estado_civil','data_casamento','deseja_obra_altar','patente','categoria'])if(JSON.stringify(original[key]??null)!==JSON.stringify(payload[key]??null))changes[key]=payload[key];
     if(!Object.keys(changes).length){youthMessage('Nenhuma alteração encontrada.',true);return;}
     const patenteAnterior=(original.patente||(original.categoria==='inconstante'?'normal':'firme')).toLowerCase();
     const patenteNova=(payload.patente||'firme').toLowerCase();
@@ -3610,6 +3633,7 @@ async function fjuPrintYouthChurchList(){
 }
 el('youth-print-list').addEventListener('click',fjuPrintYouthChurchList);
 
+el('youth-altar-filter').addEventListener('change',renderYouth);
 let youthSearchTimer=null;
 el('youth-search').addEventListener('input',()=>{
   clearTimeout(youthSearchTimer);
