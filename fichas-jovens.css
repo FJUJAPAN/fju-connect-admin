@@ -331,3 +331,12 @@
  #youth-list .fju-youth-project-icons{gap:6px!important;margin-top:0!important}
  #youth-list .fju-youth-project-icons .fju-project-icon{padding:3px 8px!important;font-size:10px!important}
 }
+
+
+/* FJU BJJ: contorno vermelho bem fino para destacar o selo branco. */
+#youth-list .fju-youth-project-icons .fju-project-icon--bjj{
+  background:#fff!important;
+  color:#d3232a!important;
+  border:1px solid #d3232a!important;
+  box-sizing:border-box!important;
+}
