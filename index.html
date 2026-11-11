@@ -948,9 +948,8 @@ body.fju-ficha-aberta #youth-detail.fju-direct-detail{padding-bottom:120px!impor
 #jovens .fju-rank-filter #fju-youth-rank-categories button{min-height:42px!important;padding:8px!important;border-radius:10px!important;font-size:12px!important}
 @media(min-width:700px){#jovens .fju-rank-filter #fju-youth-rank-categories{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
 @media(prefers-reduced-motion:reduce){#jovens .fju-rank-filter-chevron{transition:none}}
-#jovens .fju-altar-filter-section{margin:0 10px 12px;padding:12px;border-top:1px solid #e0e7f2;background:#fff;border-radius:10px}
-#jovens .fju-altar-filter-section label{display:block;margin:0 0 6px;font-size:12px;font-weight:750;color:#30466f}
-#jovens .fju-altar-filter-section select{display:block;width:100%;min-height:42px;font-size:14px;border:1px solid #d6dfed;border-radius:10px;background:#fff;color:#203252;padding:8px 10px}
+#jovens .fju-altar-filter-section{display:flex;align-items:center;gap:10px;margin:0 10px 12px;padding:13px 12px;border-top:1px solid #e0e7f2;background:#fff;border-radius:10px;font-size:13px;font-weight:700;color:#30466f;cursor:pointer}
+#jovens .fju-altar-filter-section input{width:19px;height:19px;min-width:19px;margin:0;accent-color:#29477f}
 </style>
 <style id="fju-eventual-cadastro-20261103">
 #jovens #youth-form .youth-extended-field[hidden]{display:none!important}
@@ -1216,7 +1215,7 @@ body.fju-ficha-aberta #youth-detail.fju-direct-detail{padding-bottom:120px!impor
 <details id="fju-youth-rank-filter" class="fju-rank-filter">
 <summary id="fju-youth-rank-filter-summary" aria-label="Abrir filtros de patente"><span class="fju-rank-filter-label">⚑ Filtros</span><span id="fju-youth-rank-current" class="fju-rank-filter-current">Todos</span><span class="fju-rank-filter-chevron" aria-hidden="true">⌄</span></summary>
 <div id="fju-youth-rank-categories" aria-label="Categorias de patente"></div>
-<div class="fju-altar-filter-section"><label for="youth-altar-filter">Obra no Altar</label><select id="youth-altar-filter"><option value="todos">Todos</option><option value="sim">Somente quem deseja</option><option value="nao">Somente quem não marcou</option></select></div>
+<label class="fju-altar-filter-section" for="youth-altar-filter"><input id="youth-altar-filter" type="checkbox"> Mostrar somente jovens que desejam fazer a Obra no Altar</label>
 </details>
 <div id="youth-detail" class="panel hidden" style="margin:0 0 14px;border:1px solid #dce3ef"></div><div id="youth-list" aria-label="Fichas salvas"></div>
 </section>
@@ -2526,11 +2525,12 @@ async function loadYouth(){
     const {data,error}=await supabase.from('fju_jovens')
       .select('id,polo_id,nome_completo,nascimento,telefone,endereco,nacionalidade_iso2,idiomas,patente,categoria,projetos,deseja_obra_altar,estado_civil,data_casamento,excluido_em')
       .is('excluido_em',null)
+      .eq('polo_id',polo)
       .order('nome_completo').order('id')
       .range(start,start+batchSize-1);
     if(loadVersion!==youthLoadVersion||currentProfile!==profile)return;
     if(error){youthMessage('Erro na consulta: '+error.message,true);return;}
-    all.push(...(data||[]).filter(r=>!polo||String(r.polo_id)===String(polo)));
+    all.push(...(data||[]));
     if(!data||data.length<batchSize)break;
   }
   if(loadVersion!==youthLoadVersion||currentProfile!==profile)return;
@@ -2744,8 +2744,8 @@ function renderYouth(){
     empty.textContent='Selecione uma igreja para visualizar as fichas cadastradas.';
     list.append(empty);return;
   }
-  const altarFilter=el('youth-altar-filter')?.value||'todos';
-  const rows=youthRows.filter(r=>(!polo||String(r.polo_id)===polo)&&(!fjuSelectedYouthRank||fjuSelectedYouthRank==='Todos'||youthCardRank(r)===fjuSelectedYouthRank)&&(altarFilter==='todos'||(altarFilter==='sim'?Boolean(r.deseja_obra_altar):!r.deseja_obra_altar))&&(r.nome_completo||'').toLocaleLowerCase().includes(term));
+  const altarOnly=Boolean(el('youth-altar-filter')?.checked);
+  const rows=youthRows.filter(r=>(!polo||String(r.polo_id)===polo)&&(!fjuSelectedYouthRank||fjuSelectedYouthRank==='Todos'||youthCardRank(r)===fjuSelectedYouthRank)&&(!altarOnly||r.deseja_obra_altar===true)&&(r.nome_completo||'').toLocaleLowerCase().includes(term));
   el('youth-print-toolbar').hidden=!polo;
   count.textContent=rows.length+' '+(rows.length===1?'ficha':'fichas');
   el('youth-print-list').disabled=false;
