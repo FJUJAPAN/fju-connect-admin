@@ -2503,6 +2503,7 @@ async function compactarFoto100KB(file){
   }finally{bitmap.close();}
 }
 let youthLoadVersion=0;
+let fjuNationalAllRoster=false;
 async function loadYouth(){
   if(currentProfile?.papel==='nacional'){el('photo-repair-ui').hidden=false;void fjuRestoreApprovedPhotos();}
   const profile=currentProfile;
@@ -2513,7 +2514,7 @@ async function loadYouth(){
   // Administrador Nacional sem igreja selecionada deve ver o diretório de igrejas,
   // nunca a lista geral de fichas. A consulta sem filtro carregava todas as fichas
   // novamente logo após "Voltar às igrejas".
-  if(profile.papel==='nacional'&&!polo){
+  if(profile.papel==='nacional'&&!polo&&!fjuNationalAllRoster){
     youthRows=[];
     fjuRankDetailsCache.clear();
     renderYouth();
@@ -2523,12 +2524,11 @@ async function loadYouth(){
   if(!polo&&profile.papel!=='nacional'){youthRows=[];renderYouth();youthMessage('Selecione uma igreja para visualizar as fichas.');return;}
   const all=[],batchSize=500;
   for(let start=0;;start+=batchSize){
-    const {data,error}=await supabase.from('fju_jovens')
+    let query=supabase.from('fju_jovens')
       .select('id,polo_id,nome_completo,nascimento,telefone,endereco,nacionalidade_iso2,idiomas,patente,categoria,projetos,deseja_obra_altar,estado_civil,data_casamento,excluido_em')
-      .is('excluido_em',null)
-      .eq('polo_id',polo)
-      .order('nome_completo').order('id')
-      .range(start,start+batchSize-1);
+      .is('excluido_em',null);
+    if(polo)query=query.eq('polo_id',polo);
+    const {data,error}=await query.order('nome_completo').order('id').range(start,start+batchSize-1);
     if(loadVersion!==youthLoadVersion||currentProfile!==profile)return;
     if(error){youthMessage('Erro na consulta: '+error.message,true);return;}
     all.push(...(data||[]));
@@ -3833,7 +3833,7 @@ function fjuUpdateChurchScreen(){
  const pendingDetail=el('fju-church-pending-detail');
  if(pendingDetail){if(pendingDetail.dataset.polo!==sel.value){pendingDetail.replaceChildren();pendingDetail.hidden=true;pendingDetail.dataset.polo=sel.value;}if(!selected)pendingDetail.hidden=true;}
  panel.classList.toggle('fju-church-directory',national&&!selected);
- panel.classList.toggle('fju-national-rank-results',national&&!selected&&Boolean(fjuSelectedYouthRank)&&fjuSelectedYouthRank!=='Todos');
+ panel.classList.toggle('fju-national-rank-results',national&&!selected&&(fjuNationalAllRoster||(Boolean(fjuSelectedYouthRank)&&fjuSelectedYouthRank!=='Todos')));
  panel.classList.toggle('fju-church-roster',selected);
  const header=el('fju-church-roster-header');
  header.hidden=!selected;
@@ -3847,6 +3847,7 @@ function fjuReturnToChurches(){
  if(!sel||!panel)return;
  // Cancelar consultas pendentes do roster antes de limpar a igreja selecionada.
  youthLoadVersion++;
+ fjuNationalAllRoster=false;
  fjuSelectedYouthRank='';
  const url=new URL(window.location.href);
  url.searchParams.delete('polo');
@@ -3934,7 +3935,7 @@ function fjuRenderChurchButtons(){
  const allButton=document.createElement('button');allButton.type='button';allButton.id='fju-all-japan-button';allButton.textContent='Todos ('+[...fjuChurchYouthCounts.values()].reduce((sum,count)=>sum+(Number(count)||0),0)+')';allButton.classList.toggle('is-selected',!selected);allButton.setAttribute('aria-pressed',String(!selected));
  allButton.addEventListener('click',()=>{
    sel.value='';const url=new URL(window.location.href);url.searchParams.set('module','jovens');url.searchParams.delete('polo');window.history.pushState(window.history.state,'',url.pathname+url.search+url.hash);
-   fjuSelectedYouthRank='Todos';sel.dispatchEvent(new Event('change',{bubbles:true}));void loadYouth();fjuScrollChurchViewTop();
+   fjuNationalAllRoster=true;fjuSelectedYouthRank='Todos';fjuUpdateChurchScreen();sel.dispatchEvent(new Event('change',{bubbles:true}));void loadYouth();fjuScrollChurchViewTop();
  });
  holder.append(allButton);
  for(const option of options){
@@ -3942,6 +3943,7 @@ function fjuRenderChurchButtons(){
   const pending=fjuChurchPendingCounts.get(String(option.value))||0;
   if(pending){const badge=document.createElement('span');badge.className='fju-church-alert';badge.textContent=String(pending);badge.title=pending+' solicitações pendentes';button.append(badge);}
   button.addEventListener('click',()=>{
+   fjuNationalAllRoster=false;
    sel.value=option.value;
    const url=new URL(window.location.href);
    url.searchParams.set('module','jovens');
