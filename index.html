@@ -3766,7 +3766,20 @@ window.addEventListener('popstate',()=>{
  const allowed=requested&&[...sel.options].some(o=>o.value===requested)?requested:'';
  if(sel.value!==allowed){
   sel.value=allowed;
-  sel.dispatchEvent(new Event('change',{bubbles:true}));
+  if(allowed){
+   sel.dispatchEvent(new Event('change',{bubbles:true}));
+  }else{
+   // Voltar do roster deve retornar ao diretório de igrejas, nunca à lista nacional de fichas.
+   fjuSelectedYouthRank='Todos';
+   el('youth-search').value='';
+   el('youth-detail').classList.add('hidden');
+   resetYouth();setYouthFormOpen(false);
+   fjuUpdateChurchScreen();
+   el('youth-list').replaceChildren();
+   el('youth-visible-count').textContent='Selecione uma igreja';
+   el('youth-print-toolbar').hidden=true;
+   el('youth-print-list').disabled=false;
+  }
  }
  fjuRenderChurchButtons();
  fjuScrollChurchViewTop();
