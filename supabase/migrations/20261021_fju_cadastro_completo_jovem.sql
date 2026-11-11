@@ -136,7 +136,7 @@ GRANT EXECUTE ON FUNCTION public.fju_decidir_inscricao_jovem(uuid,text,text) TO 
 CREATE OR REPLACE FUNCTION public.fju_consultar_meu_cartao_jovem()
 RETURNS TABLE(nome_completo text,polo_nome text,patente text,categoria text,projetos text[])
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path = ''
-AS $
+AS $$
  SELECT j.nome_completo::text,p.nome::text,j.patente::text,j.categoria::text,
         coalesce(i.projetos_solicitados,'{}'::text[])
  FROM public.fju_vinculos_conta_jovem v
@@ -145,7 +145,7 @@ AS $
  LEFT JOIN public.fju_inscricoes_jovens i ON i.usuario_id=v.usuario_id
  WHERE v.usuario_id=auth.uid() AND v.ativo
  LIMIT 1;
-$;
+$$;
 REVOKE ALL ON FUNCTION public.fju_consultar_meu_cartao_jovem() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.fju_consultar_meu_cartao_jovem() TO authenticated;
 
@@ -193,15 +193,10 @@ FOR SELECT TO authenticated
 USING (
  bucket_id='fju-inscricoes-fotos'
  AND CASE
-  WHEN name ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/perfil[.]jpg
+  WHEN name ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/perfil[.]jpg$'
   THEN public.fju_pode_ler_foto_inscricao(split_part(name,'/',1)::uuid)
   ELSE false
  END
 );
 COMMIT;
 
-  THEN public.fju_pode_ler_foto_inscricao(split_part(name,'/',1)::uuid)
-  ELSE false
- END
-);
-COMMIT;
