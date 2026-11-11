@@ -2737,7 +2737,7 @@ function renderYouth(){
   const list=el('youth-list');list.replaceChildren();
   const count=el('youth-visible-count');
   const polo=el('youth-list-polo').value;
-  if(!polo){
+  if(!polo&&!fjuNationalAllRoster){
     count.textContent='Selecione uma igreja';
     el('youth-print-toolbar').hidden=true;
     el('youth-print-list').disabled=false;
@@ -2747,12 +2747,12 @@ function renderYouth(){
   }
   const altarOnly=Boolean(el('youth-altar-filter')?.checked);
   const rows=youthRows.filter(r=>(!polo||String(r.polo_id)===polo)&&(!fjuSelectedYouthRank||fjuSelectedYouthRank==='Todos'||youthCardRank(r)===fjuSelectedYouthRank)&&(!altarOnly||r.deseja_obra_altar===true)&&(r.nome_completo||'').toLocaleLowerCase().includes(term));
-  el('youth-print-toolbar').hidden=!polo;
-  count.textContent=rows.length+' '+(rows.length===1?'ficha':'fichas');
+  el('youth-print-toolbar').hidden=!polo&&!fjuNationalAllRoster;
+  count.textContent=rows.length+' '+(rows.length===1?'ficha':'fichas')+(fjuNationalAllRoster?' · Japão inteiro':'');
   el('youth-print-list').disabled=false;
   if(!rows.length){
     const empty=document.createElement('div');empty.className='youth-empty';
-    empty.textContent=term?'Nenhuma ficha corresponde à busca.':fjuSelectedYouthRank&&fjuSelectedYouthRank!=='Todos'?'Nenhum jovem nesta categoria.':'Esta igreja ainda não possui fichas cadastradas.';
+    empty.textContent=term?'Nenhuma ficha corresponde à busca.':fjuSelectedYouthRank&&fjuSelectedYouthRank!=='Todos'?'Nenhum jovem nesta categoria.':fjuNationalAllRoster?'Nenhuma ficha cadastrada.':'Esta igreja ainda não possui fichas cadastradas.';
     list.append(empty);return;
   }
   // Todas as fichas aparecem imediatamente; a categoria é filtro opcional.
