@@ -3832,7 +3832,7 @@ function fjuUpdateChurchScreen(){
  const selected=national&&Boolean(sel.value);
  const pendingDetail=el('fju-church-pending-detail');
  if(pendingDetail){if(pendingDetail.dataset.polo!==sel.value){pendingDetail.replaceChildren();pendingDetail.hidden=true;pendingDetail.dataset.polo=sel.value;}if(!selected)pendingDetail.hidden=true;}
- panel.classList.toggle('fju-church-directory',national&&!selected);
+ panel.classList.toggle('fju-church-directory',national&&!selected&&!fjuNationalAllRoster);
  panel.classList.toggle('fju-national-rank-results',national&&!selected&&(fjuNationalAllRoster||(Boolean(fjuSelectedYouthRank)&&fjuSelectedYouthRank!=='Todos')));
  panel.classList.toggle('fju-church-roster',selected);
  const header=el('fju-church-roster-header');
