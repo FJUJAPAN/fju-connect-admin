@@ -460,6 +460,7 @@ body.fju-admin-shell>.fju-admin-header .fju-header-account,body.fju-admin-shell>
 #app.fju-fichas-mode #jovens.fju-church-directory #fju-church-roster-header,
 #app.fju-fichas-mode #jovens.fju-church-directory .youth-saved-heading,
 #app.fju-fichas-mode #jovens.fju-church-directory #youth-print-toolbar,
+#app.fju-fichas-mode #jovens.fju-church-directory #fju-youth-rank-filter,
 #app.fju-fichas-mode #jovens.fju-church-directory .youth-list-controls,
 #app.fju-fichas-mode #jovens.fju-church-directory #youth-list,
 #app.fju-fichas-mode #jovens.fju-church-directory #youth-detail,
@@ -3821,7 +3822,7 @@ function fjuUpdateChurchScreen(){
  const pendingDetail=el('fju-church-pending-detail');
  if(pendingDetail){if(pendingDetail.dataset.polo!==sel.value){pendingDetail.replaceChildren();pendingDetail.hidden=true;pendingDetail.dataset.polo=sel.value;}if(!selected)pendingDetail.hidden=true;}
  panel.classList.toggle('fju-church-directory',national&&!selected);
- panel.classList.toggle('fju-national-rank-results',national&&!selected&&Boolean(fjuSelectedYouthRank));
+ panel.classList.toggle('fju-national-rank-results',national&&!selected&&Boolean(fjuSelectedYouthRank)&&fjuSelectedYouthRank!=='Todos');
  panel.classList.toggle('fju-church-roster',selected);
  const header=el('fju-church-roster-header');
  header.hidden=!selected;
