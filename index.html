@@ -2736,7 +2736,7 @@ function renderYouth(){
   const list=el('youth-list');list.replaceChildren();
   const count=el('youth-visible-count');
   const polo=el('youth-list-polo').value;
-  if(!polo&&currentProfile?.papel!=='nacional'){
+  if(!polo){
     count.textContent='Selecione uma igreja';
     el('youth-print-toolbar').hidden=true;
     el('youth-print-list').disabled=false;
