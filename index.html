@@ -2506,6 +2506,16 @@ async function loadYouth(){
   const loadVersion=++youthLoadVersion;
   youthMessage('Consultando fichas...');
   const polo=profile.papel==='coordenador'?profile.polo_id:el('youth-list-polo').value;
+  // Administrador Nacional sem igreja selecionada deve ver o diretório de igrejas,
+  // nunca a lista geral de fichas. A consulta sem filtro carregava todas as fichas
+  // novamente logo após "Voltar às igrejas".
+  if(profile.papel==='nacional'&&!polo){
+    youthRows=[];
+    fjuRankDetailsCache.clear();
+    renderYouth();
+    youthMessage('Selecione uma igreja para visualizar as fichas.');
+    return;
+  }
   if(!polo&&profile.papel!=='nacional'){youthRows=[];renderYouth();youthMessage('Selecione uma igreja para visualizar as fichas.');return;}
   const all=[],batchSize=500;
   for(let start=0;;start+=batchSize){
