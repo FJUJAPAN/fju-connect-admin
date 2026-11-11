@@ -3827,8 +3827,10 @@ function fjuUpdateChurchScreen(){
  }
 }
 function fjuReturnToChurches(){
- const sel=el('youth-list-polo');
- if(!sel)return;
+ const sel=el('youth-list-polo'),panel=el('jovens');
+ if(!sel||!panel)return;
+ // Cancelar consultas pendentes do roster antes de limpar a igreja selecionada.
+ youthLoadVersion++;
  fjuSelectedYouthRank='';
  const url=new URL(window.location.href);
  url.searchParams.delete('polo');
@@ -3837,8 +3839,16 @@ function fjuReturnToChurches(){
  el('youth-search').value='';
  el('youth-detail').classList.add('hidden');
  resetYouth();setYouthFormOpen(false);
- sel.dispatchEvent(new Event('change',{bubbles:true}));
+ // Não disparar change aqui: isso iniciava outra consulta de fichas e podia
+ // reconstruir a tela vazia do roster durante a volta ao diretório.
+ youthRows=[];
+ fjuRankDetailsCache.clear();
+ fjuUpdateChurchScreen();
  fjuRenderChurchButtons();
+ el('youth-list').replaceChildren();
+ el('youth-visible-count').textContent='Selecione uma igreja';
+ el('youth-print-toolbar').hidden=true;
+ el('youth-print-list').disabled=false;
  fjuScrollChurchViewTop();
 }
 el('fju-church-roster-back').addEventListener('click',fjuReturnToChurches);
