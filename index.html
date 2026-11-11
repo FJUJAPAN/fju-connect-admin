@@ -3828,17 +3828,30 @@ function fjuUpdateChurchScreen(){
 }
 function fjuReturnToChurches(){
  const sel=el('youth-list-polo');
- if(!sel)return;
+ if(!sel||currentProfile?.papel!=='nacional')return;
+ // Invalida consultas anteriores para impedir que respostas atrasadas reabram as fichas.
+ ++youthLoadVersion;
+ ++fjuChurchPendingRequestVersion;
  fjuSelectedYouthRank='';
- const url=new URL(window.location.href);
- url.searchParams.delete('polo');
- window.history.pushState(window.history.state,'',url.pathname+url.search+url.hash);
  sel.value='';
+ const url=new URL(window.location.href);
+ url.searchParams.set('module','jovens');
+ url.searchParams.delete('polo');
+ window.history.pushState(window.history.state,'',''+url.pathname+url.search+url.hash);
  el('youth-search').value='';
  el('youth-detail').classList.add('hidden');
  resetYouth();setYouthFormOpen(false);
- sel.dispatchEvent(new Event('change',{bubbles:true}));
+ youthRows=[];
+ fjuRankDetailsCache.clear();
+ const pending=el('fju-church-pending-detail');
+ if(pending){pending.replaceChildren();pending.hidden=true;pending.dataset.polo='';}
+ el('youth-list').replaceChildren();
+ el('youth-visible-count').textContent='Selecione uma igreja';
+ el('youth-print-toolbar').hidden=true;
+ el('youth-print-list').disabled=false;
+ fjuUpdateChurchScreen();
  fjuRenderChurchButtons();
+ youthMessage('Selecione uma igreja para visualizar as fichas.');
  fjuScrollChurchViewTop();
 }
 el('fju-church-roster-back').addEventListener('click',fjuReturnToChurches);
