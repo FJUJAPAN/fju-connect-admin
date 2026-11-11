@@ -4852,14 +4852,17 @@ document.querySelectorAll('.fju-dashboard-actions [data-open-tab]').forEach(shor
     const tab=document.querySelector('#main-nav [data-tab="'+shortcut.dataset.openTab+'"]');
     if(tab&&!tab.hidden){
       const module=shortcut.dataset.openTab;
-      if(['inscricoes','relatorios'].includes(module)){
-        // Open the requested module directly instead of reloading the last active section.
+      if(module==='relatorios'){
+        // The direct ?module=relatorios URL is verified to load the correct report page.
         const destination=new URL(window.location.href);
-        destination.searchParams.set('module',module);
+        destination.searchParams.set('module','relatorios');
         destination.searchParams.delete('embed');
-        window.history.pushState({module},'',destination.pathname+destination.search+destination.hash);
-        activateMainTab(tab);
-        window.scrollTo({top:0,behavior:'instant'});
+        window.location.assign(destination.toString());
+      }else if(module==='inscricoes'){
+        const destination=new URL(window.location.href);
+        destination.searchParams.set('module','inscricoes');
+        destination.searchParams.delete('embed');
+        window.location.assign(destination.toString());
       }else tab.click();
     }
   });
