@@ -1162,7 +1162,7 @@ body.fju-ficha-aberta #youth-detail.fju-direct-detail{padding-bottom:120px!impor
 <div id="fju-edit-complement-mount" hidden style="margin:16px 0;padding:14px;border:1px solid #d7dfed;border-radius:12px"><h3>Informações da patente</h3><p class="muted">Preencha os dados adicionais e salve nesta seção. Coordenadores enviam para aprovação nacional.</p><div id="fju-edit-complement-editor"></div></div>
 <p id="youth-eventual-hint" class="muted">Cadastro Eventual feito pelo coordenador, sem login: nome, telefone, nascimento, endereço e foto. Quando o jovem criar uma conta, vincule-a à ficha existente para evitar duplicidade.</p>
 <div class="grid youth-info-grid">
-<div><label for="youth-polo">Polo</label><select id="youth-polo" required></select></div>
+<div><label for="youth-polo">Polo</label><select id="youth-polo" required></select><div id="youth-polo-fixed" hidden aria-live="polite" style="padding:11px 12px;border:1px solid #d7dfed;border-radius:10px;background:#f4f6fa;font-weight:700"></div></div>
 <div><label for="youth-name">Nome completo</label><input id="youth-name" required maxlength="180"></div>
 <div class="youth-birth-field">
 <label id="youth-birth-label">Nascimento</label>
@@ -2366,6 +2366,14 @@ async function initializeYouth(){
   const allowed=profile.papel==='coordenador'?(data||[]).filter(x=>x.id===profile.polo_id):(data||[]);
   el('youth-polo').replaceChildren();
   for(const polo of allowed){const opt=document.createElement('option');opt.value=polo.id;opt.textContent=polo.nome;el('youth-polo').append(opt);}
+  const fixedPolo=el('youth-polo-fixed');
+  const coordinatorPolo=profile.papel==='coordenador';
+  el('youth-polo').hidden=coordinatorPolo;
+  fixedPolo.hidden=!coordinatorPolo;
+  if(coordinatorPolo){
+    el('youth-polo').value=profile.polo_id;
+    fixedPolo.textContent=allowed.find(p=>p.id===profile.polo_id)?.nome||'Polo não identificado';
+  }else fixedPolo.textContent='';
   const listPolo=el('youth-list-polo');listPolo.replaceChildren();
   if(profile.papel==='nacional'){const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Selecione uma igreja';listPolo.append(placeholder);}
   for(const polo of allowed){const option=document.createElement('option');option.value=String(polo.id);option.textContent=polo.nome;listPolo.append(option);}
