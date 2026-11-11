@@ -541,6 +541,25 @@ body.fju-admin-shell #app.fju-fichas-mode #jovens.fju-church-roster > #youth-bac
  animation:fjuConnectLoadingSpin .8s linear infinite
 }
 @keyframes fjuConnectLoadingSpin{to{transform:rotate(360deg)}}
+/* Loading global independente: nunca ocupa espaço na lista de fichas. */
+.fju-global-loading-overlay{
+ position:fixed;inset:0;z-index:10000;display:grid;place-items:center;
+ padding:22px;background:rgba(8,18,38,.48);backdrop-filter:blur(4px);
+ -webkit-backdrop-filter:blur(4px);
+}
+.fju-global-loading-overlay[hidden]{display:none!important}
+.fju-global-loading-card{
+ box-sizing:border-box;width:min(100%,360px);padding:23px 21px;border:1px solid #344c82;
+ border-radius:20px;background:linear-gradient(145deg,#111b33 0%,#203c70 100%);
+ color:#fff;box-shadow:0 22px 65px rgba(5,15,35,.3);text-align:left;
+}
+.fju-global-loading-card .fju-connect-loading-brand{display:flex;align-items:center;gap:9px;color:#dce7ff;font-size:11px;font-weight:800;letter-spacing:.14em}
+.fju-global-loading-card .fju-connect-loading-mark{display:inline-flex;align-items:center;justify-content:center;width:39px;height:30px;border-radius:8px;background:#fff;color:#203c70;font-size:17px;font-weight:950;letter-spacing:-.08em}
+.fju-global-loading-card .fju-connect-loading-verse{margin:18px 0 5px;color:#fff;font-size:21px;line-height:1.35;font-weight:750}
+.fju-global-loading-card .fju-connect-loading-reference{display:block;color:#c8d8ff;font-size:12px;letter-spacing:.04em}
+.fju-global-loading-card .fju-connect-loading-status{display:flex;align-items:center;gap:9px;margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.18);color:#e1e9f8;font-size:12px;font-weight:650}
+.fju-global-loading-card .fju-connect-loading-spinner{width:13px;height:13px;flex:none;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:fjuConnectLoadingSpin .8s linear infinite}
+@media(prefers-reduced-motion:reduce){.fju-global-loading-card .fju-connect-loading-spinner{animation:none}}
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023g">
@@ -2269,13 +2288,34 @@ async function loadProfile(user){
   void coordinatorPending.refresh(data,true);
 }
 
+function fjuSetIndependentLoadingOverlay(visible){
+ let overlay=document.getElementById('fju-global-loading-overlay');
+ if(visible){
+  if(!overlay){
+   overlay=document.createElement('div');
+   overlay.id='fju-global-loading-overlay';
+   overlay.className='fju-global-loading-overlay';
+   overlay.setAttribute('role','status');
+   overlay.setAttribute('aria-live','polite');
+   overlay.innerHTML='<div class="fju-global-loading-card"><div class="fju-connect-loading-brand"><span class="fju-connect-loading-mark">FJU</span><span>CONNECT JAPAN</span></div><p class="fju-connect-loading-verse">Sede pacientes…</p><strong class="fju-connect-loading-reference">Romanos 12:12</strong><div class="fju-connect-loading-status"><span class="fju-connect-loading-spinner" aria-hidden="true"></span><span>Preparando as fichas...</span></div></div>';
+   document.body.append(overlay);
+  }
+  overlay.hidden=false;
+ }else if(overlay){
+  overlay.hidden=true;
+ }
+}
 function youthMessage(text,error=false){
  const target=el('youth-message');
  if(text==='Consultando fichas...'){
-  target.className='message fju-connect-loading-card';
-  target.innerHTML='<div class="fju-connect-loading-brand"><span class="fju-connect-loading-mark">FJU</span><span>CONNECT JAPAN</span></div><p class="fju-connect-loading-verse">Sede pacientes…</p><strong class="fju-connect-loading-reference">Romanos 12:12</strong><div class="fju-connect-loading-status"><span class="fju-connect-loading-spinner" aria-hidden="true"></span><span>Preparando as fichas...</span></div>';
+  target.hidden=true;
+  target.className='message';
+  target.textContent='';
+  fjuSetIndependentLoadingOverlay(true);
   return;
  }
+ fjuSetIndependentLoadingOverlay(false);
+ target.hidden=false;
  message('youth-message',text,error);
 }
 function selectedYouthLanguages(){return [...document.querySelectorAll('input[name="youth-language"]:checked')].map(x=>x.value)}
