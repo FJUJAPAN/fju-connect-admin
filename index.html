@@ -948,6 +948,9 @@ body.fju-ficha-aberta #youth-detail.fju-direct-detail{padding-bottom:120px!impor
 #jovens .fju-rank-filter #fju-youth-rank-categories button{min-height:42px!important;padding:8px!important;border-radius:10px!important;font-size:12px!important}
 @media(min-width:700px){#jovens .fju-rank-filter #fju-youth-rank-categories{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
 @media(prefers-reduced-motion:reduce){#jovens .fju-rank-filter-chevron{transition:none}}
+#jovens .fju-altar-filter-section{margin:0 10px 12px;padding:12px;border-top:1px solid #e0e7f2;background:#fff;border-radius:10px}
+#jovens .fju-altar-filter-section label{display:block;margin:0 0 6px;font-size:12px;font-weight:750;color:#30466f}
+#jovens .fju-altar-filter-section select{display:block;width:100%;min-height:42px;font-size:14px;border:1px solid #d6dfed;border-radius:10px;background:#fff;color:#203252;padding:8px 10px}
 </style>
 <style id="fju-eventual-cadastro-20261103">
 #jovens #youth-form .youth-extended-field[hidden]{display:none!important}
@@ -1209,10 +1212,11 @@ body.fju-ficha-aberta #youth-detail.fju-direct-detail{padding-bottom:120px!impor
 <p id="youth-message" class="message" role="status" aria-live="polite"></p>
 <div id="photo-repair-ui" hidden><button type="button" id="photo-repair-run" class="secondary">Recuperar fotos das fichas</button><p id="photo-repair-status" role="status"></p></div><div class="youth-saved-heading"><h3>Fichas cadastradas</h3><span id="youth-visible-count" class="youth-saved-count">Carregando...</span></div><div id="youth-print-toolbar" hidden><button type="button" id="youth-print-list" class="secondary">🖨 Imprimir lista desta igreja</button></div>
 <div id="youth-list-polo-wrap" class="youth-polo-filter"><label for="youth-list-polo">Visualizar fichas da igreja</label><select id="youth-list-polo"><option value="">Selecione uma igreja</option></select></div>
-<div class="youth-list-controls"><div><label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite o nome do jovem" type="search" autocomplete="off"></div><div><label for="youth-altar-filter">Desejo de fazer a Obra no Altar</label><select id="youth-altar-filter"><option value="todos">Todos</option><option value="sim">Somente quem deseja</option><option value="nao">Somente quem não marcou</option></select></div><button type="button" id="youth-refresh" class="secondary">Atualizar</button></div>
+<div class="youth-list-controls"><div><label for="youth-search">Buscar jovem</label><input id="youth-search" placeholder="Digite o nome do jovem" type="search" autocomplete="off"></div><button type="button" id="youth-refresh" class="secondary">Atualizar</button></div>
 <details id="fju-youth-rank-filter" class="fju-rank-filter">
 <summary id="fju-youth-rank-filter-summary" aria-label="Abrir filtros de patente"><span class="fju-rank-filter-label">⚑ Filtros</span><span id="fju-youth-rank-current" class="fju-rank-filter-current">Todos</span><span class="fju-rank-filter-chevron" aria-hidden="true">⌄</span></summary>
 <div id="fju-youth-rank-categories" aria-label="Categorias de patente"></div>
+<div class="fju-altar-filter-section"><label for="youth-altar-filter">Obra no Altar</label><select id="youth-altar-filter"><option value="todos">Todos</option><option value="sim">Somente quem deseja</option><option value="nao">Somente quem não marcou</option></select></div>
 </details>
 <div id="youth-detail" class="panel hidden" style="margin:0 0 14px;border:1px solid #dce3ef"></div><div id="youth-list" aria-label="Fichas salvas"></div>
 </section>
