@@ -2273,7 +2273,7 @@ function youthMessage(text,error=false){
  const target=el('youth-message');
  if(text==='Consultando fichas...'){
   target.className='message fju-connect-loading-card';
-  target.innerHTML='<div class="fju-connect-loading-brand"><span class="fju-connect-loading-mark">FJU</span><span>CONNECT JAPAN</span></div><p class="fju-connect-loading-verse">“Sede pacientes na tribulação.”</p><strong class="fju-connect-loading-reference">Romanos 12:12</strong><div class="fju-connect-loading-status"><span class="fju-connect-loading-spinner" aria-hidden="true"></span><span>Preparando as fichas...</span></div>';
+  target.innerHTML='<div class="fju-connect-loading-brand"><span class="fju-connect-loading-mark">FJU</span><span>CONNECT JAPAN</span></div><p class="fju-connect-loading-verse">Sede pacientes…</p><strong class="fju-connect-loading-reference">Romanos 12:12</strong><div class="fju-connect-loading-status"><span class="fju-connect-loading-spinner" aria-hidden="true"></span><span>Preparando as fichas...</span></div>';
   return;
  }
  message('youth-message',text,error);
