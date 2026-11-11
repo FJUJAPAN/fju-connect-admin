@@ -442,3 +442,47 @@
 #youth-list .youth-card-tags .youth-altar-tag{
   background:#ffedb8!important;color:#805300!important;
 }
+
+
+/* FJU Connect — ajuste final da paleta multicolorida dos selos.
+   Geometria compartilhada; cada categoria mantém uma cor própria da mesma família.
+   Remove especificamente qualquer contorno vermelho do selo FJU BJJ. */
+#jovens #youth-list .youth-card-tags .youth-rank{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  box-sizing:border-box!important;min-height:26px!important;height:auto!important;
+  padding:5px 10px!important;border:0!important;outline:0!important;
+  box-shadow:none!important;border-radius:999px!important;
+  font-family:inherit!important;font-size:10px!important;font-weight:750!important;
+  letter-spacing:.05px!important;line-height:1.2!important;white-space:nowrap!important;
+}
+/* Idade, estado civil e patente: tons distintos, porém coordenados. */
+#jovens #youth-list .youth-card-tags>.youth-rank:nth-child(1){background:#dcecff!important;color:#24549a!important}
+#jovens #youth-list .youth-card-tags>.youth-rank:nth-child(2){background:#eee3ff!important;color:#68449b!important}
+#jovens #youth-list .youth-card-tags>.youth-rank[data-rank="Firme"]{background:#dcecff!important;color:#24549a!important}
+#jovens #youth-list .youth-card-tags>.youth-rank[data-rank="CPO"]{background:#eee3ff!important;color:#68409d!important}
+#jovens #youth-list .youth-card-tags>.youth-rank[data-rank="Colaborador"]{background:#d9f3e9!important;color:#176b50!important}
+#jovens #youth-list .youth-card-tags>.youth-rank[data-rank="Obreiro"]{background:#ffebd9!important;color:#99501f!important}
+#jovens #youth-list .youth-card-tags>.youth-rank[data-rank="Coordenador"]{background:#e3e7ff!important;color:#414b9a!important}
+#jovens #youth-list .youth-card-tags>.youth-rank[data-rank="Eventual"]{background:#ffe2ed!important;color:#9a3e68!important}
+#jovens #youth-list .youth-card-tags>.youth-altar-tag{background:#ffedb8!important;color:#805300!important}
+/* Projetos: mesma forma e dimensões, com cores individuais da paleta. */
+#jovens #youth-list .fju-youth-project-icons .fju-project-icon{
+  min-height:26px!important;padding:5px 10px!important;border:0!important;
+  outline:0!important;box-shadow:none!important;border-radius:999px!important;
+  font-family:inherit!important;font-size:10px!important;font-weight:750!important;
+  letter-spacing:.05px!important;line-height:1.2!important;
+}
+#jovens #youth-list .fju-youth-project-icons .fju-project-icon--help{background:#ffedb8!important;color:#805300!important}
+#jovens #youth-list .fju-youth-project-icons .fju-project-icon--sport{background:#d8f2e5!important;color:#176b50!important}
+#jovens #youth-list .fju-youth-project-icons .fju-project-icon--uniforca{background:#ffedcf!important;color:#89551a!important}
+#jovens #youth-list .fju-youth-project-icons .fju-project-icon--media{background:#dcecff!important;color:#24549a!important}
+#jovens #youth-list .fju-youth-project-icons .fju-project-icon--bjj{background:#ffe0e5!important;color:#9a3e55!important;border:0!important;outline:0!important;box-shadow:none!important}
+#jovens #youth-list .fju-youth-project-icons .fju-project-icon--culture{background:#f1e2ff!important;color:#70439b!important}
+#jovens #youth-list .fju-youth-project-icons .fju-project-icon--pink{background:#ffe2ed!important;color:#9a3e68!important}
+#jovens #youth-list .fju-youth-project-icons .fju-project-icon--slate{background:#e8edf5!important;color:#465675!important}
+@media(max-width:700px){
+ #jovens #youth-list .youth-card-tags .youth-rank,
+ #jovens #youth-list .fju-youth-project-icons .fju-project-icon{
+  min-height:25px!important;padding:4px 9px!important;font-size:10px!important;
+ }
+}
