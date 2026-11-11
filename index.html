@@ -2585,10 +2585,8 @@ function fjuEnsureRankScreenBack(){
   back=document.createElement('button');back.id='fju-rank-screen-back';back.type='button';
   back.textContent='← Voltar às igrejas';
   back.addEventListener('click',()=>{
-   fjuSelectedYouthRank='';
-   el('youth-search').value='';
-   renderYouth();
-   fjuScrollChurchViewTop();
+   // Este botão existe na visualização nacional de fichas; retornar sempre ao diretório.
+   fjuReturnToChurches();
   });
   const controls=panel.querySelector('.youth-list-controls');
   (controls||el('youth-list')).before(back);
@@ -3743,6 +3741,7 @@ function fjuUpdateChurchScreen(){
 function fjuReturnToChurches(){
  const sel=el('youth-list-polo');
  if(!sel)return;
+ fjuSelectedYouthRank='';
  const url=new URL(window.location.href);
  url.searchParams.delete('polo');
  window.history.pushState(window.history.state,'',url.pathname+url.search+url.hash);
