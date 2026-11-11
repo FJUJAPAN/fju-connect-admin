@@ -511,6 +511,36 @@ body.fju-admin-shell #app.fju-fichas-mode #jovens.fju-church-roster > #youth-bac
 
 /* Nome do jovem: idade e patente em texto simples na mesma linha. */
 #youth-list .youth-card-name-meta{font:inherit;font-size:.78em;font-weight:500;color:#64748b;letter-spacing:0}
+
+/* Cartão de espera FJU Connect durante a consulta das fichas. */
+#jovens #youth-message.fju-connect-loading-card{
+ display:block!important;box-sizing:border-box;width:100%;margin:14px 0 18px!important;
+ padding:20px 18px!important;border:1px solid #344c82!important;border-radius:18px!important;
+ background:linear-gradient(135deg,#111b33 0%,#203c70 100%)!important;color:#fff!important;
+ text-align:left!important;box-shadow:0 10px 24px rgba(20,38,76,.16)!important;
+}
+#jovens #youth-message.fju-connect-loading-card .fju-connect-loading-brand{
+ display:flex;align-items:center;gap:9px;color:#dce7ff;font-size:11px;font-weight:800;letter-spacing:.14em
+}
+#jovens #youth-message.fju-connect-loading-card .fju-connect-loading-mark{
+ display:inline-flex;align-items:center;justify-content:center;width:39px;height:30px;border-radius:8px;
+ background:#fff;color:#203c70;font-size:17px;font-weight:950;letter-spacing:-.08em
+}
+#jovens #youth-message.fju-connect-loading-card .fju-connect-loading-verse{
+ margin:17px 0 5px!important;color:#fff!important;font-size:19px!important;line-height:1.35!important;font-weight:750!important
+}
+#jovens #youth-message.fju-connect-loading-card .fju-connect-loading-reference{
+ display:block;color:#c8d8ff;font-size:12px;letter-spacing:.04em
+}
+#jovens #youth-message.fju-connect-loading-card .fju-connect-loading-status{
+ display:flex;align-items:center;gap:9px;margin-top:17px;padding-top:13px;border-top:1px solid rgba(255,255,255,.18);
+ color:#e1e9f8;font-size:12px;font-weight:650
+}
+#jovens #youth-message.fju-connect-loading-card .fju-connect-loading-spinner{
+ width:13px;height:13px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;
+ animation:fjuConnectLoadingSpin .8s linear infinite
+}
+@keyframes fjuConnectLoadingSpin{to{transform:rotate(360deg)}}
 </style>
 <link rel="stylesheet" href="./admin-brand.css?v=20261023a">
 <link rel="stylesheet" href="./admin-dashboard.css?v=20261023g">
@@ -2239,7 +2269,15 @@ async function loadProfile(user){
   void coordinatorPending.refresh(data,true);
 }
 
-function youthMessage(text,error=false){message('youth-message',text,error)}
+function youthMessage(text,error=false){
+ const target=el('youth-message');
+ if(text==='Consultando fichas...'){
+  target.className='message fju-connect-loading-card';
+  target.innerHTML='<div class="fju-connect-loading-brand"><span class="fju-connect-loading-mark">FJU</span><span>CONNECT JAPAN</span></div><p class="fju-connect-loading-verse">“Sede pacientes na tribulação.”</p><strong class="fju-connect-loading-reference">Romanos 12:12</strong><div class="fju-connect-loading-status"><span class="fju-connect-loading-spinner" aria-hidden="true"></span><span>Preparando as fichas...</span></div>';
+  return;
+ }
+ message('youth-message',text,error);
+}
 function selectedYouthLanguages(){return [...document.querySelectorAll('input[name="youth-language"]:checked')].map(x=>x.value)}
 function refreshYouthLanguages(){const a=selectedYouthLanguages();el('youth-languages-summary').textContent=a.length?a.join(', '):'Selecionar idiomas'}
 document.querySelectorAll('input[name="youth-language"]').forEach(x=>x.addEventListener('change',refreshYouthLanguages));
