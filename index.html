@@ -3843,7 +3843,10 @@ function fjuUpdateChurchScreen(){
  const header=el('fju-church-roster-header');
  header.hidden=!selected;
  const mergeMount=el('fju-roster-merge-mount');
- if(mergeMount)mergeMount.hidden=!(selected||currentProfile?.papel==='coordenador');
+ // Exibir a unificação somente quando existe uma igreja específica selecionada.
+ // "Todos" (Japão inteiro) e o diretório de igrejas nunca exibem este controle.
+ const churchRosterOpen=Boolean(sel.value)&&!fjuNationalAllRoster;
+ if(mergeMount)mergeMount.hidden=!churchRosterOpen;
  if(selected){
   const church=[...sel.options].find(option=>option.value===sel.value);
   el('fju-church-roster-name').textContent=church?.textContent?.trim()||'Igreja';
