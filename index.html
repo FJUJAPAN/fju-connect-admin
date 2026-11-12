@@ -1163,17 +1163,22 @@ body.fju-ficha-aberta #youth-detail.fju-direct-detail{padding-bottom:120px!impor
 <div><h2>Fichas dos jovens</h2><p id="youth-page-subtitle" class="youth-page-subtitle">Consulte as fichas da sua igreja. Abra o formulário somente quando precisar cadastrar ou solicitar uma alteração.</p></div>
 <button type="button" id="youth-add-toggle" aria-expanded="false" aria-controls="youth-entry-panel"><span class="youth-add-icon" aria-hidden="true">+</span><span id="youth-add-toggle-label">Adicionar ficha</span></button>
 </div>
-<details id="merge-fichas" style="margin:14px 0;padding:14px;border:1px solid #cad7eb;border-radius:14px;background:#f5f8fd">
-<summary style="cursor:pointer;font-weight:750;color:#1c3565">⇄ Unificar fichas duplicadas</summary>
-<p class="muted">Escolha a ficha sem login como origem e a ficha com login ativo como principal. A senha e o acesso permanecem intactos.</p>
-<div class="grid"><label>ID da ficha duplicada<input id="merge-origem" inputmode="numeric" maxlength="5" placeholder="00046"></label><label>ID da ficha principal<input id="merge-destino" inputmode="numeric" maxlength="5" placeholder="00115"></label></div>
-<div class="actions" style="margin-top:12px"><button type="button" id="merge-verificar" class="secondary">Verificar fichas</button><button type="button" id="merge-executar" hidden>Confirmar unificação</button></div>
-<p id="merge-resultado" role="status" aria-live="polite" class="message"></p>
-</details><div id="fju-church-picker" class="fju-church-picker"><div class="fju-church-heading"><h3>Escolha a igreja</h3></div><div id="fju-church-buttons" class="fju-church-buttons" aria-label="Igrejas"></div></div>
+<div id="fju-church-picker" class="fju-church-picker"><div class="fju-church-heading"><h3>Escolha a igreja</h3></div><div id="fju-church-buttons" class="fju-church-buttons" aria-label="Igrejas"></div></div>
 <div id="fju-church-roster-header" hidden>
  <button type="button" id="fju-church-roster-back">← Todas as igrejas</button>
  <div class="fju-church-roster-title"><span>FICHAS DA IGREJA</span><h2 id="fju-church-roster-name"></h2></div>
  <button type="button" id="fju-church-roster-add">+ Adicionar ficha</button>
+</div>
+<div id="fju-roster-merge-mount" hidden style="margin:4px 0 12px">
+ <details id="merge-fichas" style="margin:0;padding:0;border:0;background:transparent">
+  <summary style="cursor:pointer;display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid #e0e6f0;border-radius:9px;background:#f7f8fb;color:#53627d;font-size:12px;font-weight:650;line-height:1.3">⇄ Unificar fichas duplicadas</summary>
+  <div style="margin-top:10px;padding:12px;border:1px solid #e2e7f0;border-radius:12px;background:#f8f9fc">
+   <p class="muted">Escolha a ficha sem login como origem e a ficha com login ativo como principal. A senha e o acesso permanecem intactos.</p>
+   <div class="grid"><label>ID da ficha duplicada<input id="merge-origem" inputmode="numeric" maxlength="5" placeholder="00046"></label><label>ID da ficha principal<input id="merge-destino" inputmode="numeric" maxlength="5" placeholder="00115"></label></div>
+   <div class="actions" style="margin-top:12px"><button type="button" id="merge-verificar" class="secondary">Verificar fichas</button><button type="button" id="merge-executar" hidden>Confirmar unificação</button></div>
+   <p id="merge-resultado" role="status" aria-live="polite" class="message"></p>
+  </div>
+ </details>
 </div>
 <div id="fju-church-pending-detail" hidden aria-live="polite"></div>
 <div id="youth-entry-panel" class="hidden">
@@ -3837,6 +3842,8 @@ function fjuUpdateChurchScreen(){
  panel.classList.toggle('fju-church-roster',selected);
  const header=el('fju-church-roster-header');
  header.hidden=!selected;
+ const mergeMount=el('fju-roster-merge-mount');
+ if(mergeMount)mergeMount.hidden=!(selected||currentProfile?.papel==='coordenador');
  if(selected){
   const church=[...sel.options].find(option=>option.value===sel.value);
   el('fju-church-roster-name').textContent=church?.textContent?.trim()||'Igreja';
