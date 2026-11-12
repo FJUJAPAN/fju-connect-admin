@@ -4840,14 +4840,19 @@ async function refreshAdminPriorities(profile,requestId){
   el('fju-priority-signups-note').textContent='Consultando inscrições…';
   el('fju-priority-requests-note').textContent='Consultando solicitações…';
   updatePriorityReportStatus();
-  const [signups,requests,complements]=await Promise.allSettled([
+  const [signups,requests,complements,profileEdits]=await Promise.allSettled([
     supabase.rpc('fju_listar_inscricoes_polo_detalhadas'),
     (()=>{
       let query=supabase.from('fju_solicitacoes').select('id',{count:'exact',head:true}).eq('status','pendente');
       if(!national)query=query.eq('polo_id',profile.polo_id);
       return query;
     })(),
-    national?supabase.rpc('fju_listar_pedidos_ficha_complementar'):Promise.resolve({data:[]})
+    national?supabase.rpc('fju_listar_pedidos_ficha_complementar'):Promise.resolve({data:[]}),
+    (()=>{
+      let query=supabase.from('fju_edicoes_perfil_jovem').select('id',{count:'exact',head:true}).eq('status','pendente');
+      if(!national)query=query.eq('polo_id',profile.polo_id);
+      return query;
+    })()
   ]);
   if(requestId!==profileRequest||currentProfile!==profile)return;
   if(signups.status==='fulfilled'&&!signups.value.error&&Array.isArray(signups.value.data)){
@@ -4858,12 +4863,15 @@ async function refreshAdminPriorities(profile,requestId){
     el('fju-priority-signups').textContent='—';
     el('fju-priority-signups-note').textContent='Não foi possível consultar';
   }
-  if(requests.status==='fulfilled'&&!requests.value.error&&Number.isFinite(requests.value.count)){
+  if(requests.status==='fulfilled'&&!requests.value.error&&Number.isFinite(requests.value.count)
+    &&profileEdits.status==='fulfilled'&&!profileEdits.value.error&&Number.isFinite(profileEdits.value.count)){
     const extra=national&&complements?.status==='fulfilled'&&!complements.value.error&&Array.isArray(complements.value.data)?complements.value.data.length:0;
-    const n=requests.value.count+extra;
+    // Somar também as solicitações de alteração de perfil, exibidas na fila própria de aprovações.
+    const edits=profileEdits.value.count;
+    const n=requests.value.count+extra+edits;
     el('fju-priority-requests').textContent=String(n);
     el('fju-priority-requests-note').textContent=n
-      ?(national?'Pedidos aguardando decisão':'Pedidos aguardando análise nacional')
+      ?(national?'Pedidos e alterações aguardando decisão':'Pedidos e alterações aguardando análise nacional')
       :'Nenhuma solicitação pendente';
   }else{
     el('fju-priority-requests').textContent='—';
