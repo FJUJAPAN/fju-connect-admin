@@ -4584,7 +4584,28 @@ el('enable-notifications').addEventListener('click',async()=>{
   updateNotificationPermissionUI();
 });
 updateNotificationPermissionUI();
-async function refresh(){if(recoveryMode){show('recovery');return}const {data:{user},error}=await supabase.auth.getUser();if(error||!user){show('auth');return}try{await loadProfile(user)}catch(e){show('auth');message('auth-message',e.message,true)}}
+async function refresh(){
+  if(recoveryMode){show('recovery');return;}
+  // Restore the persisted Supabase session locally before deciding to show login.
+  // getUser() performs a network round-trip; a temporary Safari/network delay must
+  // not be mistaken for a signed-out user and flash the login screen.
+  const {data:{session},error}=await supabase.auth.getSession();
+  if(error){
+    console.warn('Não foi possível restaurar a sessão do painel:',error);
+    show('session-startup');
+    message('auth-message','Não foi possível verificar sua sessão. Verifique a conexão e tente novamente.',true);
+    return;
+  }
+  const user=session?.user;
+  if(!user){show('auth');return;}
+  try{
+    await loadProfile(user);
+  }catch(e){
+    console.error('Falha ao carregar o perfil administrativo:',e);
+    show('auth');
+    message('auth-message',e.message,true);
+  }
+}
 document.getElementById('fju-toggle-password').addEventListener('click',()=>{
   const field=el('password'),toggle=el('fju-toggle-password');
   const visible=field.type==='password';
