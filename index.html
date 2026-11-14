@@ -2823,7 +2823,7 @@ function renderYouth(){
     if(r.estado_civil==='casado'||r.estado_civil==='solteiro'){const civilTag=document.createElement('span');civilTag.className='youth-rank';civilTag.textContent=r.estado_civil==='casado'?'Casado(a)':'Solteiro(a)';civilTag.style.background='#f0f2f6';civilTag.style.color='#3e4859';tags.append(civilTag);}
     const highlights=document.createElement('div');highlights.className='fju-card-highlights';
     if(r.deseja_obra_altar){const altarTag=document.createElement('span');altarTag.className='youth-rank youth-altar-tag';altarTag.textContent='🔥 ALTAR';altarTag.setAttribute('aria-label','Deseja fazer a Obra no Altar');altarTag.title='Deseja fazer a Obra no Altar';highlights.append(altarTag);}
-    if(highlights.childElementCount)info.append(highlights);
+    info.append(highlights);
     if(tags.childElementCount)info.append(tags);
     const projects=fjuProjectsByYouth.get(String(r.id))||[];
     if(projects.length)info.append(fjuBuildProjectIcons(projects));
