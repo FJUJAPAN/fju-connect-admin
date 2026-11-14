@@ -2670,15 +2670,15 @@ function fjuYouthLanguageFlags(languages){
 }
 function fjuAppendRankDetails(container,r,dados,compact=false){
  const entries=compact?[fjuCurrentRankTenure(r,dados)].filter(Boolean):fjuRankDetailEntries(r,dados);
- const wrap=document.createElement('div');wrap.className=compact?'fju-rank-card-fields':'fju-rank-profile-fields';
- wrap.style.cssText='display:grid;gap:5px;margin-top:10px;font-size:13px;min-width:0';
+ const wrap=document.createElement(compact?'span':'div');wrap.className=compact?'fju-rank-card-fields':'fju-rank-profile-fields';
+ wrap.style.cssText=compact?'display:inline-flex;align-items:center;min-height:24px;padding:4px 9px;border-radius:999px;background:#edf1f7;color:#40516b;font-size:11px;font-weight:700;line-height:1.2;white-space:normal;max-width:100%;box-sizing:border-box':'display:grid;gap:5px;margin-top:10px;font-size:13px;min-width:0';
  for(const [label,value] of entries){
-  const line=document.createElement('div');line.style.cssText='overflow-wrap:anywhere;white-space:normal';
-  const heading=document.createElement('strong');heading.textContent=label+': ';
-  const content=document.createElement('span');content.textContent=compact&&String(value).length>130?String(value).slice(0,130)+'…':String(value);
-  line.append(heading,content);wrap.append(line);
+  const line=document.createElement(compact?'span':'div');line.style.cssText='overflow-wrap:anywhere;white-space:normal';
+  if(compact){line.textContent=label.replace(/^Tempo (no|como|na) /i,'')+' · '+String(value);}
+  else{const heading=document.createElement('strong');heading.textContent=label+': ';const content=document.createElement('span');content.textContent=String(value);line.append(heading,content);}
+  wrap.append(line);
  }
- container.append(wrap);
+ if(entries.length)container.append(wrap);
  return wrap;
 }
 function youthCardInitials(name){
@@ -2821,18 +2821,20 @@ function renderYouth(){
     info.append(name,idLabel);
     const tags=document.createElement('div');tags.className='youth-card-metadata youth-card-tags';tags.style.display='flex';tags.style.flexWrap='wrap';tags.style.gap='5px';
     if(r.estado_civil==='casado'||r.estado_civil==='solteiro'){const civilTag=document.createElement('span');civilTag.className='youth-rank';civilTag.textContent=r.estado_civil==='casado'?'Casado(a)':'Solteiro(a)';civilTag.style.background='#f0f2f6';civilTag.style.color='#3e4859';tags.append(civilTag);}
-    if(r.deseja_obra_altar){const altarTag=document.createElement('span');altarTag.className='youth-rank youth-altar-tag';altarTag.textContent='ALTAR';tags.append(altarTag);}
+    if(r.deseja_obra_altar){const altarTag=document.createElement('span');altarTag.className='youth-rank youth-altar-tag';altarTag.textContent='🔥 ALTAR';altarTag.setAttribute('aria-label','Deseja fazer a Obra no Altar');altarTag.title='Deseja fazer a Obra no Altar';tags.append(altarTag);}
     info.append(tags);
     const projects=fjuProjectsByYouth.get(String(r.id))||[];
     if(projects.length)info.append(fjuBuildProjectIcons(projects));
     info.append(metadata);
     if(['nacional','coordenador'].includes(currentProfile?.papel)){
-      const rankDetails=document.createElement('div');rankDetails.className='fju-rank-card-fields';rankDetails.textContent='Carregando informações…';info.append(rankDetails);
+      const rankDetails=document.createElement('span');rankDetails.className='fju-rank-card-fields';rankDetails.textContent='Carregando tempo…';tags.append(rankDetails);
       const profileAtRender=currentProfile;
       void fjuGetRankDetails(r.id).then(dados=>{
        if(currentProfile!==profileAtRender||!card.isConnected)return;
-       rankDetails.replaceWith(fjuAppendRankDetails(document.createElement('div'),r,dados,true));
-      }).catch(()=>{if(rankDetails.isConnected)rankDetails.textContent='Informações adicionais indisponíveis';});
+       const tenure=fjuCurrentRankTenure(r,dados);
+       if(tenure)rankDetails.replaceWith(fjuAppendRankDetails(document.createElement('span'),r,dados,true));
+       else rankDetails.remove();
+      }).catch(()=>{if(rankDetails.isConnected)rankDetails.remove();});
     }
     main.append(avatar,info);
     main.setAttribute('role','button');main.tabIndex=0;main.setAttribute('aria-label','Abrir ficha de '+(r.nome_completo||'jovem'));main.onclick=()=>viewYouth(r.id);main.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();viewYouth(r.id);}};
