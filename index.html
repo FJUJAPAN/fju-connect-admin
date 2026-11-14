@@ -2821,13 +2821,15 @@ function renderYouth(){
     info.append(name,idLabel);
     const tags=document.createElement('div');tags.className='youth-card-metadata youth-card-tags';tags.style.display='flex';tags.style.flexWrap='wrap';tags.style.gap='5px';
     if(r.estado_civil==='casado'||r.estado_civil==='solteiro'){const civilTag=document.createElement('span');civilTag.className='youth-rank';civilTag.textContent=r.estado_civil==='casado'?'Casado(a)':'Solteiro(a)';civilTag.style.background='#f0f2f6';civilTag.style.color='#3e4859';tags.append(civilTag);}
-    if(r.deseja_obra_altar){const altarTag=document.createElement('span');altarTag.className='youth-rank youth-altar-tag';altarTag.textContent='🔥 ALTAR';altarTag.setAttribute('aria-label','Deseja fazer a Obra no Altar');altarTag.title='Deseja fazer a Obra no Altar';tags.append(altarTag);}
-    info.append(tags);
+    const highlights=document.createElement('div');highlights.className='fju-card-highlights';
+    if(r.deseja_obra_altar){const altarTag=document.createElement('span');altarTag.className='youth-rank youth-altar-tag';altarTag.textContent='🔥 ALTAR';altarTag.setAttribute('aria-label','Deseja fazer a Obra no Altar');altarTag.title='Deseja fazer a Obra no Altar';highlights.append(altarTag);}
+    info.append(highlights);
+    if(tags.childElementCount)info.append(tags);
     const projects=fjuProjectsByYouth.get(String(r.id))||[];
     if(projects.length)info.append(fjuBuildProjectIcons(projects));
     info.append(metadata);
     if(['nacional','coordenador'].includes(currentProfile?.papel)){
-      const rankDetails=document.createElement('span');rankDetails.className='fju-rank-card-fields';rankDetails.textContent='Carregando tempo…';tags.append(rankDetails);
+      const rankDetails=document.createElement('span');rankDetails.className='fju-rank-card-fields';rankDetails.textContent='Carregando tempo…';highlights.append(rankDetails);
       const profileAtRender=currentProfile;
       void fjuGetRankDetails(r.id).then(dados=>{
        if(currentProfile!==profileAtRender||!card.isConnected)return;

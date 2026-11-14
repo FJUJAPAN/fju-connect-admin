@@ -775,3 +775,22 @@
   #jovens .youth-list-controls input{font-size:14px}
   #jovens #youth-refresh{padding:8px 10px;font-size:11px}
 }
+
+
+/* Indicadores essenciais dos cards: independentes da área de metadados ocultada no iPhone. */
+#jovens #youth-list .fju-card-highlights{
+  display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:6px!important;
+  width:100%!important;min-width:0!important;margin-top:2px!important;
+}
+#jovens #youth-list .fju-card-highlights .youth-altar-tag{
+  display:inline-flex!important;align-items:center!important;min-height:24px!important;
+  padding:4px 9px!important;border:0!important;border-radius:999px!important;
+  background:#ffedb8!important;color:#805300!important;font-size:11px!important;font-weight:750!important;
+  line-height:1.2!important;
+}
+#jovens #youth-list .fju-card-highlights .fju-rank-card-fields{
+  display:inline-flex!important;align-items:center!important;min-height:24px!important;
+  padding:4px 9px!important;border-radius:999px!important;background:#edf1f7!important;
+  color:#40516b!important;font-size:11px!important;font-weight:700!important;line-height:1.2!important;
+  white-space:normal!important;max-width:100%!important;box-sizing:border-box!important;
+}
