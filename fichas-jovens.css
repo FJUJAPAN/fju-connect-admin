@@ -486,3 +486,125 @@
   min-height:25px!important;padding:4px 9px!important;font-size:10px!important;
  }
 }
+
+
+/* FJU Connect — redesign de cards de jovens (mobile-first, novembro/2026).
+   Camada visual final: preserva markup, ações, dados e permissões existentes. */
+#jovens{
+  --yc-ink:#172b4d;
+  --yc-muted:#71809a;
+  --yc-line:#e6ebf2;
+  --yc-blue:#2456a6;
+}
+#youth-list{
+  grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));
+  gap:12px;
+  margin-top:12px;
+}
+#youth-list .youth-card{
+  gap:11px;
+  padding:14px;
+  border:1px solid var(--yc-line);
+  border-radius:16px;
+  background:#fff;
+  box-shadow:0 2px 9px rgba(23,43,77,.045);
+  transition:border-color .16s ease,box-shadow .16s ease;
+}
+#youth-list .youth-card:hover{
+  transform:none;
+  border-color:#cbd7e8;
+  box-shadow:0 5px 16px rgba(23,43,77,.075);
+}
+#youth-list .youth-card-main{
+  align-items:center;
+  gap:12px;
+}
+#youth-list .youth-avatar{
+  flex:0 0 54px;
+  width:54px;height:54px;
+  border:1px solid #e5eaf2;
+  border-radius:14px;
+  background:#f0f4fa;
+  color:#38577f;
+  font-size:18px;
+}
+#youth-list .youth-card-info{gap:5px}
+#youth-list .youth-card-name{
+  color:var(--yc-ink);
+  font-size:15px;
+  font-weight:700;
+  line-height:1.3;
+  letter-spacing:-.015em;
+  overflow-wrap:anywhere;
+}
+#youth-list .youth-card-metadata{
+  gap:6px;
+  color:var(--yc-muted);
+  font-size:11.5px;
+}
+#youth-list .youth-rank{
+  padding:4px 9px;
+  border-radius:7px;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:0;
+}
+#youth-list .fju-youth-project-icons{gap:5px!important}
+#youth-list .fju-youth-project-icons .fju-project-icon{
+  padding:4px 8px!important;
+  border-radius:7px!important;
+  font-size:10px!important;
+  font-weight:650!important;
+}
+#youth-list .youth-card-actions{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding-top:10px;
+  border-top:1px solid #edf0f5;
+}
+#youth-list .youth-card-actions button{
+  min-height:36px;
+  padding:8px 12px;
+  border-radius:9px;
+  font-size:11.5px;
+  font-weight:700;
+}
+#youth-list .youth-card-actions .youth-view-button{
+  background:var(--yc-blue);
+  color:#fff;
+}
+#youth-list .youth-card-actions .youth-edit-button{
+  background:#f0f3f8;
+  color:#344b6d;
+}
+#youth-list .youth-card-more{flex:0 0 auto;margin-left:auto}
+#youth-list .youth-card-more summary{
+  min-height:36px;
+  padding:7px 8px;
+  border-radius:8px;
+  color:#64748b;
+  font-size:11px;
+}
+#youth-list .youth-card-more summary:hover{background:#f4f6fa}
+#youth-list .youth-card-extra-actions{
+  justify-content:flex-end;
+  gap:6px;
+  padding-top:8px;
+}
+#youth-list .youth-card-extra-actions button{
+  min-height:35px;
+  padding:7px 10px;
+  border-radius:8px;
+}
+@media(max-width:700px){
+  #youth-list{grid-template-columns:minmax(0,1fr);gap:9px}
+  #youth-list .youth-card{padding:12px;border-radius:14px;gap:9px}
+  #youth-list .youth-avatar{flex-basis:50px;width:50px;height:50px;border-radius:12px}
+  #youth-list .youth-card-name{font-size:14px}
+  #youth-list .youth-card-actions{gap:6px;padding-top:8px}
+  #youth-list .youth-card-actions button{min-height:38px;padding:8px 10px;font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){
+  #youth-list .youth-card{transition:none}
+}
