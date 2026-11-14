@@ -608,3 +608,111 @@
 @media(prefers-reduced-motion:reduce){
   #youth-list .youth-card{transition:none}
 }
+
+
+/* FJU Connect — correção visual pós-validação no iPhone.
+   Neutraliza estilos inline legados e mantém o cartão compacto em uma única linha. */
+#jovens #youth-list .youth-card{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:9px!important;
+  padding:12px!important;
+  background:#fff!important;
+  border:1px solid #e2e8f0!important;
+  border-left:1px solid #e2e8f0!important;
+  border-radius:14px!important;
+  box-shadow:0 2px 8px rgba(15,35,70,.045)!important;
+}
+#jovens #youth-list .youth-card-main{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:11px!important;
+  width:100%!important;
+  min-width:0!important;
+}
+#jovens #youth-list .youth-avatar{
+  display:flex!important;
+  flex:0 0 52px!important;
+  width:52px!important;
+  height:52px!important;
+  min-width:52px!important;
+  border-radius:12px!important;
+  overflow:hidden!important;
+}
+#jovens #youth-list .youth-card-info{
+  display:flex!important;
+  flex:1 1 auto!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  gap:5px!important;
+  min-width:0!important;
+  text-align:left!important;
+}
+#jovens #youth-list .youth-card-name{
+  margin:0!important;
+  color:#172b4d!important;
+  font-size:14px!important;
+  font-weight:750!important;
+  line-height:1.3!important;
+  text-align:left!important;
+}
+#jovens #youth-list .youth-card-name-meta{
+  color:#64748b!important;
+  font-size:12px!important;
+  font-weight:500!important;
+}
+#jovens #youth-list .fju-youth-id{
+  color:#64748b!important;
+  font-size:11px!important;
+  font-weight:700!important;
+  letter-spacing:.035em!important;
+}
+/* No cartão ficam apenas identificação, patente, FJU ID e tempo na função.
+   Idiomas e projetos permanecem disponíveis dentro da ficha completa. */
+#jovens #youth-list .youth-card-tags,
+#jovens #youth-list .fju-youth-project-icons,
+#jovens #youth-list .youth-card-metadata:not(.youth-card-tags){
+  display:none!important;
+}
+#jovens #youth-list .fju-rank-card-fields{
+  display:block!important;
+  margin-top:2px!important;
+  color:#52627b!important;
+  font-size:11px!important;
+  line-height:1.35!important;
+}
+#jovens #youth-list .youth-card-actions{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:wrap!important;
+  align-items:center!important;
+  gap:7px!important;
+  padding-top:8px!important;
+  border-top:1px solid #edf1f6!important;
+}
+#jovens #youth-list .youth-card-actions button{
+  min-height:34px!important;
+  padding:7px 11px!important;
+  border-radius:9px!important;
+  font-size:11px!important;
+  font-weight:700!important;
+}
+#jovens #youth-list .youth-card-actions .youth-view-button{
+  background:#2456a6!important;
+  color:#fff!important;
+}
+#jovens #youth-list .youth-card-actions .youth-edit-button,
+#jovens #youth-list .youth-card-actions .youth-delete-button{
+  background:#f0f3f8!important;
+  color:#344b6d!important;
+}
+@media(max-width:700px){
+  #jovens #youth-list{grid-template-columns:minmax(0,1fr)!important;gap:9px!important}
+  #jovens #youth-list .youth-card{padding:11px!important;gap:8px!important}
+  #jovens #youth-list .youth-avatar{flex-basis:48px!important;width:48px!important;height:48px!important;min-width:48px!important}
+  #jovens #youth-list .youth-card-actions button{min-height:34px!important}
+}
