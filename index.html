@@ -10,7 +10,7 @@
 <title>FJU Connect JAPAN · Admin</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="stylesheet" href="./cards-coordenadores.css?v=20261023b">
-<link rel="stylesheet" href="./fichas-jovens.css?v=20261114-card-redesign-2">
+<link rel="stylesheet" href="./fichas-jovens.css?v=20261114-roster-organization-1">
 <link rel="stylesheet" href="./fichas-complementos.css?v=20261026-ficha">
 <meta name="theme-color" content="#081e3b">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1174,17 +1174,21 @@ body.fju-ficha-aberta #youth-detail.fju-direct-detail{padding-bottom:120px!impor
  <div class="fju-church-roster-title"><span>FICHAS DA IGREJA</span><h2 id="fju-church-roster-name"></h2></div>
  <button type="button" id="fju-church-roster-add">+ Adicionar ficha</button>
 </div>
-<div id="fju-roster-merge-mount" hidden style="margin:4px 0 12px">
- <details id="merge-fichas" style="margin:0;padding:0;border:0;background:transparent">
-  <summary style="cursor:pointer;display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid #e0e6f0;border-radius:9px;background:#f7f8fb;color:#53627d;font-size:12px;font-weight:650;line-height:1.3">⇄ Unificar fichas duplicadas</summary>
-  <div style="margin-top:10px;padding:12px;border:1px solid #e2e7f0;border-radius:12px;background:#f8f9fc">
-   <p class="muted">Escolha a ficha sem login como origem e a ficha com login ativo como principal. A senha e o acesso permanecem intactos.</p>
-   <div class="grid"><label>ID da ficha duplicada<input id="merge-origem" inputmode="numeric" maxlength="5" placeholder="00046"></label><label>ID da ficha principal<input id="merge-destino" inputmode="numeric" maxlength="5" placeholder="00115"></label></div>
-   <div class="actions" style="margin-top:12px"><button type="button" id="merge-verificar" class="secondary">Verificar fichas</button><button type="button" id="merge-executar" hidden>Confirmar unificação</button></div>
-   <p id="merge-resultado" role="status" aria-live="polite" class="message"></p>
-  </div>
- </details>
-</div>
+<details id="fju-roster-merge-mount" class="fju-roster-tools" hidden>
+ <summary><span>⚙ Ferramentas</span><span class="fju-roster-tools-hint">Imprimir e unificar</span></summary>
+ <div class="fju-roster-tools-content">
+  
+  <details id="merge-fichas" class="fju-merge-tool">
+   <summary>⇄ Unificar fichas duplicadas</summary>
+   <div class="fju-merge-tool-body">
+    <p class="muted">Escolha a ficha sem login como origem e a ficha com login ativo como principal. A senha e o acesso permanecem intactos.</p>
+    <div class="grid"><label>ID da ficha duplicada<input id="merge-origem" inputmode="numeric" maxlength="5" placeholder="00046"></label><label>ID da ficha principal<input id="merge-destino" inputmode="numeric" maxlength="5" placeholder="00115"></label></div>
+    <div class="actions" style="margin-top:12px"><button type="button" id="merge-verificar" class="secondary">Verificar fichas</button><button type="button" id="merge-executar" hidden>Confirmar unificação</button></div>
+    <p id="merge-resultado" role="status" aria-live="polite" class="message"></p>
+   </div>
+  </details>
+ </div>
+</details>
 <div id="fju-church-pending-detail" hidden aria-live="polite"></div>
 <div id="youth-entry-panel" class="hidden">
 <div class="youth-entry-heading"><h3 id="youth-form-title">Nova ficha</h3><button type="button" id="youth-form-close" class="secondary">Fechar</button></div>
