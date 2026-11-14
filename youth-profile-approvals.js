@@ -1,6 +1,6 @@
 import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 const client=createClient('https://hmacroktklgwkofxsygv.supabase.co','sb_publishable_mdkfafhpqtthwzU8Hf7u9A_rErx3MFJ');
-const labels={testemunho:'Testemunho',nascimento:'Nascimento',batismo_aguas:'Batismo nas águas',batismo_espirito_santo:'Batismo com Espírito Santo',projetos:'Projetos'};
+const labels={testemunho:'Testemunho',nascimento:'Nascimento',batismo_aguas:'Batismo nas águas',batismo_espirito_santo:'Batismo com Espírito Santo',projetos:'Projetos',estado_civil:'Estado civil',data_casamento:'Data do casamento',endereco:'Endereço no Japão',observacoes:'Observações',batismo_espirito:'Data do batismo com o Espírito Santo (complementar)',inicio_cpo:'Início no CPO',inicio_colaborador:'Início como Colaborador',inicio_obra:'Início na Obra de Deus',inicio_coordenacao_fju:'Início na coordenação da FJU'};
 const root=document.createElement('section');root.className='panel';root.id='fju-youth-edits-approvals';
 root.innerHTML='<h2>Alterações de perfil dos jovens</h2><p>Solicitações do seu polo. A ficha só muda depois da aprovação.</p><button type="button" id="fju-edits-reload">Atualizar solicitações</button><p id="fju-edits-message" role="status"></p><div id="fju-edits-list"></div>';
 const host=document.getElementById('solicitacoes')||document.getElementById('requests')||document.querySelector('main.wrap');
@@ -20,12 +20,14 @@ async function refresh(){
  message.textContent=data.length?data.length+' solicitação(ões) pendente(s)':'Nenhuma solicitação pendente.';
  for(const item of data){
   const card=document.createElement('article');card.style.cssText='padding:15px;margin:12px 0;border:1px solid #dce3ef;border-radius:12px;background:#fff';
-  const {data:youth}=await client.from('fju_jovens').select('nome_completo,nascimento,batismo_aguas,batismo_espirito_santo,testemunho,projetos').eq('id',item.jovem_id).maybeSingle();
+  const {data:youth}=await client.from('fju_jovens').select('nome_completo,nascimento,batismo_aguas,batismo_espirito_santo,testemunho,projetos,estado_civil,data_casamento,endereco').eq('id',item.jovem_id).maybeSingle();
+  const {data:complementResult}=await client.rpc('fju_ler_ficha_complementar',{p_jovem_id:item.jovem_id});
+  const current={...(youth||{}),...(complementResult?.dados||{})};
   const title=document.createElement('h3');title.textContent=youth?.nome_completo||'Jovem '+item.jovem_id;card.append(title);
   for(const [key,newValue] of Object.entries(item.dados_propostos||{})){
    if(!(key in labels))continue;
    const line=document.createElement('p');line.style.whiteSpace='pre-wrap';
-   line.append(safe(labels[key]+': '),safe(Array.isArray(youth?.[key])?youth[key].join(', '):youth?.[key]),safe(' → '),safe(Array.isArray(newValue)?newValue.join(', '):newValue));card.append(line);
+   line.append(safe(labels[key]+': '),safe(Array.isArray(current[key])?current[key].join(', '):current[key]),safe(' → '),safe(Array.isArray(newValue)?newValue.join(', '):newValue));card.append(line);
   }
   const feedback=document.createElement('p');feedback.setAttribute('role','status');
   for(const [approved,label] of [[true,'Aprovar'],[false,'Rejeitar']]){
